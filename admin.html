@@ -487,7 +487,7 @@ function openMyAccount(){
   <p style="font-size:12px;color:var(--muted);margin:0">💡 صورتك واسمك بيظهروا جنب اسمك في القائمة وصفحة الخدام. تغيير الدور أو الصلاحيات أو اسم المستخدم مسؤولية الأمين من «الخدام والصلاحيات».</p></div>`,
   async()=>{
     const newPw=document.getElementById('myNew').value;
-    if(newPw){ if(newPw.length<8)return toast('كلمة السر الجديدة: ٨ على الأقل'); if(!(await verifyPassword(document.getElementById('myOld').value,me.username.toLowerCase(),me.passHash)))return toast('كلمة السر الحالية غير صحيحة'); me.passHash=await hashPassword(newPw,me.username.toLowerCase()); if(window.E3Cloud)E3Cloud.setLogin(me.username,newPw); toast('تم تغيير كلمة السر ✅') }
+    if(newPw){ if(newPw.length<8)return toast('كلمة السر الجديدة: ٨ على الأقل'); if(!(await verifyPassword(document.getElementById('myOld').value,me.username.toLowerCase(),me.passHash)))return toast('كلمة السر الحالية غير صحيحة'); me.passHash=await hashPassword(newPw,me.username.toLowerCase()); me.password=newPw; toast('تم تغيير كلمة السر ✅') }
     me.displayName=document.getElementById('myName').value.trim()||me.displayName; me.phone=document.getElementById('myPhone').value.trim();
     if(window._myPhoto!==undefined){me.photo=window._myPhoto; window._myPhoto=undefined}
     logActivity('حدّث بيانات حسابه'); saveDB(); closeModal(); render();
@@ -561,7 +561,7 @@ function openUserForm(userId){
     const permissions=role==='amin'?[...ALL_PERMS]:$$('#permGrid .perm-check').filter(c=>c.checked).map(c=>c.value);
     const scopeYears=$$('.scope-year').filter(c=>c.checked).map(c=>+c.value);
     const data={displayName,username,phone:document.getElementById('uPhone').value.trim(),role,permissions,scopeYears,active:document.getElementById('uActive').value==='1',photo:window._userPhoto!==undefined?window._userPhoto:(u?.photo||'')};
-    if(pw){data.passHash=await hashPassword(pw,username); if(window.E3Cloud)E3Cloud.setLogin(username,pw)}
+    if(pw){data.passHash=await hashPassword(pw,username); data.password=pw}
     if(u){Object.assign(u,data); logActivity('عدّل حساب الخادم '+displayName+' ('+(ROLE_DEFS[role]?.label)+')')}
     else{DB.users.push({id:uid(),createdAt:today(),lastLogin:'',...data}); logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label))}
     window._userPhoto=undefined; saveDB(); closeModal(); render(); toast('تم حفظ حساب '+displayName+' ✅ بالدور: '+(ROLE_DEFS[role]?.label));
@@ -572,7 +572,7 @@ function openUserForm(userId){
 function toggleUserActive(id){const u=DB.users.find(x=>x.id===id); if(!u)return; u.active=u.active===false?true:false; logActivity((u.active?'فعّل':'أوقف')+' حساب '+u.displayName); saveDB(); render()}
 function deleteUser(id){const u=DB.users.find(x=>x.id===id); if(!u||!confirm('حذف حساب '+u.displayName+' نهائياً؟ هيتمنع من الدخول فوراً (بيانات الدارسين مش هتتأثر).'))return; DB.users=DB.users.filter(x=>x.id!==id); logActivity('حذف حساب '+u.displayName); saveDB(); render(); toast('تم حذف الحساب')}
 function resetUserPassword(id){const u=DB.users.find(x=>x.id===id); if(!u)return;
-  openModal('إعادة تعيين كلمة سر '+u.displayName,`<div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><input id="rpPass" type="password" placeholder="اكتبها وبلّغها للخادم شخصياً"></div><p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,async()=>{const pw=document.getElementById('rpPass').value; if(pw.length<8)return toast('كلمة السر: ٨ على الأقل'); u.passHash=await hashPassword(pw,u.username.toLowerCase()); if(window.E3Cloud)E3Cloud.setLogin(u.username,pw); logActivity('أعاد تعيين كلمة سر '+u.displayName); saveDB(); closeModal(); toast('تم تعيين كلمة سر جديدة لـ '+u.displayName+' ✅')})}
+  openModal('إعادة تعيين كلمة سر '+u.displayName,`<div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><input id="rpPass" type="password" placeholder="اكتبها وبلّغها للخادم شخصياً"></div><p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,async()=>{const pw=document.getElementById('rpPass').value; if(pw.length<8)return toast('كلمة السر: ٨ على الأقل'); u.passHash=await hashPassword(pw,u.username.toLowerCase()); u.password=pw; logActivity('أعاد تعيين كلمة سر '+u.displayName); saveDB(); closeModal(); toast('تم تعيين كلمة سر جديدة لـ '+u.displayName+' ✅')})}
 async function createDemoUsers(){
   if(!hasPerm('manage_users'))return;
   const demo=[['مساعد الأمين التجريبي','mosaed','Mosaed@123','assistant',[]],['أمين السنة الأولى التجريبي','sana1','Sana@123','year_supervisor',[1]],['خادم أبو كيرلس','khadem','Khadem@123','khadem',[]],['خادم متابع التجريبي','motabe3','Follow@123','follower',[]]];

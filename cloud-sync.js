@@ -21,11 +21,20 @@ function setSnap(o){try{localStorage.setItem(cfg.dbKey+'_snap',JSON.stringify(o)
 
 /* مجموعة = مصفوفة عناصر كل واحد له id صالح كمفتاح */
 function isColl(v){return Array.isArray(v)&&v.length>0&&v.every(function(x){return x&&typeof x==='object'&&typeof x.id==='string'&&/^[^.$#\[\]\/]+$/.test(x.id)})}
+/* المستخدمين بيتخزنوا كحقول منفصلة في Firebase (اسم، دور، password...) مش كسطر واحد */
+var NATIVE={users:1}, legacy={};
+function toArr(x){return Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).map(function(k){return x[k]}):[])}
+function normRec(coll,o){if(coll==='users'&&o&&typeof o==='object'){o.permissions=toArr(o.permissions);o.scopeYears=toArr(o.scopeYears)}return o}
+function canon(v){
+  if(Array.isArray(v))return '['+v.map(canon).join(',')+']';
+  if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+canon(v[k])}).join(',')+'}';
+  return JSON.stringify(v);
+}
 function flatten(db){
   var m={};
   Object.keys(db||{}).forEach(function(k){
     var v=db[k]; if(v===undefined)return;
-    if(isColl(v)){v.forEach(function(it){m['rec/'+k+'/'+it.id]=JSON.stringify(it)})}
+    if(isColl(v)){v.forEach(function(it){m['rec/'+k+'/'+it.id]=NATIVE[k]?canon(normRec(k,JSON.parse(JSON.stringify(it)))):JSON.stringify(it)})}
     else{m['val/'+k]=JSON.stringify(v)}
   });
   return m;
@@ -51,12 +60,20 @@ async function fetchRemote(ms){
   var j=await r.json(), m={};
   if(j){
     var str=function(x){return typeof x==='string'?x:JSON.stringify(x)};
-    if(j.rec)Object.keys(j.rec).forEach(function(k){Object.keys(j.rec[k]||{}).forEach(function(id){m['rec/'+k+'/'+id]=str(j.rec[k][id])})});
+    legacy={};
+    if(j.rec)Object.keys(j.rec).forEach(function(k){Object.keys(j.rec[k]||{}).forEach(function(id){
+      var x=j.rec[k][id], p='rec/'+k+'/'+id;
+      if(NATIVE[k]){ if(typeof x==='string')legacy[p]=1; m[p]=canon(normRec(k,typeof x==='string'?parseVal(x):x)) }
+      else m[p]=str(x);
+    })});
     if(j.val)Object.keys(j.val).forEach(function(k){m['val/'+k]=str(j.val[k])});
   }
   return m;
 }
 async function patch(obj,ms){
+  var o2={};
+  Object.keys(obj).forEach(function(p){var q=p.split('/'),v=obj[p]; o2[p]=(q[0]==='rec'&&NATIVE[q[1]]&&typeof v==='string')?JSON.parse(v):v});
+  obj=o2;
   var r=await fetch(url(),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj),signal:signal(ms||20000)});
   if(!r.ok)throw new Error('http '+r.status);
 }
@@ -96,7 +113,7 @@ async function sync(opt){
       else if(lc&&rc)f=(lh===rh)?l:(first?r:l);
       else f=l;
       if(f!==undefined)final[p]=f;
-      if(f!==r)push[p]=(f===undefined?null:f);
+      if(f!==r||(legacy[p]&&f!==undefined))push[p]=(f===undefined?null:f);
       if(f!==l)localChange=true;
     });
     if(Object.keys(push).length)await patch(push);
@@ -146,19 +163,5 @@ function init(opt){
   setInterval(function(){if(!document.hidden&&navigator.onLine)sync().then(remoteChanged)},180000);
 }
 
-/* كلمات سر مرئية: ekhdam/logins/<username> = كلمة السر (للعرض والتعديل من Firebase) */
-function loginKey(u){return String(u||'').toLowerCase().replace(/[.$#\[\]\/]/g,'_')}
-function loginUrl(u){return DB_URL+'/'+ROOT+'/logins/'+encodeURIComponent(loginKey(u))+'.json'}
-async function setLogin(username,pw){
-  try{await fetch(loginUrl(username),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pw),signal:signal(10000)})}catch(e){}
-}
-async function loginOk(username,pw){
-  try{
-    var r=await fetch(loginUrl(username),{cache:'no-store',signal:signal(6000)});
-    if(!r.ok)return false;
-    var v=await r.json();
-    return typeof v==='string'&&v.length>0&&v===pw;
-  }catch(e){return false}
-}
-window.E3Cloud={init:init,sync:sync,queuePush:queuePush,setLogin:setLogin,loginOk:loginOk};
+window.E3Cloud={init:init,sync:sync,queuePush:queuePush};
 })();
