@@ -146,5 +146,19 @@ function init(opt){
   setInterval(function(){if(!document.hidden&&navigator.onLine)sync().then(remoteChanged)},180000);
 }
 
-window.E3Cloud={init:init,sync:sync,queuePush:queuePush};
+/* كلمات سر مرئية: ekhdam/logins/<username> = كلمة السر (للعرض والتعديل من Firebase) */
+function loginKey(u){return String(u||'').toLowerCase().replace(/[.$#\[\]\/]/g,'_')}
+function loginUrl(u){return DB_URL+'/'+ROOT+'/logins/'+encodeURIComponent(loginKey(u))+'.json'}
+async function setLogin(username,pw){
+  try{await fetch(loginUrl(username),{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(pw),signal:signal(10000)})}catch(e){}
+}
+async function loginOk(username,pw){
+  try{
+    var r=await fetch(loginUrl(username),{cache:'no-store',signal:signal(6000)});
+    if(!r.ok)return false;
+    var v=await r.json();
+    return typeof v==='string'&&v.length>0&&v===pw;
+  }catch(e){return false}
+}
+window.E3Cloud={init:init,sync:sync,queuePush:queuePush,setLogin:setLogin,loginOk:loginOk};
 })();

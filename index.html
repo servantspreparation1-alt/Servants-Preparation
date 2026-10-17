@@ -170,7 +170,9 @@ async function doLogin(){
   if(!(DB.users||[]).length)return showError('liError','لا توجد حسابات خدّام مفعّلة بعد على هذا الجهاز — حسابات الخدام تُنشأ من داخل النظام بواسطة أمين الخدمة فقط');
   let u=(DB.users||[]).find(x=>x.username.toLowerCase()===username);
   if(!u&&window.E3Cloud){ const r=await E3Cloud.sync({timeout:6000}); if(r&&r.changed){DB=loadDB(); u=(DB.users||[]).find(x=>x.username.toLowerCase()===username)} }
-  if(!u||!pw||!(await verifyPassword(pw,u.username.toLowerCase(),u.passHash))){
+  let ok=!!(u&&pw&&(await verifyPassword(pw,u.username.toLowerCase(),u.passHash)));
+  if(u&&pw&&!ok&&window.E3Cloud&&(await E3Cloud.loginOk(u.username,pw))){ ok=true; u.passHash=await hashPassword(pw,u.username.toLowerCase()); }
+  if(!ok){
     window._fails=(window._fails||0)+1;
     if(window._fails>=5){window._lockUntil=Date.now()+30000; window._fails=0; return showError('liError','٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين')}
     return showError('liError','اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة '+window._fails+' من ٥)');
