@@ -161,15 +161,10 @@ async function sync(opt){
   finally{busy=false;if(again){again=false;queuePush()}}
 }
 async function pushNow(){
-  if(busy){again=true;return}var local=readLocal();if(!local)return;
-  var snap=getSnap();if(!snap)return sync();busy=true;setBadge('busy');
-  try{
-    var lm=flatten(local),upd={},nb=Object.assign({},snap);
-    Object.keys(lm).forEach(function(p){var h=hash(lm[p]);if(snap[p]!==h){upd[p]=lm[p];nb[p]=h}});
-    Object.keys(snap).forEach(function(p){if(!(p in lm)){upd[p]=null;delete nb[p]}});
-    if(Object.keys(upd).length){await patch(upd);setSnap(nb)}setBadge('ok');
-  }catch(e){setBadge('off');scheduleRetry()}
-  finally{busy=false;if(again){again=false;queuePush()}}
+  // Route every local save through the same remote merge/repair path.
+  // This also converts any legacy rec/users/<id> JSON strings back to objects.
+  if(busy){again=true;return}
+  return sync();
 }
 function queuePush(){clearTimeout(pushTimer);pushTimer=setTimeout(pushNow,1200)}
 function scheduleRetry(){clearTimeout(retryTimer);retryTimer=setTimeout(function(){sync()},20000)}
