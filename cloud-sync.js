@@ -8,7 +8,7 @@
 var DB_URL='https://servantspreparation1-773ce-default-rtdb.europe-west1.firebasedatabase.app';
 var ROOT='ekhdam';
 var cfg={dbKey:'e3dad_khoddam_db_v1',badge:false,auto:true,onRemote:null};
-var busy=false,again=false,pushTimer=null,retryTimer=null,badgeEl=null;
+var busy=false,again=false,pushTimer=null,retryTimer=null,badgeEl=null,ownerRestoreNeeded=false;
 var rewrite={},legacyDeletes=[];
 
 function rootUrl(){return DB_URL+'/'+ROOT+'.json'}
@@ -24,6 +24,7 @@ function stableId(username){return 'id'+String(username||'user').toLowerCase().r
 function userKey(username){return String(username||'').trim().toUpperCase().replace(/\./g,'%2E')}
 function userNameFromKey(key){return String(key||'').replace(/%2E/gi,'.').toLowerCase()}
 function isValidFirebaseKey(k){return typeof k==='string'&&k.length>0&&k.length<=700&&!/[.$#\[\]\/]/.test(k)}
+function isProtectedOwner(u){return !!u&&(String(u.username||'').toLowerCase()==='lucaskayser'||String(u.id||'').toLowerCase()==='idlucas0001')}
 function fallbackHash(pw,salt){var txt=(salt||'')+'::'+pw,h1=0xdeadbeef,h2=0x41c6ce57;for(var i=0;i<txt.length;i++){var c=txt.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16)}
 async function hashPassword(pw,salt){var txt=(salt||'')+'::'+pw;try{if(window.crypto&&crypto.subtle){var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('')}}catch(e){}return fallbackHash(pw,salt)}
 function canon(v){
@@ -44,7 +45,7 @@ function toCloudUser(u){
   var username=String(u.username||'').trim().toLowerCase();
   return {
     addedAt:String(u.createdAt||u.addedAt||''),
-    disabled:u.active===false||u.disabled===true,
+    disabled:isProtectedOwner(u)?false:(u.active===false||u.disabled===true),
     name:String(u.displayName||u.name||username),
     passHash:String(u.passHash||u.passwordHash||''),
     permissions:toArr(u.permissions),
@@ -70,7 +71,7 @@ function fromCloudUser(c,key){
     phone:String(c.phone||''),
     photo:String(c.photoUrl||''),
     role:String(c.role||'follower'),
-    active:c.disabled!==true
+    active:isProtectedOwner({id:c.id,username:username})?true:c.disabled!==true
   };
 }
 async function normalizeCloudUser(raw,key){
@@ -83,6 +84,7 @@ async function normalizeCloudUser(raw,key){
   // the record without ever preserving the plaintext field.
   if(x.password!==undefined&&String(x.password)!=='')passHash=await hashPassword(String(x.password),username);
   var active=typeof x.disabled==='boolean'?!x.disabled:x.active!==false;
+  if(username==='lucaskayser'||String(x.id||'').toLowerCase()==='idlucas0001')active=true;
   return {
     username:username,
     cloud:{
@@ -115,7 +117,20 @@ function cleanLocal(db){
   return db;
 }
 function readLocal(){try{var d=JSON.parse(localStorage.getItem(cfg.dbKey)||'null');if(d){d=cleanLocal(d);localStorage.setItem(cfg.dbKey,JSON.stringify(d))}return d}catch(e){return null}}
-function writeLocal(d){localStorage.setItem(cfg.dbKey,JSON.stringify(cleanLocal(d)))}
+function writeLocal(d){
+  d=cleanLocal(d);
+  try{
+    var old=JSON.parse(localStorage.getItem(cfg.dbKey)||'null'),oldOwner=old&&asUserList(old.users).find(isProtectedOwner);
+    if(oldOwner){
+      oldOwner=cleanLocal({users:[Object.assign({},oldOwner)]}).users[0];oldOwner.active=true;
+      var users=asUserList(d.users),at=users.findIndex(isProtectedOwner),nextOwner=at>=0?users[at]:null;
+      if(!nextOwner||canon(toCloudUser(nextOwner))!==canon(toCloudUser(oldOwner)))ownerRestoreNeeded=true;
+      if(at<0)users.push(oldOwner);else users[at]=oldOwner;
+      d.users=users;
+    }
+  }catch(e){}
+  localStorage.setItem(cfg.dbKey,JSON.stringify(cleanLocal(d)));
+}
 function flatten(db){
   var m={};db=cleanLocal(db||{});
   Object.keys(db||{}).forEach(function(k){
@@ -244,7 +259,7 @@ async function sync(opt){
     if(Object.keys(push).length)await patch(push);
     if(localChange){if(first&&local){try{localStorage.setItem(cfg.dbKey+'_backup_before_cloud',JSON.stringify(local))}catch(e){}}writeLocal(build(final))}
     else if(local)writeLocal(local);
-    setSnap(hashes(final));setBadge('ok');return {ok:true,changed:localChange};
+    setSnap(hashes(final));if(ownerRestoreNeeded){ownerRestoreNeeded=false;again=true}setBadge('ok');return {ok:true,changed:localChange};
   }catch(e){setBadge('off');scheduleRetry();return {ok:false,error:String(e&&e.message||e)}}
   finally{busy=false;if(again){again=false;queuePush()}}
 }
