@@ -126,7 +126,7 @@ h1 .admin{color:#8a6410}
   </div></section>
 </div>
 
-<script src="cloud-sync.js?v=18"></script>
+<script src="cloud-sync.js?v=19"></script>
 <script>
 const DB_KEY='e3dad_khoddam_db_v1', SESSION_KEY='e3dad_khoddam_session_v1';
 const ADMIN_URL='admin.html';
@@ -137,7 +137,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const initials=n=>(n||'خ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('');
 let DB=loadDB();
-function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; delete v.password; return v}).filter(Boolean) }
+function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; if(v.password)v.passHash=fallbackHash(String(v.password),String(v.username||'').toLowerCase()); delete v.password; return v}).filter(Boolean) }
 function loadDB(){ try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.users=cleanUsers(d.users); d.students=d.students||[]; d.activityLog=d.activityLog||[]; d.settings=d.settings||{}; return d}}catch(e){} return {students:[],users:[],activityLog:[],templates:{},settings:{}} }
 function saveDB(){DB.users=cleanUsers(DB.users); localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
 async function hashPassword(pw,salt){ const txt=(salt||'')+'::'+pw; try{ if(window.crypto&&crypto.subtle){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')} }catch(e){} let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16) }
@@ -148,7 +148,7 @@ function logAs(u,action){DB.activityLog=DB.activityLog||[]; DB.activityLog.unshi
 function showError(id,msg){const e=$(id); e.textContent=msg; e.classList.add('show')}
 function avatarHTML(u){return u&&u.photo?'<img src="'+u.photo+'" alt="">':'<span>'+esc(initials(u?u.displayName:'خ'))+'</span>'}
 async function boot(){
-  if(window.E3Cloud){ E3Cloud.init({dbKey:DB_KEY,auto:false}); const r=await E3Cloud.sync({timeout:6000}); if(r&&r.changed)DB=loadDB(); }
+  if(window.E3Cloud){ E3Cloud.init({dbKey:DB_KEY,auto:false}); const r=await E3Cloud.sync({timeout:6000}); DB=loadDB(); }
   if(DB.settings&&DB.settings.orgName){$('artOrg').textContent=DB.settings.orgName+(DB.settings.church?' — '+DB.settings.church:' — الكنيسة القبطية الأرثوذكسية')}
   if(DB.settings&&DB.settings.orgLogo){$('logoPlace').innerHTML='<img src="'+DB.settings.orgLogo+'" alt="">'}
   purgeSeededDemo();

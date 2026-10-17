@@ -333,7 +333,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{background:#fbf3dd;c
 <input type="file" id="importFile" accept=".json" style="display:none">
 <input type="file" id="csvFile" accept=".csv" style="display:none">
 
-<script src="cloud-sync.js?v=18"></script>
+<script src="cloud-sync.js?v=19"></script>
 <script>
 /* ============================================================
    إعداد الخدّام — سجل الدارسين (PWA)
@@ -344,7 +344,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{background:#fbf3dd;c
 const DB_KEY='e3dad_khoddam_db_v1';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const uid=()=> 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-function newUserRecordId(username){const stem='id'+String(username||'user').toLowerCase().replace(/[^a-z0-9_-]/g,'_').slice(0,60);let id=stem,n=0;while((DB.users||[]).some(x=>x.id===id))id=stem+'_'+(++n);return id}
 function showOneTimeCredentials(displayName,username,password){
   openModal('بيانات دخول '+displayName,`<div style="background:#fff8e8;border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وابعثها لصاحب الحساب الآن. <b>لن تظهر مرة أخرى</b>؛ قاعدة البيانات تحفظ passHash فقط.</div>
   <div class="field"><label>اسم المستخدم</label><input id="createdUsername" readonly autocomplete="off" value="${esc(username)}"></div>
@@ -376,7 +375,7 @@ function defaultAssessments(){return[
 ]}
 function cleanUsers(users){
  const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]);
- return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; delete v.password; return v}).filter(Boolean);
+ return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; if(v.password)v.passHash=fallbackHash(String(v.password),String(v.username||'').toLowerCase()); delete v.password; return v}).filter(Boolean);
 }
 function loadDB(){
  try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.activityLog=d.activityLog||[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
@@ -542,7 +541,7 @@ function viewUsers(){
    return `<tr><td><div style="display:flex;gap:9px;align-items:center"><div class="avatar">${userAvatar(u)}</div><div><b>${esc(u.displayName)}</b><br><small style="color:var(--muted)">${esc(u.phone||'')}</small></div></div></td><td><b dir="ltr">@${esc(u.username)}</b></td><td><span class="badge ${u.role==='amin'?'b-gold':u.role==='assistant'?'b-purple':u.role==='year_supervisor'?'b-blue':'b-gray'}">${r.icon} ${esc(r.label)}</span></td><td>${(u.scopeYears||[]).length?u.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):'كل السنوات'}</td><td><span class="badge b-blue">${u.role==='amin'?'كل الصلاحيات':perms.length+' صلاحية مفعّلة'}</span></td><td style="font-size:12px">${esc(u.lastLogin||'لسه مدخلش')}</td><td>${u.active===false?'<span class="badge b-red">موقوف</span>':'<span class="badge b-green">مفعّل</span>'}</td>
    <td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn sm" onclick="openUserForm('${u.id}')">✏️ تعديل وصلاحيات</button><button class="btn sm" onclick="resetUserPassword('${u.id}')">🔑 كلمة سر جديدة</button>${u.id!==me.id&&!protectedAmin?`<button class="btn sm" onclick="toggleUserActive('${u.id}')">${u.active===false?'▶️ تفعيل':'⏸️ إيقاف'}</button><button class="btn sm danger" onclick="deleteUser('${u.id}')">حذف</button>`:'<span class="badge b-gray">حساب محمي</span>'}</div></td></tr>`}).join('')}
   </table></div>
-  <p style="font-size:12px;color:var(--muted)">كلمات السر لا تظهر كنص داخل قاعدة البيانات؛ يتم حفظ بصمة passHash فقط. لتغيير كلمة السر استخدم «كلمة سر جديدة». قاعدة أمان: مينفعش توقف أو تحذف نفسك، ولا توقف آخر أمين مفعّل. مساعد الأمين يقدر يضيف الخدام الأقل منه بس، ومش بيعدل حسابات «أمين».</p></div>
+  <p style="font-size:12px;color:var(--muted)">حسابات الخدام محفوظة تحت users بمفتاح اسم المستخدم، وكلمات السر لا تحفظ كنص. قاعدة أمان: مينفعش توقف أو تحذف نفسك، ولا توقف آخر أمين مفعّل. مساعد الأمين يقدر يضيف الخدام الأقل منه بس، ومش بيعدل حسابات «أمين».</p></div>
   <div class="card"><h3>🕘 آخر نشاطات الدخول والإدارة</h3>${(DB.activityLog||[]).length?(DB.activityLog||[]).slice(0,15).map(a=>`<div class="kv"><span>${esc(a.date)} — ${esc(a.user)}</span><b>${esc(a.action)}</b></div>`).join(''):'<p style="color:var(--muted);font-size:13px">لا يوجد نشاط بعد</p>'}</div>`;
 }
 function permCheckboxes(selected){return PERMISSIONS.map(([k,l])=>`<label><input type="checkbox" class="perm-check" value="${k}" ${selected.includes(k)?'checked':''}> ${l}</label>`).join('')}
@@ -575,9 +574,9 @@ function openUserForm(userId){
     const permissions=role==='amin'?[...ALL_PERMS]:$$('#permGrid .perm-check').filter(c=>c.checked).map(c=>c.value);
     const scopeYears=$$('.scope-year').filter(c=>c.checked).map(c=>+c.value);
     const data={displayName,username,phone:document.getElementById('uPhone').value.trim(),role,permissions,scopeYears,active:document.getElementById('uActive').value==='1',photo:window._userPhoto!==undefined?window._userPhoto:(u?.photo||'')};
-    if(pw){data.passHash=await hashPassword(pw,username)}
+    if(pw){data.passHash=await hashPassword(pw,username); delete data.password}
     if(u){Object.assign(u,data); logActivity('عدّل حساب الخادم '+displayName+' ('+(ROLE_DEFS[role]?.label)+')')}
-    else{DB.users.push({id:newUserRecordId(username),createdAt:today(),lastLogin:'',...data}); logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label))}
+    else{DB.users.push({id:uid(),createdAt:today(),lastLogin:'',...data}); logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label))}
     window._userPhoto=undefined; saveDB(); closeModal(); render(); toast('تم حفظ حساب '+displayName+' ✅ بالدور: '+(ROLE_DEFS[role]?.label));
     if(pw)showOneTimeCredentials(displayName,username,pw);
   });
