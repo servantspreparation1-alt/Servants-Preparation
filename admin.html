@@ -333,7 +333,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{background:#fbf3dd;c
 <input type="file" id="importFile" accept=".json" style="display:none">
 <input type="file" id="csvFile" accept=".csv" style="display:none">
 
-<script src="cloud-sync.js?v=16"></script>
+<script src="cloud-sync.js?v=17"></script>
 <script>
 /* ============================================================
    إعداد الخدّام — سجل الدارسين (PWA)
@@ -345,6 +345,15 @@ const DB_KEY='e3dad_khoddam_db_v1';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const uid=()=> 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function newUserRecordId(username){const stem='id'+String(username||'user').toLowerCase().replace(/[^a-z0-9_-]/g,'_').slice(0,60);let id=stem,n=0;while((DB.users||[]).some(x=>x.id===id))id=stem+'_'+(++n);return id}
+function showOneTimeCredentials(displayName,username,password){
+  openModal('بيانات دخول '+displayName,`<div style="background:#fff8e8;border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وابعثها لصاحب الحساب الآن. <b>لن تظهر مرة أخرى</b>؛ قاعدة البيانات تحفظ passHash فقط.</div>
+  <div class="field"><label>اسم المستخدم</label><input id="createdUsername" readonly autocomplete="off" value="${esc(username)}"></div>
+  <div class="field"><label>كلمة السر — تظهر الآن فقط</label><div class="pw-wrap"><input id="createdPassword" type="password" readonly autocomplete="off" value="${esc(password)}"><button class="btn" id="createdPasswordEye" type="button">👁️</button></div></div>
+  <button class="btn gold" id="copyCreatedPassword" type="button">📋 نسخ كلمة السر</button>`,()=>closeModal(),'✅ تم حفظها — إغلاق');
+  const input=document.getElementById('createdPassword'),eye=document.getElementById('createdPasswordEye'),copy=document.getElementById('copyCreatedPassword');
+  eye.onclick=()=>{input.type=input.type==='password'?'text':'password';eye.textContent=input.type==='password'?'👁️':'🙈'};
+  copy.onclick=async()=>{try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(password);else{input.type='text';input.select();document.execCommand('copy');input.type='password'}toast('تم نسخ كلمة السر — ابعتها لصاحب الحساب الآن')}catch(e){input.type='text';input.select();toast('حدد كلمة السر وانسخها يدويًا')}};
+}
 const today=()=> new Date().toISOString().slice(0,10);
 const YEAR_NAMES={1:'السنة الأولى',2:'السنة الثانية',3:'السنة الثالثة'};
 const ATTEMPT_STATUS={ongoing:'جارية',completed:'مكتملة',passed:'ناجح / منتقل',repeat_year:'إعادة سنة',repeat_courses:'إعادة مواد',paused:'موقوفة مؤقتاً',withdrawn:'منسحب'};
@@ -570,6 +579,7 @@ function openUserForm(userId){
     if(u){Object.assign(u,data); logActivity('عدّل حساب الخادم '+displayName+' ('+(ROLE_DEFS[role]?.label)+')')}
     else{DB.users.push({id:newUserRecordId(username),createdAt:today(),lastLogin:'',...data}); logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label))}
     window._userPhoto=undefined; saveDB(); closeModal(); render(); toast('تم حفظ حساب '+displayName+' ✅ بالدور: '+(ROLE_DEFS[role]?.label));
+    if(pw)showOneTimeCredentials(displayName,username,pw);
   });
   window._rolePreset=(role)=>{const perms=rolePerms(role); $$('#permGrid .perm-check').forEach(c=>c.checked=perms.includes(c.value))};
   setTimeout(()=>{const ph=document.getElementById('uPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._userPhoto=data; const n=document.getElementById('uPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; document.getElementById('uPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
@@ -577,7 +587,7 @@ function openUserForm(userId){
 function toggleUserActive(id){const u=DB.users.find(x=>x.id===id); if(!u)return; u.active=u.active===false?true:false; logActivity((u.active?'فعّل':'أوقف')+' حساب '+u.displayName); saveDB(); render()}
 function deleteUser(id){const u=DB.users.find(x=>x.id===id); if(!u||!confirm('حذف حساب '+u.displayName+' نهائياً؟ هيتمنع من الدخول فوراً (بيانات الدارسين مش هتتأثر).'))return; DB.users=DB.users.filter(x=>x.id!==id); logActivity('حذف حساب '+u.displayName); saveDB(); render(); toast('تم حذف الحساب')}
 function resetUserPassword(id){const u=DB.users.find(x=>x.id===id); if(!u)return;
-  openModal('إعادة تعيين كلمة سر '+u.displayName,`<div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><input id="rpPass" type="password" placeholder="اكتبها وبلّغها للخادم شخصياً"></div><p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,async()=>{const pw=document.getElementById('rpPass').value; if(pw.length<8)return toast('كلمة السر: ٨ على الأقل'); u.passHash=await hashPassword(pw,u.username.toLowerCase()); delete u.password; logActivity('أعاد تعيين كلمة سر '+u.displayName); saveDB(); closeModal(); toast('تم تعيين كلمة سر جديدة لـ '+u.displayName+' ✅')})}
+  openModal('إعادة تعيين كلمة سر '+u.displayName,`<div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><input id="rpPass" type="password" placeholder="اكتبها وبلّغها للخادم شخصياً"></div><p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,async()=>{const pw=document.getElementById('rpPass').value; if(pw.length<8)return toast('كلمة السر: ٨ على الأقل'); u.passHash=await hashPassword(pw,u.username.toLowerCase()); delete u.password; logActivity('أعاد تعيين كلمة سر '+u.displayName); saveDB(); closeModal(); toast('تم تعيين كلمة سر جديدة لـ '+u.displayName+' ✅'); showOneTimeCredentials(u.displayName,u.username,pw)})}
 async function createDemoUsers(){
   if(!hasPerm('manage_users'))return;
   const demo=[['مساعد الأمين التجريبي','mosaed','Mosaed@123','assistant',[]],['أمين السنة الأولى التجريبي','sana1','Sana@123','year_supervisor',[1]],['خادم أبو كيرلس','khadem','Khadem@123','khadem',[]],['خادم متابع التجريبي','motabe3','Follow@123','follower',[]]];
