@@ -6,8 +6,8 @@
 ============================================================ */
 (function(){
 'use strict';
-var DB_URL='https://servantspreparation1-default-rtdb.europe-west1.firebasedatabase.app';
-var ROOT='e3dad_v1';
+var DB_URL='https://servantspreparation1-773ce-default-rtdb.europe-west1.firebasedatabase.app';
+var ROOT='ekhdam';
 var cfg={dbKey:'e3dad_khoddam_db_v1',badge:false,auto:true,onRemote:null};
 var busy=false, again=false, pushTimer=null, retryTimer=null, badgeEl=null;
 
@@ -25,8 +25,8 @@ function flatten(db){
   var m={};
   Object.keys(db||{}).forEach(function(k){
     var v=db[k]; if(v===undefined)return;
-    if(isColl(v)){v.forEach(function(it){m['c/'+k+'/'+it.id]=JSON.stringify(it)})}
-    else{m['v/'+k]=JSON.stringify(v)}
+    if(isColl(v)){v.forEach(function(it){m['rec/'+k+'/'+it.id]=JSON.stringify(it)})}
+    else{m['val/'+k]=JSON.stringify(v)}
   });
   return m;
 }
@@ -35,13 +35,14 @@ function build(map){
   Object.keys(map).forEach(function(p){
     var s=p.split('/');
     try{
-      if(s[0]==='v'){db[s[1]]=JSON.parse(map[p])}
-      else if(s[0]==='c'){(colls[s[1]]=colls[s[1]]||[]).push(JSON.parse(map[p]))}
+      if(s[0]==='val'){db[s[1]]=parseVal(map[p])}
+      else if(s[0]==='rec'){(colls[s[1]]=colls[s[1]]||[]).push(parseVal(map[p]))}
     }catch(e){}
   });
   Object.keys(colls).forEach(function(k){db[k]=colls[k]});
   return db;
 }
+function parseVal(x){try{return JSON.parse(x)}catch(e){return x}}
 function hashes(map){var o={};Object.keys(map).forEach(function(p){o[p]=hash(map[p])});return o}
 
 async function fetchRemote(ms){
@@ -49,8 +50,9 @@ async function fetchRemote(ms){
   if(!r.ok)throw new Error('http '+r.status);
   var j=await r.json(), m={};
   if(j){
-    if(j.c)Object.keys(j.c).forEach(function(k){Object.keys(j.c[k]).forEach(function(id){m['c/'+k+'/'+id]=j.c[k][id]})});
-    if(j.v)Object.keys(j.v).forEach(function(k){m['v/'+k]=j.v[k]});
+    var str=function(x){return typeof x==='string'?x:JSON.stringify(x)};
+    if(j.rec)Object.keys(j.rec).forEach(function(k){Object.keys(j.rec[k]||{}).forEach(function(id){m['rec/'+k+'/'+id]=str(j.rec[k][id])})});
+    if(j.val)Object.keys(j.val).forEach(function(k){m['val/'+k]=str(j.val[k])});
   }
   return m;
 }
