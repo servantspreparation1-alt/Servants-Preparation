@@ -333,6 +333,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{background:#fbf3dd;c
 <input type="file" id="importFile" accept=".json" style="display:none">
 <input type="file" id="csvFile" accept=".csv" style="display:none">
 
+<script src="cloud-sync.js"></script>
 <script>
 /* ============================================================
    إعداد الخدّام — سجل الدارسين (PWA)
@@ -367,7 +368,7 @@ function loadDB(){
  try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=d.users||[]; d.activityLog=d.activityLog||[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
  return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
 }
-function saveDB(){localStorage.setItem(DB_KEY, JSON.stringify(DB));}
+function saveDB(){localStorage.setItem(DB_KEY, JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush();}
 
 /* ============================================================
    الدخول والصلاحيات — للخدام فقط
@@ -1022,7 +1023,7 @@ function viewBackup(){
  <div class="card"><h3>🧪 بيانات تجريبية</h3><p style="color:var(--muted);font-size:13px">٦ دارسين بأمثلة كاملة — منهم دارس عاد السنة الثانية ودارس عاد مادة — عشان تشوف فكرة حفظ القديم شغالة إزاي.</p><button class="btn" onclick="loadDemo()">تحميل البيانات التجريبية</button></div>
  <div class="card" style="border-color:#fecaca"><h3>⚠️ منطقة الخطر</h3><p style="color:var(--muted);font-size:13px">مسح كل البيانات من هذا الجهاز نهائياً. (الحذف الفردي للدارسين والمحاولات متاحة لأمين إعداد الخدام فقط، والتطبيق بينبّهك قبل أي حذف).</p>${isAdmin()?'<button class="btn danger" onclick="clearAll()">🗑️ مسح كل البيانات</button>':'<p class="badge b-gray">متاحة للمدير فقط</p>'}</div>
  </div>
- <div class="card" style="margin-top:14px"><b>أين تُحفظ البيانات؟</b><p style="color:var(--muted);font-size:13px">في نسخة التطبيق دي، البيانات بتتحفظ محلياً على الجهاز اللي بتستخدمه (متصفح/تطبيق مثبّت) — سريعة وبتشتغل بدون إنترنت تماماً. عشان البيانات تبقى مشتركة بين أكثر من مشرف وجهاز في نفس الوقت، الخطوة الجاية هي ربط نفس الواجهة بقاعدة بيانات سحابية (زي Supabase/Firebase) بحسابات دخول — البنية جاهزة لكده لأن كل البيانات في ملف واحد منظم. لحد ما ده يحصل: <b>صدّر نسخة احتياطية بعد كل جلسة إدخال مهمة</b>.</p></div>`;
+ <div class="card" style="margin-top:14px"><b>أين تُحفظ البيانات؟</b><p style="color:var(--muted);font-size:13px">البيانات بتتحفظ على الجهاز <b>وكمان على السحابة (Firebase)</b> تلقائياً بعد كل تعديل، فبتتشارك بين كل المشرفين وكل الأجهزة. لو النت قطع بيفضل الشغل عادي وبيترفع لوحده لما النت يرجع (شوف الشارة الصغيرة تحت على الشمال). برضه ينفع <b>تصدّر نسخة احتياطية بعد كل جلسة إدخال مهمة</b>.</p></div>`;
 }
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 function exportJSON(){if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك'); download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'e3dad-khoddam-backup-'+today()+'.json');toast('تم تصدير النسخة الاحتياطية ✅')}
@@ -1030,7 +1031,7 @@ function exportStudentsCSV(){const csv='الكود,الاسم,الدفعة,تا�
 function exportResultsCSV(){let rows=['الكود,الاسم,السنة,رقم المحاولة,حالة المحاولة,المادة,النتيجة النهائية %,الحضور %,ساعات الخدمة,قرار نهاية السنة'];
  DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{const s=enrollStats(en); (en.subjects||[]).forEach(sub=>rows.push([st.code,st.name,YEAR_NAMES[en.yearLevel],en.attemptNo,ATTEMPT_STATUS[en.status]||en.status,sub.name,subjFinal(sub)??'',s.att??'',en.serviceHours||0,'"'+String(en.decisionNote||'').replace(/"/g,'""')+'"'].join(',')))})});
  download(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}),'all-results-attempts.csv')}
-function clearAll(){if(!isAdmin())return toast('مسح كل البيانات لأمين إعداد الخدام فقط'); if(confirm('متأكد؟ هيتم مسح كل البيانات من هذا الجهاز نهائياً.')){if(confirm('تأكيد أخير: المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية.')){DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}}}
+function clearAll(){if(!isAdmin())return toast('مسح كل البيانات لأمين إعداد الخدام فقط'); if(confirm('متأكد؟ هيتم مسح كل البيانات من هذا الجهاز ومن السحابة (كل الأجهزة) نهائياً.')){if(confirm('تأكيد أخير: المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية.')){DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}}}
 
 /* ---------- الإعدادات ---------- */
 function viewSettings(){if(!hasPerm('manage_settings'))return `<div class="card empty"><div class="big">🔒</div>إعدادات الخدمة لأمين إعداد الخدام فقط</div>`; const s=DB.settings;return `<div class="card" style="max-width:760px"><h3>☦ هوية الخدمة وإعدادات التقييم</h3>
@@ -1056,7 +1057,7 @@ function viewHelp(){return `<div class="grid c2">
  <div class="card"><h3>🔄 سير العمل اليومي</h3><ol style="line-height:2;font-size:14px"><li>ضيف الدارس مرة واحدة بس (بيانات ثابتة + صورة).</li><li>من ملفه: «بدء سنة / محاولة جديدة» وطبّق مواد المنهج.</li><li>طوال السنة: عدّل تقييمات كل مادة، وضيف الأنشطة والحضور وساعات الخدمة والملاحظات.</li><li>آخر السنة: «إنهاء السنة واتخاذ قرار» — نقل للسنة الجاية، أو إعادة سنة، أو إعادة مواد معينة، أو تخرج (سنة ٣). <b>المحاولة القديمة بتفضل محفوظة تلقائياً.</b></li><li>اطبع من «مركز التقارير»: فردي شامل، أو مجموعة، أو إعادات، أو خريجين — واحفظ PDF.</li><li>كل فترة: صدّر نسخة احتياطية من صفحة «النسخ الاحتياطي».</li></ol></div>
  <div class="card"><h3>⭐ مميزات إضافية من البحث في أنظمة مشابهة</h3><ul style="line-height:2;font-size:14px"><li>ساعات خدمة سنوية ولقاءات إرشاد كمطلب للانتقال للسنة التالية (مطبق في برامج إعداد خدام بالخارج).</li><li>تنبيه مبكر للمتعثرين (حضور/درجات/خدمة) للمتابعة قبل نهاية السنة.</li><li>تقارير جماعية وتصدير Excel، وسجل زمني (Timeline) كامل لكل دارس.</li><li>أنشطة مصاحبة منفصلة عن المواد: خلوات، مؤتمرات، تدريب عملي، خدمة ميدانية، مشروع تخرج.</li></ul></div>
  <div class="card" style="border-color:var(--gold)"><h3>🆕 الجديد في التطوير ده</h3><ul style="line-height:2;font-size:14px"><li><b>الحضور بالمحاضرات:</b> كل محاضرة سجل لوحدها، ونسبة حضور الدارس بتتحدث تلقائياً، والغائب مرتين ورا بعض بيظهر في «غياب متكرر» بزرار واتساب افتقاد ومهمة متابعة.</li><li><b>المتابعة والافتقاد:</b> مهام باسم خادم مسؤول ومعاد — للمتعثر والغائب، وتتسجل «تمت» عشان محدش يقع.</li><li><b>استيراد جماعي:</b> ارفع ملف Excel (CSV) بمئات الدارسين مرة واحدة من صفحة الدارسين، وفيه نموذج جاهز.</li><li><b>كارت دارس وشهادة:</b> من ملف أي دارس — وصفحة شهادات مستقلة «شهادة-التخرج.html».</li></ul><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="window.open('شهادة-التخرج.html','_blank')">🎓 فتح صفحة الشهادات</button></div></div>
- <div class="card"><h3>🚀 خطوات تطوير مستقبلية مقترحة</h3><ul style="line-height:2;font-size:14px"><li>ربط سحابي (Supabase/Firebase) عشان البيانات تبقى مشتركة بين المشرفين وعلى كل الأجهزة مع تسجيل دخول.</li><li>تسجيل حضور بالجلسات (محاضرة بمحاضرة) بدل النسبة الإجمالية.</li><li>حسابات دخول للدارسين أنفسهم (دور جديد) للاطلاع على نتائجهم عند نضج الفكرة، وإشعارات واتساب.</li><li>شهادة تخرج قابلة للطباعة بتصميم رسمي.</li></ul></div></div>`}
+ <div class="card"><h3>🚀 خطوات تطوير مستقبلية مقترحة</h3><ul style="line-height:2;font-size:14px"><li>تأمين قاعدة البيانات بـ Firebase Authentication بدل القواعد المفتوحة.</li><li>تسجيل حضور بالجلسات (محاضرة بمحاضرة) بدل النسبة الإجمالية.</li><li>حسابات دخول للدارسين أنفسهم (دور جديد) للاطلاع على نتائجهم عند نضج الفكرة، وإشعارات واتساب.</li><li>شهادة تخرج قابلة للطباعة بتصميم رسمي.</li></ul></div></div>`}
 
 /* ---------- النوافذ (Modals) ---------- */
 function openModal(title,bodyHTML,onSave,saveLabel){const bg=$('#modalBg'),box=$('#modalBox');box.innerHTML=`<h2>${title}</h2><div class="sub">الحقول الأساسية بس هي المطلوبة — والباقي اختياري</div>${bodyHTML}<div class="modal-actions"><button class="btn primary" id="mSave">${saveLabel||'💾 حفظ'}</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`;bg.classList.add('open');document.body.classList.add('no-scroll');$('#mSave').onclick=onSave}
@@ -1247,6 +1248,13 @@ if(!navigator.onLine)$('#offlineBar').classList.add('show');
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); deferredPrompt=e});
 window.addEventListener('appinstalled',()=>{deferredPrompt=null; toast('تم تثبيت «اعداد خدام ادمن» على جهازك ☦📲')});
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
+  DB=loadDB();
+  if(!currentUser()){location.href='index.html';return}
+  const a=document.activeElement, modal=$('#modalBg');
+  if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open')))return;
+  render();
+}})}
 if(currentUser()){render()}else{location.href='index.html'}
 </script>
 </body>
