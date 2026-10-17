@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شهادة التخرج | اعداد خدام ادمن</title>
+<style>
+:root{--wine:#70162b;--wine2:#3d0f24;--gold:#c9a227;--gold2:#e8c55a;--bg:#faf6ee;--card:#fffdf8;--line:#e8dcc3;--text:#33262e;--muted:#8a7663}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Tahoma,Arial;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,var(--wine2),var(--wine) 65%,#8a6d1c);color:#fdf6df;padding:26px 18px;text-align:center;border-bottom:4px solid var(--gold)}
+header h1{margin:4px 0;font-size:25px}header p{margin:0;opacity:.88;font-size:13px}
+main{max-width:860px;margin:0 auto;padding:20px 14px 44px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 26px rgba(75,32,20,.07);margin-bottom:15px}
+label{font-size:12.5px;font-weight:800;color:#6d5636;display:block;margin-bottom:6px}
+select,input{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:14.5px;background:#fff;outline:none}
+select:focus,input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.22)}
+.btn{border:1px solid var(--line);background:#fff;padding:11px 18px;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.btn.primary{background:linear-gradient(135deg,var(--wine),var(--wine2));color:#fff;border-color:var(--wine2)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2b1020;border-color:var(--gold)}
+.cert{border:4px double #c9a227;border-radius:10px;padding:40px 30px;text-align:center;background:#fffef9}
+.cert .cross{font-size:46px;color:var(--wine)}
+.cert h1{font-size:32px;color:var(--wine2);margin:10px 0 4px}
+.cert .name{font-size:31px;font-weight:900;color:var(--wine);border-bottom:2px solid #c9a227;display:inline-block;padding:0 28px 8px}
+.signs{display:flex;justify-content:space-between;gap:20px;margin-top:48px;font-size:13.5px;text-align:center}
+.signs div{flex:1}.signs .line{border-top:1.5px solid #33262e;padding-top:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.empty{text-align:center;color:var(--muted);padding:22px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}select,input{font-size:16px;min-height:48px}.btn{min-height:48px}.card{padding:15px}header{padding:22px 14px}header h1{font-size:23px;line-height:1.45}.cert{padding:26px 16px}.cert h1{font-size:24px}.cert .name{font-size:23px;padding:0 10px 8px}.signs{flex-direction:column;gap:26px;margin-top:34px}.card.no-print .grid>div:last-child>div{display:grid!important;grid-template-columns:1fr 1fr}.card.no-print .grid>div:last-child .btn:last-child{grid-column:1/-1}}
+@media print{header,.no-print{display:none!important}body{background:#fff}main{padding:0}.card{border:0;box-shadow:none;padding:0}.cert{border-width:3px}.signs{flex-direction:row}@page{margin:10mm}}
+</style>
+</head>
+<body>
+<header><div style="font-size:30px">☦</div><h1>شهادات إنهاء وتخرّج إعداد الخدّام</h1><p>اعداد خدام ادمن — اختر الدارس واطبع شهادة رسمية ببياناته من سجله المحفوظ</p></header>
+<main>
+<div class="card no-print">
+  <div class="grid">
+    <div><label>اختر الدارس (اللي أنهى سنة بنجاح على الأقل)</label><select id="studentSel"></select></div>
+    <div><label>نوع الشهادة</label><select id="certType"><option value="auto">تلقائي حسب حالة الدارس (تخرج لو أنهى الثالثة)</option><option value="grad">شهادة تخرّج — ٣ سنوات</option><option value="year">شهادة إنهاء سنة</option></select></div>
+    <div><label>تاريخ الإصدار</label><input type="date" id="certDate"></div>
+    <div><label>&nbsp;</label><div style="display:flex;gap:8px"><button class="btn gold" style="flex:1" onclick="renderCert()">🎓 عرض الشهادة</button><button class="btn primary" style="flex:1" onclick="window.print()">🖨️ طباعة / حفظ PDF</button><a class="btn" href="admin.html" style="text-decoration:none;display:grid;place-items:center">رجوع للنظام</a></div></div>
+  </div>
+  <p style="font-size:12.5px;color:var(--muted)">الصفحة دي بتقرأ نفس بيانات النظام (نفس الجهاز والمتصفح). لو مش داخل بحساب خادم، هترجعك لصفحة اللوجن «اعداد خدام ادمن».</p>
+</div>
+<div class="card" id="certBox"><div class="empty">اختر دارساً ودوس «عرض الشهادة» 🎓</div></div>
+</main>
+<script>
+const DB_KEY='e3dad_khoddam_db_v1', SESSION_KEY='e3dad_khoddam_session_v1';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const YEAR_NAMES={1:'السنة الأولى',2:'السنة الثانية',3:'السنة الثالثة'};
+let DB={students:[],users:[],settings:{}};
+try{DB=JSON.parse(localStorage.getItem(DB_KEY)||'{}'); DB.students=DB.students||[]; DB.settings=DB.settings||{}}catch(e){}
+const sessionId=localStorage.getItem(SESSION_KEY);
+const sessionAt=+localStorage.getItem(SESSION_KEY+'_at')||0;
+const me=(DB.users||[]).find(u=>u.id===sessionId);
+if(!me||me.active===false||(sessionAt&&Date.now()-sessionAt>12*3600*1000)){ document.querySelector('main').innerHTML='<div class="card empty" style="font-size:16px">🔒 لازم تسجل دخولك الأول بحساب خادم<br><br><a class="btn primary" href="index.html" style="text-decoration:none">🔐 الذهاب لصفحة اللوجن — اعداد خدام ادمن</a></div>'; throw new Error('login required'); }
+function subjFinal(sub){const sc=(sub.assessments||[]).filter(a=>a.score!==''&&a.score!=null&&!isNaN(+a.score)); if(!sc.length)return null; const g=sc.reduce((s,a)=>s+(+a.score||0),0),m=sc.reduce((s,a)=>s+(+a.max||0),0); return m?Math.round(g/m*1000)/10:null}
+function enrollOverall(en){const f=(en.subjects||[]).map(subjFinal).filter(v=>v!=null); return f.length?Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10:null}
+function studentAvg(st){const v=(st.enrollments||[]).map(enrollOverall).filter(x=>x!=null); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null}
+const eligible=DB.students.filter(st=>(st.enrollments||[]).some(e=>e.status==='passed'));
+const sel=document.getElementById('studentSel');
+sel.innerHTML=eligible.length?eligible.map(st=>`<option value="${st.id}">${esc(st.name)} (${esc(st.code)})${st.status==='graduated'?' — 🎓 خريج':''}</option>`).join(''):'<option value="">لا يوجد دارسون أنهوا سنة بنجاح بعد</option>';
+document.getElementById('certDate').value=new Date().toISOString().slice(0,10);
+function renderCert(){
+  const st=DB.students.find(x=>x.id===sel.value); if(!st){document.getElementById('certBox').innerHTML='<div class="empty">لا يوجد دارس مؤهل للشهادة بعد — الشهادة بعد أول سنة منتهية بنجاح</div>'; return}
+  const passed=(st.enrollments||[]).filter(e=>e.status==='passed'); const last=passed[passed.length-1];
+  const type=document.getElementById('certType').value;
+  const isGrad=type==='grad'||(type==='auto'&&(st.status==='graduated'||passed.some(e=>e.yearLevel===3)));
+  const date=document.getElementById('certDate').value||new Date().toISOString().slice(0,10);
+  const org=(DB.settings&&DB.settings.orgName)||'إعداد الخدّام', church=(DB.settings&&DB.settings.church)||'', logo=(DB.settings&&DB.settings.orgLogo)||'';
+  const title=isGrad?'شهادة تخرّج من خدمة إعداد الخدّام':'شهادة إنهاء '+YEAR_NAMES[last.yearLevel]+' — إعداد الخدّام';
+  const sub=isGrad?'أنهى بنجاح سنوات إعداد الخدام الثلاث (٣ سنوات) بكل موادها وتقييماتها وأنشطتها وتدريبها العملي':'أنهى بنجاح متطلبات '+YEAR_NAMES[last.yearLevel]+' من برنامج إعداد الخدام — مواد وتقييمات وأنشطة وتدريب عملي';
+  document.getElementById('certBox').innerHTML=`<div class="cert">
+    <div class="cross">☦</div>${logo?`<img src="${logo}" style="height:74px;width:74px;object-fit:cover;border-radius:50%;border:2px solid #c9a227">`:''}
+    <div style="font-size:15px;color:#8a6410;margin-top:8px">${esc(org)}${church?' — '+esc(church):''}</div>
+    <h1>${title}</h1>
+    <div style="color:#8a7663">«حَسَناً أَيُّهَا الْعَبْدُ الصَّالِحُ وَالأَمِينُ» (متى ٢٥ : ٢١)</div>
+    <p style="font-size:16px;margin-top:24px">تشهد خدمة إعداد الخدام بأن الدارس</p>
+    <div class="name">${esc(st.name)}</div>
+    <div style="color:#8a7663;margin-top:7px">كود ${esc(st.code)} — ${esc(st.batch||'')}</div>
+    <p style="font-size:15.5px;line-height:2;max-width:650px;margin:18px auto 4px">${sub}، بمتوسط عام <b>${studentAvg(st)??'—'}%</b> عبر ${(st.enrollments||[]).length} محاولة محفوظة في سجله الكامل منذ التحاقه في ${esc(st.joinDate||'—')}.</p>
+    <div class="signs"><div><div class="line">الأب الكاهن المسؤول عن الخدمة</div></div><div><div class="line">أمين إعداد الخدام<br><small>${esc(me.displayName)} — ${esc(me.username)}@</small></div></div><div><div class="line">تاريخ الإصدار<br><b>${esc(date)}</b></div></div></div>
+    <div style="font-size:11px;color:#a08b6d;margin-top:26px">شهادة داخلية من خدمة إعداد الخدام — التفاصيل الكاملة بالدرجات والمحاولات في التقرير الشامل للدارس بنظام «اعداد خدام ادمن»</div></div>`;
+}
+if(eligible.length)renderCert();
+</script>
+</body>
+</html>

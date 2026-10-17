@@ -1,0 +1,27 @@
+{
+  "name": "اعداد خدام ادمن | إعداد الخدّام — سجل الدارسين",
+  "short_name": "اعداد خدام ادمن",
+  "description": "اعداد خدام ادمن — دخول الخدام فقط. نظام متابعة دارسي إعداد الخدام عبر ٣ سنوات مع حفظ كل المحاولات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf6ee",
+  "theme_color": "#2b1020",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
