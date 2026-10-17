@@ -126,7 +126,7 @@ h1 .admin{color:#8a6410}
   </div></section>
 </div>
 
-<script src="cloud-sync.js"></script>
+<script src="cloud-sync.js?v=16"></script>
 <script>
 const DB_KEY='e3dad_khoddam_db_v1', SESSION_KEY='e3dad_khoddam_session_v1';
 const ADMIN_URL='admin.html';
@@ -137,8 +137,9 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const initials=n=>(n||'خ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('');
 let DB=loadDB();
-function loadDB(){ try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.users=d.users||[]; d.students=d.students||[]; d.activityLog=d.activityLog||[]; d.settings=d.settings||{}; return d}}catch(e){} return {students:[],users:[],activityLog:[],templates:{},settings:{}} }
-function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
+function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; delete v.password; return v}).filter(Boolean) }
+function loadDB(){ try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.users=cleanUsers(d.users); d.students=d.students||[]; d.activityLog=d.activityLog||[]; d.settings=d.settings||{}; return d}}catch(e){} return {students:[],users:[],activityLog:[],templates:{},settings:{}} }
+function saveDB(){DB.users=cleanUsers(DB.users); localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
 async function hashPassword(pw,salt){ const txt=(salt||'')+'::'+pw; try{ if(window.crypto&&crypto.subtle){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')} }catch(e){} let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16) }
 function fallbackHash(pw,salt){const txt=(salt||'')+'::'+pw; let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16)}
 async function verifyPassword(pw,username,stored){ if(!stored)return false; if(await hashPassword(pw,username)===stored)return true; return fallbackHash(pw,username)===stored }
@@ -171,10 +172,7 @@ async function doLogin(){
   let u=(DB.users||[]).find(x=>x.username.toLowerCase()===username);
   if(!u&&window.E3Cloud){ const r=await E3Cloud.sync({timeout:6000}); if(r&&r.changed){DB=loadDB(); u=(DB.users||[]).find(x=>x.username.toLowerCase()===username)} }
   let ok=false;
-  if(u&&pw){
-    if(u.password!=null&&String(u.password)!==''){ ok=String(u.password)===pw; if(ok&&!(await verifyPassword(pw,u.username.toLowerCase(),u.passHash)))u.passHash=await hashPassword(pw,u.username.toLowerCase()); }
-    else ok=await verifyPassword(pw,u.username.toLowerCase(),u.passHash);
-  }
+  if(u&&pw)ok=await verifyPassword(pw,u.username.toLowerCase(),u.passHash);
   if(!ok){
     window._fails=(window._fails||0)+1;
     if(window._fails>=5){window._lockUntil=Date.now()+30000; window._fails=0; return showError('liError','٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين')}
