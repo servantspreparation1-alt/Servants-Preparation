@@ -73,6 +73,18 @@
 
 <!-- ===== Modal root ===== -->
 <div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div class="app-confirm-bg" id="confirmBg" hidden>
+  <div class="app-confirm" role="dialog" aria-modal="true">
+    <div class="app-confirm-icon" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">تأكيد</h3>
+    <p id="confirmMsg"></p>
+    <div id="confirmExtra"></div>
+    <div class="app-confirm-actions">
+      <button type="button" class="btn" id="confirmCancel">إلغاء</button>
+      <button type="button" class="btn primary" id="confirmOk">تأكيد</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" style="display:none">
 <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" style="display:none">
@@ -112,6 +124,14 @@
 .doc-studio-paper table{width:100%;border-collapse:collapse;font-size:12.5px}
 .doc-studio-paper th,.doc-studio-paper td{border:1px solid #d6d0c2;padding:6px 8px;text-align:right}
 .doc-studio-paper th{background:#f4efe3}
+.app-confirm-bg{position:fixed;inset:0;z-index:120;background:rgba(18,24,38,.58);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px}
+.app-confirm-bg[hidden]{display:none!important}
+.app-confirm{background:var(--surface);border:1.5px solid var(--gold);border-radius:18px;max-width:440px;width:100%;padding:22px 20px 16px;text-align:center;box-shadow:0 22px 70px rgba(0,0,0,.28)}
+.app-confirm-icon{font-size:34px;margin-bottom:6px}
+.app-confirm h3{margin:0 0 8px;color:var(--head);font-size:18px}
+.app-confirm p{margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.85}
+.app-confirm-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.app-confirm.danger .app-confirm-actions .btn.primary{background:#b42318;border-color:#b42318;color:#fff}
 @media print{
   body *{visibility:hidden!important}
   #docStudio,.doc-studio-paper,.doc-studio-paper *{visibility:visible!important}
@@ -187,7 +207,43 @@ const ATTEMPT_STATUS={ongoing:'جارية',completed:'مكتملة',passed:'نا
 let deferredPrompt=null;
 
 let DB = loadDB();
-let state = {view:'dashboard', studentId:null, profileTab:'years', yearFilter:1, reportStudentAttempt:'all', attYear:1};
+const VIEW_STATE_KEY='e3dad_view_state_v1';
+function readSavedViewState(){
+  try{
+    const fromStore=JSON.parse(sessionStorage.getItem(VIEW_STATE_KEY)||'null');
+    const hash=(location.hash||'').replace(/^#/,'').trim();
+    let view='dashboard', studentId=null;
+    if(hash){
+      const parts=hash.split('-');
+      view=parts[0]||'dashboard';
+      if(parts.length>1) studentId=parts.slice(1).join('-');
+    }else if(fromStore&&fromStore.view){
+      view=fromStore.view; studentId=fromStore.studentId||null;
+    }
+    return {
+      view: view||'dashboard',
+      studentId: studentId||null,
+      profileTab:(fromStore&&fromStore.profileTab)||'years',
+      yearFilter:(fromStore&&fromStore.yearFilter)||1,
+      reportStudentAttempt:(fromStore&&fromStore.reportStudentAttempt)||'all',
+      attYear:(fromStore&&fromStore.attYear)||1,
+      scrollY:(fromStore&&typeof fromStore.scrollY==='number')?fromStore.scrollY:0
+    };
+  }catch(e){ return {view:'dashboard',studentId:null,profileTab:'years',yearFilter:1,reportStudentAttempt:'all',attYear:1,scrollY:0}; }
+}
+let _bootView=readSavedViewState();
+let state = {view:_bootView.view, studentId:_bootView.studentId, profileTab:_bootView.profileTab, yearFilter:_bootView.yearFilter, reportStudentAttempt:_bootView.reportStudentAttempt, attYear:_bootView.attYear};
+let _restoreScrollY=_bootView.scrollY||0;
+let _skipNextScrollTop=true;
+function persistViewState(){
+  try{
+    sessionStorage.setItem(VIEW_STATE_KEY, JSON.stringify({
+      view:state.view, studentId:state.studentId, profileTab:state.profileTab,
+      yearFilter:state.yearFilter, reportStudentAttempt:state.reportStudentAttempt,
+      attYear:state.attYear, scrollY: window.scrollY||window.pageYOffset||0
+    }));
+  }catch(e){}
+}
 
 function defaultSettings(){return{orgName:'معلم الأجيال للتلمذة',church:'كنيسة رئيس الملائكة ميخائيل بالأندلس',orgLogo:'',passMark:60,excellentMark:90,attendanceWarn:75,serviceHoursTarget:100,spiritualMeetingsTarget:10}}
 function defaultTemplates(){return{
@@ -202,7 +258,7 @@ function defaultAssessments(){return[
  {id:uid(),title:'الاختبار النهائي',type:'امتحان نهائي',date:'',score:'',max:50}
 ]}
 function loadDB(){
- try{const raw=E3.store.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.activityLog=d.activityLog||[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
+ try{const raw=E3.store.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.deletedUserIds=d.deletedUserIds||[]; d.users=(d.users||[]).filter(u=>isLucasOwner(u)||!(d.deletedUserIds||[]).includes(u.id)); d.activityLog=d.activityLog||[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
  return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
 }
 function preserveLucasRecord(users){
@@ -485,7 +541,7 @@ function viewUsers(){
       <td data-label="إجراءات"><div style="display:flex;gap:5px;flex-wrap:wrap">${actions}</div></td>
     </tr>`}).join('')}
   </tbody></table></div>
-  <p style="font-size:12px;color:var(--muted);line-height:1.9">🔐 <b>كلمات السر محفوظة مشفّرة (AES-GCM)</b> — مفتاحها بيتولّد من كلمة سر <b>إدارة السيستم</b>، فمفيش أمين ولا مساعد أمين يقدر يشوفها. إدارة السيستم بس هي اللي تقدر تعرضها أو تنسخها، وكل عرض بيتسجل في سجل النشاطات.<br>⚠️ مينفعش توقف أو تحذف نفسك، ولا توقف آخر أمين مفعّل، وحساب إدارة السيستم مقفول تمامًا على أي حد غيره.</p></div>
+  <p style="font-size:12px;color:var(--muted);line-height:1.9">🔐 <b>كلمات السر محفوظة مشفّرة (AES-GCM)</b> — مفتاحها بيتولّد من كلمة سر <b>إدارة السيستم</b>، فمفيش أمين ولا مساعد أمين يقدر يشوفها. إدارة السيستم بس هي اللي تقدر تعرضها أو تنسخها، وكل عرض بيتسجل في سجل النشاطات.<br>⚠️ إدارة السيستم (لوكاس قيصر) ليها التحكم الكامل: تقدر تعدّل وتوقف وتحذف أي خادم بما فيهم أمين إعداد الخدام. باقي الأدوار ملتزمة بالصلاحيات.</p></div>
 
   <details class="card" style="margin-bottom:14px">
     <summary style="cursor:pointer;font-weight:900;color:var(--head);font-size:15px">🎭 أدوار الخدمة والصلاحيات — اضغط لعرض التفاصيل</summary>
@@ -509,7 +565,7 @@ function openUserForm(userId){
   <div class="photo-up"><div class="avatar" id="uPhotoPrev">${u?userAvatar(u):'✝️'}</div><div><input class="file-input" type="file" id="uPhoto" accept="image/*"><label class="upload-btn" for="uPhoto">📷 اختيار صورة الخادم</label><div class="file-name" id="uPhotoName">الصورة اختيارية — وبتتضغط تلقائياً عشان النظام يفضل خفيف</div></div></div>
   <div class="form-grid" style="margin-top:12px">
   ${field('اسم الخادم بالكامل *','uName',u?.displayName)}${field('رقم الهاتف','uPhone',u?.phone||'')}
-  <div class="field"><label>اسم المستخدم للدخول * (إنجليزي بدون مسافات)</label><input id="uUser" value="${esc(u?.username||'')}" placeholder="مثال: mina.adel" ${editingOwner?'disabled':''}></div>
+  <div class="field"><label>اسم المستخدم للدخول * (عربي أو إنجليزي — مسافات وكابيتال عادي)</label><input id="uUser" dir="auto" value="${esc(u?.username||'')}" placeholder="مثال: مينا عادل أو Mina Adel" ${editingOwner?'disabled':''}></div>
   <div class="field"><label>${u?'كلمة سر جديدة (اتركها فارغة للإبقاء على الحالية)':'كلمة السر * (٨ على الأقل)'}</label>
     <div class="pw-wrap"><input id="uPass" type="password" autocomplete="new-password" placeholder="••••••••"><button class="btn" type="button" onclick="window._genPw()" title="توليد كلمة سر قوية">🎲</button><button class="btn" type="button" onclick="window._eyePw(this)">👁️</button></div>
     <div class="file-name">🔐 بتتخزّن مشفّرة — إدارة السيستم بس هي اللي تقدر تشوفها بعد كده</div>
@@ -523,13 +579,14 @@ function openUserForm(userId){
   <div class="perm-grid" id="permGrid" ${editingOwner?'style="opacity:.6;pointer-events:none"':''}>${permCheckboxes(editingOwner?ALL_PERMS:selPerms)}</div>`,
   async()=>{
     const displayName=document.getElementById('uName').value.trim();
-    const username=(editingOwner?(u.username):document.getElementById('uUser').value.trim().toLowerCase());
+    const username=(editingOwner?(u.username):document.getElementById('uUser').value.trim().replace(/\s+/g,' '));
     const pw=document.getElementById('uPass').value;
     const role=editingOwner?'amin':document.getElementById('uRole').value;
+    const unorm=s=>String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
     if(displayName.length<3)return toast('اكتب اسم الخادم بالكامل');
-    if(!editingOwner&&!/^[a-z0-9._-]{3,}$/i.test(username))return toast('اسم المستخدم غير صالح (٣+، إنجليزي/أرقام/نقطة/شرطة)');
-    if((username===E3.OWNER_USERNAME||username==='admin')&&!editingOwner)return toast('اسم المستخدم ده محجوز لإدارة السيستم — اختار اسم تاني');
-    if(!editingOwner&&(DB.users||[]).some(x=>x.username.toLowerCase()===username&&(!u||x.id!==u.id)))return toast('اسم المستخدم ده مستخدم بالفعل — اختر غيره');
+    if(!editingOwner&&(username.length<2||!/^[\p{L}\p{N}._\-\s]+$/u.test(username)))return toast('اسم المستخدم غير صالح — عربي أو إنجليزي، مسافات وكابيتال مسموح');
+    if((unorm(username)===unorm(E3.OWNER_USERNAME)||unorm(username)==='admin')&&!editingOwner)return toast('اسم المستخدم ده محجوز لإدارة السيستم — اختار اسم تاني');
+    if(!editingOwner&&(DB.users||[]).some(x=>unorm(x.username)===unorm(username)&&(!u||x.id!==u.id)))return toast('اسم المستخدم ده مستخدم بالفعل — اختر غيره');
     if(!u&&pw.length<8)return toast('لازم تحدد كلمة سر ٨ حروف على الأقل للحساب الجديد');
     if(u&&pw&&pw.length<(editingOwner?10:8))return toast('كلمة السر الجديدة: '+(editingOwner?'١٠':'٨')+' على الأقل');
     if(role==='amin'&&!isAdmin()&&!iAmOwner)return toast('إنشاء حساب أمين متاح للأمين الحالي فقط');
@@ -568,30 +625,45 @@ function toggleUserActive(id){
   const me=currentUser(); const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
   if(isLucasOwner(u))return toast('🛡️ حساب إدارة السيستم مقفول — مفيش حد يقدر يوقفه، ولا هو نفسه. لو عايز تقفله نهائي استخدم «حذف نهائي».');
   if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
-  if(u.role==='amin'&&!isAdmin())return toast('مساعد الأمين لا يعدّل حسابات الأمين');
-  if(u.active!==false && u.role==='amin' && (DB.users||[]).filter(x=>x.role==='amin'&&x.active!==false).length<=1)return toast('ده آخر أمين مفعّل — مينفعش يتوقف');
+  if(u.role==='amin'&&!isAdmin()&&!isLucasOwner(me))return toast('مساعد الأمين لا يعدّل حسابات الأمين');
+  if(!isLucasOwner(me) && u.active!==false && u.role==='amin' && (DB.users||[]).filter(x=>x.role==='amin'&&x.active!==false).length<=1)return toast('ده آخر أمين مفعّل — مينفعش يتوقف');
   u.active=u.active===false; logActivity((u.active?'فعّل':'أوقف')+' حساب '+u.displayName); saveDB(); render(); toast(u.active?'تم تفعيل الحساب ✅':'تم إيقاف الحساب ⏸️');
 }
-function deleteUser(id){
+async function deleteUser(id){
   const me=currentUser(); const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
-  if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
-  if(isLucasOwner(u)&&!isLucasOwner(me))return toast('🔒 حساب إدارة السيستم مقفول تمامًا — مفيش حد غير صاحب الحساب يقدر يمسحه');
-  if(u.role==='amin'&&!isAdmin()&&!isLucasOwner(me))return toast('مساعد الأمين لا يعدّل حسابات الأمين');
-  if(u.id===me.id&&!isLucasOwner(u))return toast('مينفعش تحذف حسابك انت — خلّي حد تاني يعمله');
-  if(!confirm('حذف حساب '+u.displayName+' نهائياً؟ هيتمنع من الدخول فوراً (بيانات الدارسين مش هتتأثر).'))return;
+  if(isLucasOwner(me)){
+    /* إدارة السيستم تتحكم في الكل بما فيهم أمين إعداد الخدام */
+  } else {
+    if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
+    if(isLucasOwner(u))return toast('🔒 حساب إدارة السيستم مقفول تمامًا — مفيش حد غير إدارة السيستم');
+    if(u.role==='amin'&&!isAdmin()&&!isLucasOwner(me))return toast('مساعد الأمين لا يعدّل حسابات الأمين');
+    if(u.id===me.id)return toast('مينفعش تحذف حسابك انت — خلّي حد تاني يعمله');
+  }
+  if(isLucasOwner(u)&&!isLucasOwner(me))return toast('🔒 حساب إدارة السيستم مقفول');
+  const ok=await askConfirm({danger:true,icon:'🗑️',title:'حذف حساب خادم',ok:'نعم، احذف الحساب',
+    message:'هل أنت متأكد من حذف حساب <b>'+esc(u.displayName)+'</b>'+(u.role==='amin'?' (أمين إعداد الخدام)':'')+' نهائياً؟<br>هيتمنع من الدخول فوراً. بيانات الدارسين مش هتتأثر.'});
+  if(!ok)return;
   if(isLucasOwner(u)){
-    const t=prompt('⚠️ انت على وشك تحذف حساب إدارة السيستم نفسه.\nالنظام هيفضل شغّال لكن مفيش حد هيقدر يشوف كلمات السر أو يدير السيستم بعد كده — ومفيش طريقة لإنشاء حساب إدارة من برّه.\n\nاكتب كلمة السر بتاعتك للتأكيد:', '');
-    if(t===null)return;
-    verifyPassword(t,u.username.toLowerCase(),u.passHash).then(ok=>{
-      if(!ok)return toast('كلمة السر غلط — الحذف اتلغى');
-      DB.users=DB.users.filter(x=>x.id!==id);
-      logActivity('حذف حساب إدارة السيستم (إجراء نهائي)');
-      E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at');
-      saveDB(); toast('تم حذف حساب إدارة السيستم'); setTimeout(()=>location.replace('index.html'),600);
-    });
+    const pw=await askConfirm({danger:true,icon:'🛡️',title:'تأكيد حذف إدارة السيستم',ok:'تأكيد الحذف',
+      message:'هتمسح حساب إدارة السيستم نفسه. اكتب كلمة سرك للتأكيد.',
+      extraHTML:'<div class="field" style="text-align:right"><label>كلمة السر</label><input id="confirmField" type="password" autocomplete="current-password"></div>',
+      requireField:true});
+    if(!pw)return;
+    let good=false;
+    try{ good=await verifyPassword(pw,u.username,u.passHash); if(!good) good=await verifyPassword(pw,String(u.username||'').toLowerCase(),u.passHash);}catch(e){}
+    if(!good)return toast('كلمة السر غلط — الحذف اتلغى');
+    DB.users=DB.users.filter(x=>x.id!==id);
+    logActivity('حذف حساب إدارة السيستم (إجراء نهائي)');
+    E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at');
+    saveDB(); toast('تم حذف حساب إدارة السيستم'); setTimeout(()=>location.replace('index.html'),600);
     return;
   }
-  DB.users=DB.users.filter(x=>x.id!==id); logActivity('حذف حساب '+u.displayName); saveDB(); render(); toast('تم حذف الحساب');
+  DB.users=(DB.users||[]).filter(x=>x.id!==id);
+  DB.deletedUserIds=Array.from(new Set([...(DB.deletedUserIds||[]), id]));
+  logActivity('حذف حساب '+u.displayName+(u.role==='amin'?' — أمين إعداد الخدام':''));
+  saveDB();
+  if(window.E3Cloud&&E3Cloud.syncNow) try{ E3Cloud.syncNow(); }catch(e){}
+  render(); toast('تم حذف الحساب ✅');
 }
 function resetUserPassword(id){
   const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
@@ -623,7 +695,8 @@ async function createDemoUsers(){
     DB.users.push(nu); createdList.push(username); added++;
   }
   logActivity('أنشأ الحسابات التجريبية'); saveDB(); render();
-  alert(added?('تم إنشاء '+added+' حسابات تجريبية — جرّب تدخل بيهم من تسجيل الخروج:\n\n• مساعد أمين: mosaed / Mosaed@123\n• أمين سنة أولى: sana1 / Sana@123\n• خادم: khadem / Khadem@123\n• متابع (عرض فقط): motabe3 / Follow@123\n\n⚠️ غيّر أو احذف الحسابات دي قبل الاستخدام الحقيقي.'):'الحسابات التجريبية موجودة بالفعل');
+  askConfirm({icon:added?'🧪':'ℹ️',title:added?'اتعملت حسابات تجريبية':'الحسابات التجريبية',ok:'حسناً',cancel:'إغلاق',
+    message: added ? ('تم إنشاء '+added+' حسابات — جرّب تدخل بيهم بعد تسجيل الخروج:<br><br>• مساعد أمين: mosaed / Mosaed@123<br>• أمين سنة أولى: sana1 / Sana@123<br>• خادم: khadem / Khadem@123<br>• متابع: motabe3 / Follow@123<br><br>غيّر أو احذف الحسابات دي قبل الاستخدام الحقيقي.') : 'الحسابات التجريبية موجودة بالفعل'})
 }
 
 /* ---------- التنقل ---------- */
@@ -640,10 +713,15 @@ function go(view,studentId){
       history.pushState({view, studentId}, '', url);
     }
   }catch(e){}
-  render(); window.scrollTo({top:0, behavior:'smooth'}); toggleSidebar(false);
+  persistViewState();
+  render();
+  if(!_skipNextScrollTop) window.scrollTo({top:0, behavior:'auto'});
+  _skipNextScrollTop=false;
+  toggleSidebar(false);
   try{ touchSessionAdmin(); }catch(e){}
 }
 function render(){
+ persistViewState();
  const me=currentUser(); if(!me){location.replace('index.html'); return}
  document.getElementById('appRoot').style.display='flex';
  const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
@@ -913,7 +991,9 @@ function openSessionForm(year,sessionId){
   });
   window._markAll=(v)=>{$$('.att-sel').forEach(sel=>sel.value=v)};
 }
-function deleteSession(id){const se=(DB.attendanceSessions||[]).find(x=>x.id===id); if(!se||!confirm('حذف سجل محاضرة «'+se.title+'»؟ نسب الحضور هتتظبط لوحدها بعده.'))return; DB.attendanceSessions=DB.attendanceSessions.filter(x=>x.id!==id); recalcAllAttendance(); logActivity('حذف سجل محاضرة: '+se.title); saveDB(); render(); toast('تم حذف سجل المحاضرة')}
+async function deleteSession(id){const se=(DB.attendanceSessions||[]).find(x=>x.id===id); if(!se)return;
+ if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف سجل محاضرة',ok:'نعم، احذف',message:'حذف سجل محاضرة «'+esc(se.title)+'»؟ نسب الحضور هتتظبط لوحدها بعده.'}))return;
+ DB.attendanceSessions=DB.attendanceSessions.filter(x=>x.id!==id); recalcAllAttendance(); logActivity('حذف سجل محاضرة: '+se.title); saveDB(); render(); toast('تم حذف سجل المحاضرة')}
 
 /* ---------- المتابعة والافتقاد ---------- */
 function quickFollowTask(studentId){ if(!hasPerm('add_notes'))return toast('صلاحية المتابعة غير مفعّلة لحسابك'); const st=getStudent(studentId); if(!st)return;
@@ -945,7 +1025,7 @@ function openTaskForm(){
 }
 function doneTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='done'; t.doneAt=today(); logActivity('أنهى مهمة متابعة: '+t.title); saveDB(); render(); toast('بركة 💗 اتسجلت المتابعة كم تمت — كملوا افتقاد')}
 function reopenTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='open'; t.doneAt=''; saveDB(); render()}
-function deleteTask(id){if(!confirm('حذف مهمة المتابعة دي؟'))return; DB.tasks=DB.tasks.filter(x=>x.id!==id); saveDB(); render()}
+async function deleteTask(id){if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف مهمة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف مهمة المتابعة دي؟'}))return; DB.tasks=DB.tasks.filter(x=>x.id!==id); saveDB(); render()}
 
 /* ---------- استيراد الدارسين CSV + كارت وشهادة ---------- */
 function downloadImportTemplate(){
@@ -1157,9 +1237,9 @@ function rememberAutoBackup(){
 function listAutoBackups(){
   try{return JSON.parse(localStorage.getItem('e3dad_auto_backups_v1')||'[]')}catch(e){return []}
 }
-function restoreAutoBackup(i){
+async function restoreAutoBackup(i){
   const list=listAutoBackups(); const item=list[i]; if(!item)return;
-  if(!confirm('استعادة النسخة المحفوظة على الجهاز بتاريخ '+new Date(item.at).toLocaleString('ar-EG')+'؟'))return;
+  if(!await askConfirm({title:'استعادة نسخة احتياطية',ok:'نعم، استعد',message:'استعادة النسخة المحفوظة على الجهاز بتاريخ '+new Date(item.at).toLocaleString('ar-EG')+'؟'}))return;
   try{ DB=JSON.parse(item.json); DB.settings={...defaultSettings(),...(DB.settings||{})}; saveDB(); render(); toast('اترجعت النسخة الاحتياطية ✅'); }catch(e){toast('النسخة تالفة')}
 }
 function printStudentReport(studentId,mode){
@@ -1274,7 +1354,10 @@ function exportResultsCSV(){
  DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{const s=enrollStats(en); (en.subjects||[]).forEach(sub=>aoa.push([st.code,st.name,YEAR_NAMES[en.yearLevel],en.attemptNo,ATTEMPT_STATUS[en.status]||en.status,sub.name,subjFinal(sub)??'',s.att??'',en.serviceHours||0,en.decisionNote||'']))})});
  exportAoAToXlsx(aoa,'كل-النتائج-والمحاولات');
 }
-function clearAll(){if(!isAdmin())return toast('مسح كل البيانات لأمين إعداد الخدام فقط'); if(confirm('متأكد؟ هيتم مسح كل البيانات من هذا الجهاز ومن السحابة (كل الأجهزة) نهائياً.')){if(confirm('تأكيد أخير: المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية.')){DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}}}
+async function clearAll(){if(!(isAdmin()||isLucasOwner(currentUser())))return toast('مسح كل البيانات لإدارة السيستم أو الأمين فقط');
+ if(!await askConfirm({danger:true,icon:'⚠️',title:'مسح كل البيانات',ok:'نعم، امسح',message:'متأكد؟ هيتم مسح كل بيانات الدارسين من هذا الجهاز ومن السحابة نهائياً.'}))return;
+ if(!await askConfirm({danger:true,icon:'🛑',title:'تأكيد أخير',ok:'مسح نهائي',message:'المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية. هل أنت متأكد؟'}))return;
+ DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}
 
 /* ---------- الإعدادات ---------- */
 function viewSettings(){if(!hasPerm('manage_settings'))return `<div class="card empty"><div class="big">🔒</div>إعدادات الخدمة لأمين إعداد الخدام فقط</div>`; const s=DB.settings;return `<div class="card" style="max-width:760px"><h3>☦ هوية الخدمة وإعدادات التقييم</h3>
@@ -1303,6 +1386,35 @@ function viewHelp(){return `<div class="grid c2">
  <div class="card"><h3>🚀 خطوات تطوير مستقبلية مقترحة</h3><ul style="line-height:2;font-size:14px"><li>تأمين قاعدة البيانات بـ Firebase Authentication بدل القواعد المفتوحة.</li><li>تسجيل حضور بالجلسات (محاضرة بمحاضرة) بدل النسبة الإجمالية.</li><li>حسابات دخول للدارسين أنفسهم (دور جديد) للاطلاع على نتائجهم عند نضج الفكرة، وإشعارات واتساب.</li><li>شهادة تخرج قابلة للطباعة بتصميم رسمي.</li></ul></div></div>`}
 
 /* ---------- النوافذ (Modals) ---------- */
+function askConfirm(opts){
+  const o=typeof opts==='string'?{message:opts}: (opts||{});
+  return new Promise(resolve=>{
+    const bg=document.getElementById('confirmBg');
+    if(!bg){ resolve(!!window.confirm(o.message||'')); return; }
+    document.getElementById('confirmTitle').textContent=o.title||'تأكيد العملية';
+    document.getElementById('confirmMsg').innerHTML=o.message||'متأكد؟';
+    document.getElementById('confirmIcon').textContent=o.icon||(o.danger?'🗑️':'⚠️');
+    document.getElementById('confirmExtra').innerHTML=o.extraHTML||'';
+    const okBtn=document.getElementById('confirmOk');
+    const cancelBtn=document.getElementById('confirmCancel');
+    okBtn.textContent=o.ok||'نعم، متأكد';
+    cancelBtn.textContent=o.cancel||'إلغاء';
+    bg.querySelector('.app-confirm').classList.toggle('danger', !!o.danger);
+    okBtn.className='btn '+(o.danger?'danger':'primary');
+    bg.hidden=false;
+    const finish=v=>{ bg.hidden=true; resolve(v); };
+    okBtn.onclick=()=>{
+      const extra=document.getElementById('confirmField');
+      if(o.requireField){
+        const val=(extra&&extra.value||'').trim();
+        if(!val){ toast('اكتب التأكيد المطلوب'); return; }
+        finish(val); return;
+      }
+      finish(true);
+    };
+    cancelBtn.onclick=()=>finish(false);
+  });
+}
 function openModal(title,bodyHTML,onSave,saveLabel){const bg=$('#modalBg'),box=$('#modalBox');box.innerHTML=`<h2>${title}</h2><div class="sub">الحقول الأساسية بس هي المطلوبة — والباقي اختياري</div>${bodyHTML}<div class="modal-actions"><button class="btn primary" id="mSave">${saveLabel||'💾 حفظ'}</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`;bg.classList.add('open');document.body.classList.add('no-scroll');$('#mSave').onclick=onSave}
 function closeModal(){$('#modalBg').classList.remove('open');$('#modalBox').classList.remove('wide');document.body.classList.toggle('no-scroll',document.getElementById('sidebar').classList.contains('open'))}
 $('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
@@ -1333,7 +1445,9 @@ function openStudentForm(id){
  });
  setTimeout(()=>{const p=$('#sPhoto'); if(p)p.onchange=()=>{const f=p.files[0]; if(!f)return; readPhotoFile(f,data=>{window._tmpPhoto=data; const n=$('#sPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; $('#photoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
-function deleteStudent(id){if(!hasPerm('delete_students'))return toast('الحذف النهائي للأمين فقط'); const st=getStudent(id); if(!confirm(`حذف نهائي للدارس ${st.name} وكل سجله؟ هذا الإجراء للمدير فقط ولا يمكن التراجع عنه — الأفضل تصدير نسخة احتياطية أولاً.`))return; DB.students=DB.students.filter(s=>s.id!==id); saveDB(); go('students'); toast('تم حذف الدارس')}
+async function deleteStudent(id){if(!(hasPerm('delete_students')||isLucasOwner(currentUser())))return toast('الحذف النهائي للأمين أو إدارة السيستم'); const st=getStudent(id);
+ if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف دارس',ok:'نعم، احذف نهائياً',message:'حذف نهائي للدارس <b>'+esc(st.name)+'</b> وكل سجله؟ الأفضل تصدير نسخة احتياطية أولاً.'}))return;
+ DB.students=DB.students.filter(s=>s.id!==id); saveDB(); go('students'); toast('تم حذف الدارس')}
 
 function openEnrollmentForm(studentId,enrollId){
  if(!hasPerm('manage_years'))return toast('صلاحية «فتح السنوات والمحاولات» غير مفعّلة لحسابك');
@@ -1356,7 +1470,9 @@ function openEnrollmentForm(studentId,enrollId){
   st.updatedAt=today(); saveDB(); closeModal(); render();
  });
 }
-function deleteEnrollment(studentId,enrollId){const st=getStudent(studentId); const en=st.enrollments.find(e=>e.id===enrollId); if(!confirm(`حذف محاولة ${en.attemptNo} (${YEAR_NAMES[en.yearLevel]}) بكل نتائجها؟\nالأصل عندك إن القديم لا يُحذف — الحذف هنا للتصحيح الاستثنائي فقط.`))return; st.enrollments=st.enrollments.filter(e=>e.id!==enrollId); st.updatedAt=today(); saveDB(); render(); toast('تم حذف المحاولة')}
+async function deleteEnrollment(studentId,enrollId){const st=getStudent(studentId); const en=st.enrollments.find(e=>e.id===enrollId);
+ if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف محاولة',ok:'نعم، احذف',message:'حذف محاولة '+en.attemptNo+' ('+YEAR_NAMES[en.yearLevel]+') بكل نتائجها؟<br>الأصل إن القديم لا يُحذف — الحذف هنا للتصحيح الاستثنائي فقط.'}))return;
+ st.enrollments=st.enrollments.filter(e=>e.id!==enrollId); st.updatedAt=today(); saveDB(); render(); toast('تم حذف المحاولة')}
 function applyTemplate(studentId,enrollId){if(!hasPerm('enter_grades'))return toast('صلاحية الدرجات غير مفعّلة لحسابك'); const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const list=DB.templates[en.yearLevel]||[]; let added=0;
  list.forEach(([name,cat])=>{if(!(en.subjects||[]).some(s=>s.name===name)){en.subjects.push({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()});added++}}); st.updatedAt=today(); saveDB(); render(); toast(added?`تمت إضافة ${added} مادة من المنهج ✅`:'مواد المنهج موجودة بالفعل')}
 
@@ -1410,7 +1526,7 @@ function openNoteForm(studentId,noteId){
   if(n)Object.assign(n,data); else (st.notes=st.notes||[]).push({id:uid(),...data});
   st.updatedAt=today(); saveDB(); closeModal(); state.profileTab='notes'; render(); toast('تم حفظ الملاحظة ✅')});
 }
-function deleteNote(studentId,noteId){const st=getStudent(studentId); if(!confirm('حذف هذه الملاحظة نهائياً؟'))return; st.notes=st.notes.filter(n=>n.id!==noteId); saveDB(); render()}
+async function deleteNote(studentId,noteId){const st=getStudent(studentId); if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف ملاحظة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف هذه الملاحظة نهائياً؟'}))return; st.notes=st.notes.filter(n=>n.id!==noteId); saveDB(); render()}
 function openDecisionForm(studentId,enrollId){
  if(!hasPerm('make_decisions'))return toast('قرارات نهاية السنة للأمين ومساعده فقط');
  const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const s=enrollStats(en);
@@ -1443,8 +1559,8 @@ function openDecisionForm(studentId,enrollId){
 function demoStudent(code,name,batch,join,phone,father){return{id:uid(),code,name,batch,joinDate:join,phone,whatsapp:phone,gender:'ذكر',birthDate:'2002-05-10',email:'',nationalId:'',address:'القاهرة',education:'طالب جامعي',church:'',confessionFather:father,status:'active',fixedNotes:'',photo:'',createdAt:join,updatedAt:today(),notes:[],enrollments:[]}}
 function mkEn(year,attempt,acad,status,subs,acts,attA,attT,service,spirit,decision){return{id:uid(),yearLevel:year,attemptNo:attempt,academicYear:acad,startDate:acad.split(' / ')[0]+'-10-01',endDate:status==='ongoing'?'':(acad.split(' / ')[1]||'')+'-06-30',status,attendanceAttended:attA,attendanceTotal:attT,serviceHours:service,spiritualMeetings:spirit,decisionNote:decision||'',subjects:subs,activities:acts||[]}}
 function mkSub(name,cat,scores){const defs=defaultAssessments(); scores.forEach((v,i)=>{if(defs[i])defs[i].score=v}); return{id:uid(),name,category:cat,teacher:'',assessments:defs}}
-function loadDemo(){
- if(DB.students.length && !confirm('تحميل البيانات التجريبية هيضيف ٦ دارسين أمثلة فوق الموجود. أكمل؟'))return;
+async function loadDemo(){
+ if(DB.students.length && !(await askConfirm({title:'بيانات تجريبية',ok:'نعم، أضف',message:'تحميل البيانات التجريبية هيضيف ٦ دارسين أمثلة فوق الموجود. هل أنت متأكد؟'})))return;
  const demo=[];
  // 1) طالب مثالي حالياً سنة ثانية
  let s1=demoStudent('D-001','أحمد سمير','دفعة 2024','2024-10-01','01001234567','أبونا داود');
@@ -1500,7 +1616,7 @@ $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)
      importStudentsCSV(csv);
    }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
  }
- const r=new FileReader(); r.onload=()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!confirm('استيراد النسخة هيستبدل البيانات الحالية على الجهاز. أكمل؟'))return; rememberAutoBackup(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=DB.activityLog||[]; saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
+ const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=DB.activityLog||[]; saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
 window.addEventListener('online',()=>$('#offlineBar').classList.remove('show'));
 window.addEventListener('offline',()=>$('#offlineBar').classList.add('show'));
 if(!navigator.onLine)$('#offlineBar').classList.add('show');
@@ -1653,7 +1769,19 @@ window.addEventListener('popstate', (e)=>{
 
 E3.theme.init();
 E3.vault.loadMeta(DB.settings||{});
-if(currentUser()){render()}else{location.replace('index.html')}
+if(currentUser()){
+  try{
+    const url='#'+state.view+(state.studentId?('-'+state.studentId):'');
+    history.replaceState({view:state.view, studentId:state.studentId}, '', url);
+  }catch(e){}
+  render();
+  const y=_restoreScrollY||0;
+  _skipNextScrollTop=false;
+  requestAnimationFrame(()=>{ window.scrollTo(0,y); setTimeout(()=>window.scrollTo(0,y),50); });
+}else{location.replace('index.html')}
+window.addEventListener('scroll', ()=>{ try{ persistViewState(); }catch(e){} }, {passive:true});
+window.addEventListener('beforeunload', persistViewState);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') persistViewState(); });
 
 </script>
 </body>

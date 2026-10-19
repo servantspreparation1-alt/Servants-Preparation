@@ -72,7 +72,7 @@
         <div class="servant-preview" id="servantPreview"></div>
         <div class="field">
           <label for="liUser">اسم المستخدم</label>
-          <input id="liUser" autocomplete="username" spellcheck="false" placeholder="اسم المستخدم اللي استلمته من أمين الخدمة">
+          <input id="liUser" autocomplete="username" spellcheck="false" dir="auto" placeholder="عربي أو إنجليزي — مسافات وكابيتال عادي">
         </div>
         <div class="field">
           <label for="liPass">كلمة السر</label>
@@ -397,9 +397,13 @@ $('eyeBtn').addEventListener('click', () => {
   const i = $('liPass'); i.type = i.type === 'password' ? 'text' : 'password';
   $('eyeBtn').textContent = i.type === 'password' ? '👁️' : '🙈';
 });
+function normUser(s){ return String(s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
+function findUserByLogin(raw){
+  const v = normUser(raw);
+  return (DB.users || []).find(x => normUser(x.username) === v);
+}
 $('liUser').addEventListener('input', () => {
-  const v = $('liUser').value.trim().toLowerCase();
-  const u = (DB.users || []).find(x => String(x.username || '').toLowerCase() === v);
+  const u = findUserByLogin($('liUser').value);
   const box = $('servantPreview');
   if (u) {
     box.className = 'servant-preview show';
@@ -416,14 +420,21 @@ async function doLogin() {
   clearError();
   const now = Date.now();
   if (window._lockUntil && now < window._lockUntil) return showError('محاولات كتير غلط — استنى ' + Math.ceil((window._lockUntil - now) / 1000) + ' ثانية وحاول تاني');
-  const username = $('liUser').value.trim().toLowerCase();
+  const typed = $('liUser').value.trim().replace(/\s+/g,' ');
+  const username = typed;
   const pw = $('liPass').value;
   if (!username || !pw) return showError('اكتب اسم المستخدم وكلمة السر');
   if (/^[0-9a-f]{32,64}$/i.test(pw.trim())) return showError('اللي لصقته ده كود مشفّر (hash) مش كلمة السر — اكتب كلمة السر نفسها');
-  const u = (DB.users || []).find(x => String(x.username || '').toLowerCase() === username);
+  const u = findUserByLogin(typed);
   busy = true; const btn = $('loginBtn'); btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
   let ok = false;
-  try { ok = await verifyPassword(pw, username, u && u.passHash); } catch (e) {}
+  try {
+    if (u && u.passHash) {
+      ok = await verifyPassword(pw, u.username, u.passHash);
+      if (!ok) ok = await verifyPassword(pw, String(u.username||'').toLowerCase(), u.passHash);
+      if (!ok) ok = await verifyPassword(pw, normUser(u.username), u.passHash);
+    }
+  } catch (e) {}
   if (!ok) {
     busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام';
     window._fails = (window._fails || 0) + 1;
