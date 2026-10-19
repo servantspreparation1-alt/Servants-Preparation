@@ -229,9 +229,7 @@
     const users = DB.users || [];
     const sealed = users.filter((u) => E3.vault.canSeal(u)).length;
     const students = (DB.students || []).length;
-    const logs = DB.activityLog || [];
     const sizeKB = Math.round((E3.store.getItem(DB_KEY) || "").length / 1024);
-    const reveals = logs.filter((l) => /عرض كلمة سر|نسخ كلمة سر/.test(l.action || "")).length;
 
     return `
     <div class="owner-hero">
@@ -243,10 +241,9 @@
       <span class="badge b-gold">${E3.vault.privKey ? "🔓 الخزنة مفتوحة" : "🔒 الخزنة مقفولة"}</span>
     </div>
 
-    <div class="grid c4" style="margin-bottom:14px">
+    <div class="grid c3" style="margin-bottom:14px">
       <div class="card stat"><div class="icbox">👥</div><span>حسابات الخدام</span><b>${ar(users.length)}</b><div class="trend">${ar(sealed)} كلمة سر مشفّرة</div></div>
       <div class="card stat"><div class="icbox">🎓</div><span>الدارسين</span><b>${ar(students)}</b><div class="trend">ملف محفوظ على الجهاز</div></div>
-      <div class="card stat"><div class="icbox">📜</div><span>عمليات على الخزنة</span><b>${ar(reveals)}</b><div class="trend">آخر ${ar(logs.length)} نشاط محفوظ</div></div>
       <div class="card stat"><div class="icbox">💾</div><span>حجم البيانات</span><b>${ar(sizeKB)}<small style="font-size:13px"> KB</small></b><div class="trend">محلي + سحابة (لو مفعّلة)</div></div>
     </div>
 
@@ -263,13 +260,6 @@
     </div>
 
     <div class="grid c2">
-      <div class="card">
-        <h3>🔍 آخر عمليات الخزنة</h3>
-        ${reveals
-          ? logs.filter((l) => /عرض كلمة سر|نسخ كلمة سر|ملكي|خزنة/.test(l.action || "")).slice(0, 8)
-              .map((l) => `<div class="kv"><span style="font-size:11.5px">${esc(l.date)}</span><b style="font-size:12px">${esc(l.action)}</b></div>`).join("")
-          : '<p style="color:var(--muted);font-size:13px">مفيش عمليات عرض لسه — كل حاجة هتتسجل هنا أول ما تعرض أي كلمة سر.</p>'}
-      </div>
       <div class="card">
         <h3>📋 حسابات الخدام</h3>
         ${users.map((u) => `<div class="kv"><span>${isLucasOwner(u) ? "🛡️" : "•"} ${esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : u.displayName)} <small style="color:var(--muted)" dir="${isLucasOwner(u) ? 'rtl' : 'ltr'}">${isLucasOwner(u) ? "حساب محمي" : "@" + esc(u.username)}</small></span>
