@@ -471,7 +471,6 @@ html[data-theme="dark"] .gz-chip:hover{background:#3a301c;border-color:#e0c266}
       </div>
 
       <!-- ===== نجاح الدخول ===== -->
-      <div class="success" id="successBox"></div>
 
       <div class="card-theme-row"><button class="theme-btn" type="button" data-theme-toggle><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button></div>
       <p class="mini">يعمل بدون إنترنت بعد أول فتح • قابل للتثبيت على الموبايل والكمبيوتر 📲<br>اعداد خدام ادمن — معلم الأجيال للتلمذة</p>
@@ -1659,36 +1658,41 @@ async function doLogin() {
   busy = false;
   setBusy(false);
 
-  await _sleep(620);
+  await _sleep(220);
   VZ.close();
   welcome(acc, { vaultOK: vaultOK, tolerant: res.mode === 'tolerant' });
 }
 
 function welcome(u, extra) {
   extra = extra || {};
-  $('loginBox').style.display = 'none';
-  var box = $('successBox');
-  box.className = 'success show';
-  var first = isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : String(u.displayName || '').split(' ')[0];
-  var warn = '';
-  if (extra.tolerant) {
-    warn += '<div style="margin-top:10px;padding:9px 11px;border-radius:11px;background:#fff8e6;border:1px solid #ead9a4;color:#7a5c00;font-size:11.5px;line-height:1.8;font-weight:700;text-align:right">' +
-      '⚠️ دخلت بكلمة السر بحروف مختلفة عن المسجّلة (التسامح مفعّل). لو الخزنة/عرض كلمات السر مش شغال، ادخل بكلمة السر بنفس شكل الحروف.' +
-      '</div>';
-  }
+
+  /* مفيش شاشة نجاح وسيطة — الدخول بيفتح لوحة التحكم على طول.
+     لو فيه تنبيه مهم (خزنة مقفولة / تسامح كابيتال) بيظهر في مكان رسائل الدخول
+     نفسه ثانيتين وبعدها بننتقل. */
+  var msg = null;
   if (extra.vaultOK === false) {
-    warn += '<div style="margin-top:10px;padding:9px 11px;border-radius:11px;background:#fdf1ef;border:1px solid #ecc7c1;color:#a11c14;font-size:11.5px;line-height:1.8;font-weight:700;text-align:right">' +
-      '🔒 خزنة كلمات السر مقفولة في الجلسة دي — هتقدر تدخل عادي، بس مش هتقدر تعرض كلمات سر الخدام. ادخل بكلمة سر الإدارة بنفس الحروف بالظبط.' +
-      '</div>';
+    msg = {
+      tone: 'warn',
+      title: '🔒 خزنة كلمات السر مقفولة في الجلسة دي',
+      lines: ['دخولك تمام — بس عرض كلمات سر الخدام مش هيشتغل دلوقتي.', 'نصيحة: ادخل بكلمة سر الإدارة بنفس شكل الحروف المسجّل.']
+    };
   }
-  box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div>' +
-    '<h2 style="margin:8px 0 2px;color:var(--head)">نورت يا ' + _e(first) + ' ☦</h2>' +
-    '<p class="sub">' + _e(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
-    warn +
-    '<button class="btn gold" style="margin-top:14px" onclick="location.replace(\'' + ADMIN_URL + '\')">🎓 دخول لوحة التحكم الآن</button>';
-  try { history.replaceState(null, '', location.href); } catch (e) {}
-  if (location.protocol.startsWith('http')) {
-    setTimeout(function () { location.replace(ADMIN_URL); }, (extra.tolerant || extra.vaultOK === false) ? 2600 : 1200);
+
+  var go = function () {
+    try { history.replaceState(null, '', location.href); } catch (e) {}
+    location.replace(ADMIN_URL);
+  };
+
+  var lb = $('loginBox');
+  if (lb) lb.style.display = 'none';
+
+  if (msg) {
+    /* نرجّع الكارت لحظة عشان التنبيه يبان، وبعدها ننتقل */
+    if (lb) lb.style.display = 'block';
+    showError(msg);
+    setTimeout(go, 2400);
+  } else {
+    go();
   }
 }
 
@@ -1955,5 +1959,5 @@ try{
 E3.theme.init();
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cf9d5cea10ed24',t:'MTc5MjQxMTE0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfac03393a0ba3',t:'MTc5MjQxMTc0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
