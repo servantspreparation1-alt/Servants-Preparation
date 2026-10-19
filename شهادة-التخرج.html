@@ -13,7 +13,7 @@
 <script>
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-<link rel="stylesheet" href="assets/css/app.css?v=3.1">
+<link rel="stylesheet" href="assets/css/app.css?v=3.2">
 <style>
 header.cert-head{background:linear-gradient(135deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;padding:24px 18px;border-bottom:4px solid var(--gold);position:relative;overflow:hidden}
 header.cert-head .grain{position:absolute;inset:0;background:url("assets/img/church-hero.jpg") center/cover;opacity:.18}
@@ -93,7 +93,7 @@ main{max-width:880px;margin:0 auto;padding:20px 14px 48px}
   <div class="card" id="certBox"><div class="empty">اختر دارساً ودوس «عرض الشهادة» 🎓</div></div>
 </main>
 
-<script src="assets/js/core.js?v=3.1"></script>
+<script src="assets/js/core.js?v=3.2"></script>
 <script>
 const SESSION_KEY = E3.SESSION_KEY;
 
@@ -163,7 +163,7 @@ function renderCert() {
     <p style="font-size:15.5px;line-height:2;max-width:650px;margin:20px auto 4px">${sub}، بمتوسط عام <b>${studentAvg(st) ?? '—'}%</b> عبر ${(st.enrollments || []).length} محاولة محفوظة في سجله الكامل منذ التحاقه في ${esc(st.joinDate || '—')}.</p>
     <div class="signs">
       <div><div class="line">الأب الكاهن المسؤول عن الخدمة</div></div>
-      <div><div class="line">أمين إعداد الخدام<br><small>${esc(me ? (isLucasOwner(me) ? 'إدارة السيستم — مدير النظام' : me.displayName) : '')}</small></div></div>
+      <div><div class="line">أمين إعداد الخدام<br><small>${esc(me ? (isLucasOwner(me) ? 'إدارة السيستم' : me.displayName) : '')}</small></div></div>
       <div><div class="line">تاريخ الإصدار<br><b>${esc(date)}</b></div></div>
     </div>
     <div class="cert-foot">شهادة داخلية من خدمة إعداد الخدام — التفاصيل الكاملة بالدرجات والمحاولات في التقرير الشامل للدارس بنظام «اعداد خدام ادمن»</div>

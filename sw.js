@@ -4,7 +4,7 @@
    • ملفات HTML: network-first (علشان التحديثات تظهر بسرعة مع fallback).
    • أصول ثابتة (صور/css/js): cache-first.
    ===================================================================== */
-const VERSION = "e3dad-v3.1.0";
+const VERSION = "e3dad-v3.2.0";
 const SHELL = [
   "./",
   "index.html",

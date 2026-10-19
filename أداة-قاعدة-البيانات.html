@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أداة إدارة الحسابات في قاعدة البيانات</title>
+<style>
+:root{--navy:#12325c;--blue:#1b4a86;--gold:#c9a227;--gold2:#e8c766;--bg:#f8f8f3;--card:#fff;--line:#dbe3ef;--text:#22303f;--muted:#6d7c8d;--red:#a83232;--green:#2f7d55}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",Tahoma,Arial,sans-serif;line-height:1.85}
+header{background:linear-gradient(135deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;padding:22px 16px;text-align:center;border-bottom:4px solid var(--gold)}
+header h1{margin:0;font-size:21px}
+header p{margin:6px 0 0;font-size:13px;opacity:.92}
+main{max-width:980px;margin:0 auto;padding:18px 14px 50px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:0 10px 28px rgba(18,50,92,.07)}
+h2{margin:0 0 10px;font-size:16px;color:var(--navy)}
+label{display:block;font-size:12.5px;font-weight:800;color:#41546a;margin:10px 0 5px}
+input,select{width:100%;padding:11px 13px;border:1.5px solid #cdd9ea;border-radius:11px;font:inherit;font-size:14px;background:#fff;color:var(--text)}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,74,134,.14)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 16px;border-radius:11px;border:1.5px solid var(--line);background:#fff;color:var(--navy);font:inherit;font-weight:800;font-size:13.5px;cursor:pointer;margin-top:12px}
+.btn:hover{background:#f2f6fd}
+.btn.primary{background:linear-gradient(135deg,#21569c,#123a6b);border-color:#123a6b;color:#fff}
+.btn.gold{background:linear-gradient(135deg,#e6bd57,#f5dc9b);border-color:#e2bc5a;color:#3a2a05}
+.btn.danger{background:#fff5f5;border-color:#e3b4b0;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+th{background:#f3f6fc;color:#2a4a78;font-size:12.5px}
+code{background:#eef3fb;padding:2px 6px;border-radius:6px;font-size:11.5px;direction:ltr;display:inline-block;word-break:break-all}
+.note{background:#fdf7e3;border:1px solid #e8d399;border-radius:12px;padding:12px 14px;font-size:13px;margin-top:10px}
+.ok{background:#eef8f1;border-color:#bfe0cb;color:#1f5f3d}
+.err{background:#fdeeee;border-color:#e8b4b4;color:#8d2323}
+.log{font-size:12.5px;max-height:190px;overflow:auto;direction:rtl}
+.log div{padding:4px 0;border-bottom:1px dashed var(--line)}
+.muted{color:var(--muted);font-size:12px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid #e2bc5a;background:#fdf3d8;color:#7a5a10}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔑 أداة إدارة الحسابات في قاعدة البيانات</h1>
+  <p>تغيّر اسم المستخدم وكلمة السر مباشرة في Firebase — بدون ما تعرف الـ hash</p>
+</header>
+<main>
+
+  <div class="card">
+    <h2>1) رابط قاعدة البيانات</h2>
+    <label>عنوان قاعدة البيانات (بدون آخر /)</label>
+    <input id="base" dir="ltr" value="https://servants-preparation-108f3-default-rtdb.europe-west1.firebasedatabase.app/ekhdam">
+    <div class="row">
+      <div><label>اسم مجموعة المستخدمين</label><input id="node" dir="ltr" value="users"></div>
+      <div><label>&nbsp;</label><button class="btn primary" onclick="loadUsers()">🔄 اقرأ الحسابات</button></div>
+    </div>
+    <div class="note">
+      كلمة السر في القاعدة مخزّنة كـ <b>hash</b> بالمعادلة:
+      <code>sha256( username.toLowerCase() + "::" + password )</code><br>
+      يعني مستحيل تكتب كلمة السر نفسها في Firebase — لازم الأداة دي تحسب الـ hash وتكتبه.<br>
+      <span class="muted">مثال: <code>lucaskayser</code> + <code>Fady2026L</code> = <code id="sampleHash" dir="ltr">…</code></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2) الحسابات الموجودة</h2>
+    <div id="usersBox"><p class="muted">اضغط «اقرأ الحسابات» الأول.</p></div>
+  </div>
+
+  <div class="card">
+    <h2>3) تعديل / إنشاء حساب</h2>
+    <div class="row">
+      <div><label>اسم المستخدم (حاليًا — سيبها فاضية لو حساب جديد)</label><input id="oldUser" dir="ltr" placeholder="lucaskayser"></div>
+      <div><label>اسم المستخدم الجديد</label><input id="newUser" dir="ltr" placeholder="lucaskayser"></div>
+    </div>
+    <div class="row">
+      <div><label>كلمة السر الجديدة</label><input id="newPass" type="text" dir="ltr" placeholder="Fady2026L"></div>
+      <div><label>الاسم الظاهر</label><input id="newName" placeholder="إدارة السيستم"></div>
+    </div>
+    <div class="row">
+      <div><label>الدور</label>
+        <select id="newRole">
+          <option value="amin">أمين إعداد الخدام</option>
+          <option value="assistant">مساعد الأمين</option>
+          <option value="year_supervisor">أمين سنة</option>
+          <option value="khadem">خادم</option>
+          <option value="follower">متابِع (عرض فقط)</option>
+        </select>
+      </div>
+      <div><label>الحالة</label>
+        <select id="newActive"><option value="1">مفعّل</option><option value="0">موقوف</option></select>
+      </div>
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap">
+      <button class="btn primary" onclick="applyChange(false)">💾 حفظ (كلمة السر + البيانات)</button>
+      <button class="btn" onclick="applyChange(true)">🔑 تغيير كلمة السر بس</button>
+      <button class="btn gold" onclick="fillLucas()">⚡ جهّز lucaskayser / Fady2026L</button>
+    </div>
+    <div id="result" class="note" style="display:none"></div>
+  </div>
+
+  <div class="card">
+    <h2>4) آخر العمليات</h2>
+    <div id="log" class="log"><div class="muted">لسه مفيش عمليات.</div></div>
+  </div>
+
+  <div class="note">
+    ⚠️ الأداة دي بتكتب في قاعدة البيانات مباشرة. جرّب على حساب تجريبي الأول، وخُد نسخة احتياطية
+    من تبويب <b>Data → ⋮ → Export JSON</b> في Firebase قبل أي تعديل.
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const log = (msg, cls) => {
+  const box = $('log');
+  if (box.querySelector('.muted')) box.innerHTML = '';
+  const d = document.createElement('div');
+  d.textContent = new Date().toLocaleTimeString('ar-EG') + ' — ' + msg;
+  if (cls) d.style.color = cls;
+  box.prepend(d);
+};
+const show = (msg, ok) => {
+  const r = $('result'); r.style.display = 'block';
+  r.className = 'note ' + (ok ? 'ok' : 'err');
+  r.innerHTML = msg;
+};
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+const hashOf = (username, password) => sha256Hex(String(username).toLowerCase() + '::' + password);
+
+async function sample() {
+  const h = await hashOf('lucaskayser', 'Fady2026L');
+  $('sampleHash').textContent = h.slice(0, 24) + '…';
+}
+sample();
+
+const api = (path, opts) => fetch($('base').value.replace(/\/+$/, '') + path, Object.assign({ cache: 'no-store' }, opts || {}));
+const jsonOr = async (p, o, fb) => { const r = await api(p, o); if (!r.ok) throw new Error('HTTP ' + r.status); const t = await r.text(); return t ? JSON.parse(t) : fb; };
+
+async function loadUsers() {
+  const node = '/' + ($('node').value || 'users') + '.json';
+  $('usersBox').innerHTML = '<p class="muted">⏳ جاري القراءة…</p>';
+  try {
+    const data = await jsonOr(node, null, null) || {};
+    const keys = Object.keys(data);
+    if (!keys.length) { $('usersBox').innerHTML = '<p class="muted">مفيش حسابات في القاعدة.</p>'; return; }
+    const rows = keys.map((k) => {
+      const u = data[k] || {};
+      return `<tr>
+        <td><b dir="ltr">${k}</b><br><span class="muted">${u.name || ''}</span></td>
+        <td>${u.role || '—'} ${u.disabled ? '<span class="badge" style="background:#fdeeee;border-color:#e8b4b4;color:#8d2323">موقوف</span>' : '<span class="badge" style="background:#eef8f1;border-color:#bfe0cb;color:#1f5f3d">مفعّل</span>'}</td>
+        <td><code dir="ltr">${(u.passHash || '—').slice(0, 18)}…</code></td>
+        <td><button class="btn" style="margin:0;padding:6px 10px" onclick="pick('${k}')">تعديل</button></td>
+      </tr>`;
+    }).join('');
+    $('usersBox').innerHTML = `<table><thead><tr><th>اسم المستخدم</th><th>الدور</th><th>passHash</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="muted">آخر قراءة: ${new Date().toLocaleTimeString('ar-EG')}</p>`;
+    log('قرأ ' + keys.length + ' حساب من القاعدة', '#2f7d55');
+  } catch (e) {
+    $('usersBox').innerHTML = '<p class="muted">تعذرت القراءة: ' + e.message + '</p>';
+    log('فشل القراءة: ' + e.message, '#a83232');
+  }
+}
+
+function pick(key) {
+  $('oldUser').value = key;
+  $('newUser').value = key;
+  const base = $('base').value.replace(/\/+$/, '');
+  fetch(base + '/' + $('node').value + '/' + encodeURIComponent(key) + '.json')
+    .then((r) => r.json())
+    .then((u) => { if (u) { $('newName').value = u.name || ''; $('newRole').value = u.role || 'khadem'; $('newActive').value = u.disabled ? '0' : '1'; } })
+    .catch(() => {});
+}
+
+function fillLucas() {
+  $('oldUser').value = 'lucaskayser';
+  $('newUser').value = 'lucaskayser';
+  $('newPass').value = 'Fady2026L';
+  $('newName').value = 'إدارة السيستم';
+  $('newRole').value = 'amin';
+  $('newActive').value = '1';
+  log('تم تجهيز البيانات — دوس «حفظ»');
+}
+
+async function applyChange(passwordOnly) {
+  const base = $('base').value.replace(/\/+$/, '');
+  const node = '/' + ($('node').value || 'users');
+  const oldUser = ($('oldUser').value || '').trim().toLowerCase();
+  const newUser = ($('newUser').value || oldUser || '').trim().toLowerCase();
+  const pass = $('newPass').value;
+  const name = $('newName').value.trim();
+  const role = $('newRole').value;
+  const disabled = $('newActive').value === '0';
+
+  if (!newUser) return show('اكتب اسم المستخدم.', false);
+  if (!passwordOnly && !name) return show('اكتب الاسم الظاهر.', false);
+  if (!passwordOnly && oldUser && oldUser !== newUser) {
+    if (!confirm(`هتغيّر اسم المستخدم من «${oldUser}» إلى «${newUser}».\nالحساب هيتنقل بالبيانات كلها. تكمل؟`)) return;
+  }
+
+  try {
+    if (passwordOnly) {
+      if (!pass) return show('اكتب كلمة السر الجديدة.', false);
+      const h = await hashOf(newUser, pass);
+      const r = await api(node + '/' + encodeURIComponent(newUser) + '/passHash.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(h) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      show(`✅ اتغيّرت كلمة السر.<br>ادخل بـ <b dir="ltr">${newUser}</b> / <b dir="ltr">${pass}</b><br><span class="muted"><code dir="ltr">${h}</code></span>`, true);
+      log('غيّر كلمة سر ' + newUser, '#2f7d55');
+      loadUsers();
+      return;
+    }
+
+    const existing = await jsonOr(node + '/' + encodeURIComponent(oldUser || newUser) + '.json', null, null) || {};
+    const payload = Object.assign({}, existing, {
+      name: name,
+      role: role,
+      disabled: disabled,
+      id: existing.id || ('id' + Date.now().toString(36)),
+      permissions: existing.permissions || ['view_students','edit_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'],
+      addedAt: existing.addedAt || new Date().toISOString().slice(0, 10),
+      lastLogin: existing.lastLogin || '',
+      photoUrl: existing.photoUrl || '',
+      phone: existing.phone || '',
+      systemAdmin: newUser === 'lucaskayser',
+    });
+    if (pass) payload.passHash = await hashOf(newUser, pass);
+
+    const r1 = await api(node + '/' + encodeURIComponent(newUser) + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!r1.ok) throw new Error('PUT: HTTP ' + r1.status);
+    if (oldUser && oldUser !== newUser) {
+      const r2 = await api(node + '/' + encodeURIComponent(oldUser) + '.json', { method: 'DELETE' });
+      if (!r2.ok) throw new Error('DELETE: HTTP ' + r2.status);
+    }
+    show(`✅ اتحفظ الحساب <b dir="ltr">${newUser}</b>${pass ? '<br>كلمة السر: <b dir="ltr">' + pass + '</b>' : ''}`, true);
+    log('حفظ حساب ' + newUser + (oldUser && oldUser !== newUser ? ' (بدل ' + oldUser + ')' : ''), '#2f7d55');
+    loadUsers();
+  } catch (e) {
+    show('❌ حصل خطأ: ' + e.message + '<br><span class="muted">اتأكد إن قواعد قاعدة البيانات بتسمح بالكتابة (Rules).</span>', false);
+    log('خطأ: ' + e.message, '#a83232');
+  }
+}
+
+// عرض سريع للحسابات أول ما الصفحة تفتح
+loadUsers();
+</script>
+</body>
+</html>

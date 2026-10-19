@@ -18,7 +18,7 @@
 <script>
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-<link rel="stylesheet" href="assets/css/app.css?v=3.1">
+<link rel="stylesheet" href="assets/css/app.css?v=3.2">
 </head>
 
 <body>
@@ -77,9 +77,9 @@
 <input type="file" id="importFile" accept=".json" style="display:none">
 <input type="file" id="csvFile" accept=".csv" style="display:none">
 
-<script src="cloud-sync.js?v=3.1"></script>
-<script src="assets/js/core.js?v=3.1"></script>
-<script src="assets/js/owner.js?v=3.1"></script>
+<script src="cloud-sync.js?v=3.2"></script>
+<script src="assets/js/core.js?v=3.2"></script>
+<script src="assets/js/owner.js?v=3.2"></script>
 <script>
 
 /* ============================================================
@@ -91,7 +91,7 @@
 const DB_KEY=E3.DB_KEY;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function showOneTimeCredentials(displayName,username,password){
-  openModal('بيانات دخول '+displayName,`<div style="background:var(--surface-2);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وسلّمها لصاحب الحساب بأمان. كلمة السر دي <b>متشفّرة في الخزنة</b> — مدير النظام بس هو اللي يقدر يشوفها تاني؛ باقي الإدارة مش هتقدر.</div>
+  openModal('بيانات دخول '+displayName,`<div style="background:var(--surface-2);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وسلّمها لصاحب الحساب بأمان. كلمة السر دي <b>متشفّرة في الخزنة</b> — إدارة السيستم بس هي اللي تقدر تشوفها تاني؛ باقي الإدارة مش هتقدر.</div>
   <div class="field"><label>اسم المستخدم</label><input id="createdUsername" readonly autocomplete="off" value="${esc(username)}"></div>
   <div class="field"><label>كلمة السر — تظهر الآن فقط</label><div class="pw-wrap"><input id="createdPassword" type="password" readonly autocomplete="off" value="${esc(password)}"><button class="btn" id="createdPasswordEye" type="button">👁️</button></div></div>
   <button class="btn gold" id="copyCreatedPassword" type="button">📋 نسخ كلمة السر</button>`,()=>closeModal(),'✅ تم حفظها — إغلاق');
@@ -135,6 +135,7 @@ function saveDB(){
   const owner=(DB.users||[]).find(isLucasOwner);
   if(owner){ owner.active=true; owner.hidden=false; owner.role='amin'; owner.permissions=[...ALL_PERMS]; }
   DB.users=preserveLucasRecord(DB.users);
+  DB.settings=DB.settings||{}; DB.settings.updatedAt=Date.now();
   E3.store.setItem(DB_KEY, JSON.stringify(DB));
   if(window.E3Cloud)E3Cloud.queuePush();
 }
@@ -171,7 +172,7 @@ const ROLE_DEFS={
  follower:{label:'خادم متابِع (عرض فقط)',icon:'👁️',desc:'اطلاع وطباعة تقارير فقط، بدون أي إضافة أو تعديل. مناسب للمتابعة الرعوية أو مرحلة التعارف على الخدمة.',perms:['view_students','print_reports']},
 };
 function rolePerms(role){return [...(ROLE_DEFS[role]?.perms||ROLE_DEFS.follower.perms)]}
-function roleCaption(u){return isLucasOwner(u)?'مدير النظام':((ROLE_DEFS[u&&u.role]||ROLE_DEFS.follower).label)}
+function roleCaption(u){return isLucasOwner(u)?'إدارة السيستم':((ROLE_DEFS[u&&u.role]||ROLE_DEFS.follower).label)}
 function currentUser(){
   try{
     const id=E3.store.getItem(SESSION_KEY); if(!id)return null;
@@ -254,7 +255,7 @@ function openMyAccount(){
     <div class="field"><label>كلمة سر جديدة (سيبها فاضية لو مش هتغيّرها)</label><div class="pw-wrap"><input id="myNew" type="password" placeholder="٨ حروف على الأقل" oninput="window._pwStrength(this.value)"><button class="btn" type="button" onclick="window._togglePw('myNew',this)">👁️</button></div>
     <div class="pw-meter"><i id="pwBar"></i></div><div id="pwTxt" style="font-size:11px;color:var(--muted)"></div></div>
   </div>
-  <p style="font-size:12px;color:var(--muted);margin:0">${iAmOwner?'🛡️ انت مدير النظام: كلمة سرك هي مفتاح خزنة كلمات السر — لما تغيّرها النظام بيعيد تأمين الخزنة تلقائيًا، وكل الكلمات المشفّرة القديمة تفضل شغالة.':'💡 صورتك واسمك بيظهروا جنب اسمك في القائمة وصفحة الخدام. تغيير الدور أو الصلاحيات أو اسم المستخدم مسؤولية الأمين من «الخدام والصلاحيات».'}</p></div>`,
+  <p style="font-size:12px;color:var(--muted);margin:0">${iAmOwner?'🛡️ انت إدارة السيستم: كلمة سرك هي مفتاح خزنة كلمات السر — لما تغيّرها النظام بيعيد تأمين الخزنة تلقائيًا، وكل الكلمات المشفّرة القديمة تفضل شغالة.':'💡 صورتك واسمك بيظهروا جنب اسمك في القائمة وصفحة الخدام. تغيير الدور أو الصلاحيات أو اسم المستخدم مسؤولية الأمين من «الخدام والصلاحيات».'}</p></div>`,
   async()=>{
     const newPw=document.getElementById('myNew').value;
     if(newPw){
@@ -267,7 +268,10 @@ function openMyAccount(){
         if(!r.ok){ toast('⚠️ '+r.message); return; }
       }
       me.passHash=await hashPassword(newPw,me.username.toLowerCase());
-      if(iAmOwner&&E3.vault.key) me.passSealed=await E3.vault.sealText(newPw,E3.vault.key);
+      me.mustChangePassword=false;
+      if(iAmOwner){
+        try{ if(E3.vault.pub) me.passSealed=await E3.vault.seal(newPw); }catch(_){}
+      }
       delete me.password;
       toast(iAmOwner?'تم تغيير كلمة سرك وتبديل مفتاح الخزنة ✅':'تم تغيير كلمة السر ✅');
     }
@@ -303,11 +307,30 @@ function viewUsers(){
   const me=currentUser(); const users=DB.users||[]; const owner=isLucasOwner(me);
   const rolesCount=r=>users.filter(u=>u.role===r).length;
   const sealedCount=users.filter(u=>E3.vault.canSeal(u)).length;
+  const cloudPending = (window.E3Cloud && E3Cloud.pendingLocalUsers) ? E3Cloud.pendingLocalUsers().length : 0;
+  const pendingTxt = cloudPending===1?'حساب واحد':cloudPending===2?'حسابين':toArabicDigits(cloudPending)+' حسابات';
+  const cloudOn = !!(window.E3Cloud && E3Cloud.enabled && E3Cloud.status && E3Cloud.status().enabled);
+  const syncBanner = !cloudOn ? '' : (cloudPending ? `
+    <div class="card" style="border-color:var(--gold);background:var(--surface-2);margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:24px">☁️</div>
+      <div style="flex:1;min-width:220px;font-size:13px;line-height:1.9">
+        <b>${pendingTxt} على الجهاز ولسه مش مرفوعين لقاعدة البيانات.</b><br>
+        <small style="color:var(--muted)">ارفعهم عشان يظهروا في Firebase ويشتغلوا من أي جهاز.</small>
+      </div>
+      <button class="btn gold" onclick="cloudPushNow()">⬆️ ارفعهم للقاعدة</button>
+    </div>` : `
+    <div class="card" style="border-color:var(--line);background:var(--surface-2);margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:22px">☁️</div>
+      <div style="flex:1;min-width:220px;font-size:13px">
+        <b>مربوط بقاعدة البيانات</b> — كل الحسابات والبيانات متزامنة.
+      </div>
+      <button class="btn sm" onclick="cloudPushNow()">🔄 مزامنة الآن</button>
+    </div>`);
   const vaultBanner = owner ? `
     <div class="vault-banner">
       <div class="vic">🔐</div>
       <div style="flex:1;min-width:200px">
-        <b>خزنة كلمات السر — مفتوحة لك لأنك مدير النظام</b>
+        <b>خزنة كلمات السر — مفتوحة لك لأنك إدارة السيستم</b>
         <small>${toArabicDigits(sealedCount)} من ${toArabicDigits(users.length)} كلمة سر متشفّرة وجاهزة للعرض. مفتاح الخزنة مستخدَم من كلمة سرك ومافيش حد غيرك يقدر يفكها — وكل عملية عرض بتتسجل في سجل النشاطات.</small>
       </div>
       <button class="btn gold sm" onclick="openVaultPanel()">🔎 فتح خزنة البيانات</button>
@@ -315,18 +338,19 @@ function viewUsers(){
     <div class="vault-banner" style="border-color:var(--line);background:var(--surface-2)">
       <div class="vic" style="background:linear-gradient(135deg,#21569c,#123a6b)">🔒</div>
       <div style="flex:1;min-width:200px">
-        <b>كلمات السر مشفّرة — عرضها لمدير النظام فقط</b>
-        <small>انت تقدر تضيف وتوقف وتعيد تعيين كلمة سر أي حساب، لكن <b>مش هتقدر تشوف كلمة السر نفسها</b> غير لو انت مدير النظام.</small>
+        <b>كلمات السر مشفّرة — عرضها لإدارة السيستم فقط</b>
+        <small>انت تقدر تضيف وتوقف وتعيد تعيين كلمة سر أي حساب، لكن <b>مش هتقدر تشوف كلمة السر نفسها</b> غير لو انت إدارة السيستم.</small>
       </div>
     </div>`;
 
   return `
+  ${syncBanner}
   ${vaultBanner}
   <div class="card" style="margin-bottom:14px">
     <div style="display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap;align-items:center">
       <h3 style="margin:0">حسابات الخدام (${toArabicDigits(users.length)}) — الدخول للخدام فقط</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn gold" onclick="openUserForm()">➕ إضافة خادم (Username & Password)</button>
+        <button class="btn gold" onclick="openUserForm()">➕ إضافة خادم جديد</button>
         ${owner?'<button class="btn" onclick="createDemoUsers()">🧪 حسابات تجريبية</button>':''}
       </div>
     </div>
@@ -356,7 +380,7 @@ function viewUsers(){
         <button class="btn sm danger" onclick="deleteUser('${u.id}')">حذف</button>`;
     } else { actions = `<span class="badge b-gray">حساب محمي</span>`; }
     return `<tr>
-      <td data-label="الخادم"><div style="display:flex;gap:9px;align-items:center"><div class="avatar">${userAvatar(u)}</div><div><b>${esc(u.displayName)}</b>${lockedLucas?'<br><small style="color:var(--muted)">حساب محمي — مش بيتوقف ولا بيتمسح</small>':'<br><small style="color:var(--muted)">'+esc(u.phone||'')+'</small>'}</div></div></td>
+      <td data-label="الخادم"><div style="display:flex;gap:9px;align-items:center"><div class="avatar">${userAvatar(u)}</div><div><b>${esc(u.displayName)}</b>${lockedLucas?'<br><small style="color:var(--muted)">حساب إدارة السيستم — مقفول، مش بيتوقف ولا بيتمسح</small>':'<br><small style="color:var(--muted)">'+esc(u.phone||'')+'</small>'}</div></div></td>
       <td data-label="اسم المستخدم">${lockedLucas&&!owner?'<b style="color:var(--muted)">🔒 محمي</b>':`<b dir="ltr">@${esc(u.username)}</b>`}</td>
       <td data-label="كلمة السر">${credCell(u)}</td>
       <td data-label="الدور"><span class="badge ${u.role==='amin'?'b-gold':u.role==='assistant'?'b-purple':u.role==='year_supervisor'?'b-blue':'b-gray'}">${lockedLucas?'🛡️':r.icon} ${esc(roleCaption(u))}</span></td>
@@ -365,7 +389,7 @@ function viewUsers(){
       <td data-label="إجراءات"><div style="display:flex;gap:5px;flex-wrap:wrap">${actions}</div></td>
     </tr>`}).join('')}
   </tbody></table></div>
-  <p style="font-size:12px;color:var(--muted);line-height:1.9">🔐 <b>كلمات السر محفوظة مشفّرة (AES-GCM)</b> — مفتاحها بيتولّد من كلمة سر <b>مدير النظام</b>، فمفيش أمين ولا مساعد أمين يقدر يشوفها. مدير النظام بس هو اللي يقدر يعرضها أو ينسخها، وكل عرض بيتسجل في سجل النشاطات.<br>⚠️ مينفعش توقف أو تحذف نفسك، ولا توقف آخر أمين مفعّل، وحساب إدارة السيستم مقفول تمامًا على أي حد غيره.</p></div>
+  <p style="font-size:12px;color:var(--muted);line-height:1.9">🔐 <b>كلمات السر محفوظة مشفّرة (AES-GCM)</b> — مفتاحها بيتولّد من كلمة سر <b>إدارة السيستم</b>، فمفيش أمين ولا مساعد أمين يقدر يشوفها. إدارة السيستم بس هي اللي تقدر تعرضها أو تنسخها، وكل عرض بيتسجل في سجل النشاطات.<br>⚠️ مينفعش توقف أو تحذف نفسك، ولا توقف آخر أمين مفعّل، وحساب إدارة السيستم مقفول تمامًا على أي حد غيره.</p></div>
 
   <details class="card" style="margin-bottom:14px">
     <summary style="cursor:pointer;font-weight:900;color:var(--head);font-size:15px">🎭 أدوار الخدمة والصلاحيات — اضغط لعرض التفاصيل</summary>
@@ -380,7 +404,7 @@ function openUserForm(userId){
   const me=currentUser(); if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
   const u=userId?(DB.users||[]).find(x=>x.id===userId):null;
   const editingOwner=!!(u&&isLucasOwner(u)), iAmOwner=isLucasOwner(me);
-  if(editingOwner&&!iAmOwner)return toast('🔒 حساب مدير النظام مقفول تمامًا — مفيش حد غير مدير النظام نفسه يقدر يعدّله');
+  if(editingOwner&&!iAmOwner)return toast('🔒 حساب إدارة السيستم مقفول تمامًا — مفيش حد غير صاحبه يقدر يعدّله');
   if(u&&u.role==='amin'&&!isAdmin()&&!iAmOwner)return toast('مساعد الأمين لا يعدّل حسابات الأمين');
   const selPerms=u?effectivePerms(u):rolePerms('khadem');
   const ownerNotice=editingOwner?`<div class="secret-warn gold">🛡️ انت بتعدّل <b>حساب إدارة السيستم</b> نفسه — اسم المستخدم والدور مقفولين، لكن تقدر تغيّر اسمك وصورتك وكلمة سرك. الحساب ده مفيش حد غيرك يقدر يوقفه أو يحذفه.</div>`:'';
@@ -392,7 +416,7 @@ function openUserForm(userId){
   <div class="field"><label>اسم المستخدم للدخول * (إنجليزي بدون مسافات)</label><input id="uUser" value="${esc(u?.username||'')}" placeholder="مثال: mina.adel" ${editingOwner?'disabled':''}></div>
   <div class="field"><label>${u?'كلمة سر جديدة (اتركها فارغة للإبقاء على الحالية)':'كلمة السر * (٨ على الأقل)'}</label>
     <div class="pw-wrap"><input id="uPass" type="password" autocomplete="new-password" placeholder="••••••••"><button class="btn" type="button" onclick="window._genPw()" title="توليد كلمة سر قوية">🎲</button><button class="btn" type="button" onclick="window._eyePw(this)">👁️</button></div>
-    <div class="file-name">🔐 بتتخزّن مشفّرة — مدير النظام بس يقدر يشوفها بعد كده</div>
+    <div class="file-name">🔐 بتتخزّن مشفّرة — إدارة السيستم بس هي اللي تقدر تشوفها بعد كده</div>
   </div>
   <div class="field"><label>الدور في خدمة إعداد الخدام *</label><select id="uRole" onchange="window._rolePreset(this.value)" ${editingOwner?'disabled':''}>${Object.entries(ROLE_DEFS).map(([k,r])=>`<option value="${k}" ${(u?.role||'khadem')===k?'selected':''} ${k==='amin'&&!isAdmin()?'disabled':''}>${r.icon} ${r.label}</option>`).join('')}</select></div>
   <div class="field"><label>الحساب مفعّل؟</label><select id="uActive" ${editingOwner?'disabled':''}><option value="1" ${u?.active!==false?'selected':''}>✅ مفعّل — يقدر يدخل</option><option value="0" ${u?.active===false?'selected':''}>⏸️ موقوف — لا يستطيع الدخول</option></select></div>
@@ -432,6 +456,18 @@ function openUserForm(userId){
   window._genPw=()=>{const sets='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';let s='';const a=new Uint32Array(12);(crypto.getRandomValues?crypto.getRandomValues(a):a.map(()=>Math.random()*1e9)).forEach(v=>{s+=sets[v%sets.length]});const i=document.getElementById('uPass');i.type='text';i.value=s;toast('اتولدت كلمة سر قوية — انسخها وسلّمها لصاحب الحساب')};
   setTimeout(()=>{const ph=document.getElementById('uPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._userPhoto=data; const n=document.getElementById('uPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; document.getElementById('uPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
+async function cloudPushNow(){
+  if(!window.E3Cloud || !E3Cloud.syncNow) return toast('المزامنة غير مفعّلة');
+  toast('⏳ جاري المزامنة مع قاعدة البيانات…');
+  try{
+    const r=await E3Cloud.syncNow();
+    DB=loadDB();
+    render();
+    toast(r.ok?'✅ تمت المزامنة — الحسابات والبيانات على القاعدة':'⚠️ حصلت مشكلة في المزامنة، جرّب تاني');
+  }catch(e){ toast('⚠️ تعذرت المزامنة: '+e.message); }
+}
+window.cloudPushNow=cloudPushNow;
+
 function toggleUserActive(id){
   const me=currentUser(); const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
   if(isLucasOwner(u))return toast('🛡️ حساب إدارة السيستم مقفول — مفيش حد يقدر يوقفه، ولا هو نفسه. لو عايز تقفله نهائي استخدم «حذف نهائي».');
@@ -443,7 +479,7 @@ function toggleUserActive(id){
 function deleteUser(id){
   const me=currentUser(); const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
   if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
-  if(isLucasOwner(u)&&!isLucasOwner(me))return toast('🔒 حساب مدير النظام مقفول تمامًا — مفيش حد غير مدير النظام نفسه يقدر يمسحه');
+  if(isLucasOwner(u)&&!isLucasOwner(me))return toast('🔒 حساب إدارة السيستم مقفول تمامًا — مفيش حد غير صاحب الحساب يقدر يمسحه');
   if(u.role==='amin'&&!isAdmin()&&!isLucasOwner(me))return toast('مساعد الأمين لا يعدّل حسابات الأمين');
   if(u.id===me.id&&!isLucasOwner(u))return toast('مينفعش تحذف حسابك انت — خلّي حد تاني يعمله');
   if(!confirm('حذف حساب '+u.displayName+' نهائياً؟ هيتمنع من الدخول فوراً (بيانات الدارسين مش هتتأثر).'))return;
@@ -463,9 +499,9 @@ function deleteUser(id){
 }
 function resetUserPassword(id){
   const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
-  if(isLucasOwner(u))return toast('🔑 كلمة سر الإدارة يغيّرها المدير بنفسه من «حسابي» — مفيش حد يقدر يغيّرها له');
+  if(isLucasOwner(u))return toast('🔑 كلمة سر إدارة السيستم يغيّرها صاحب الحساب بنفسه من «حسابي» — مفيش حد يقدر يغيّرها له');
   openModal('إعادة تعيين كلمة سر '+u.displayName,`
-    <div class="secret-warn gold">⚠️ كلمة السر دي هتتخزّن مشفّرة في الخزنة، ومدير النظام بس هو اللي يقدر يشوفها بعد كده.</div>
+    <div class="secret-warn gold">⚠️ كلمة السر دي هتتخزّن مشفّرة في الخزنة، وإدارة السيستم بس هي اللي تقدر تشوفها بعد كده.</div>
     <div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><div class="pw-wrap"><input id="rpPass" type="password" autocomplete="new-password" placeholder="اكتبها وبلّغها للخادم شخصياً"><button class="btn" type="button" onclick="(function(b){var i=document.getElementById('rpPass');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈'})(this)">👁️</button></div></div>
     <p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,
   async()=>{
@@ -504,16 +540,27 @@ function render(){
  const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
  const navItems=[['dashboard','🏠','لوحة المتابعة',true],['system','🛡️','لوحة إدارة السيستم',isLucasOwner(me)],['students','👥','الدارسون',hasPerm('view_students')],['attendance','✅','الحضور بالمحاضرات',hasPerm('manage_activities')],['tasks','💗','المتابعة والافتقاد',hasPerm('add_notes')],['curriculum','📚','المواد والمناهج',hasPerm('manage_curriculum')],['reports','🖨️','مركز التقارير',hasPerm('print_reports')],['users','🔑','الخدام والصلاحيات',hasPerm('manage_users')],['backup','💾','النسخ الاحتياطي والبيانات',hasPerm('backup')],['settings','⚙️','إعدادات الخدمة',hasPerm('manage_settings')],['help','❓','طريقة الاستخدام والتثبيت',true]];
  $('#mainNav').innerHTML='<div class="nav-label">القائمة الرئيسية</div>'+navItems.filter(n=>n[3]).map(n=>`<button class="nav-item ${state.view===n[0]?'active':''}" data-view="${n[0]}"><span class="ic">${n[1]}</span> ${n[2]}</button>`).join('');
- $('#currentUserCard').innerHTML=`<div class="avatar">${userAvatar(me)}</div><div style="min-width:0"><b style="font-size:13px;color:#fff">${esc(isLucasOwner(me)?E3.SYSTEM_ADMIN_LABEL:me.displayName)}</b><br><small>${isLucasOwner(me)?'🛡️':rd.icon} ${esc(roleCaption(me))}</small></div>`;
+ $('#currentUserCard').innerHTML=`<div class="avatar">${userAvatar(me)}</div><div style="min-width:0"><b style="font-size:13px;color:#fff">${esc(isLucasOwner(me)?E3.SYSTEM_ADMIN_LABEL:me.displayName)}</b><br><small>${isLucasOwner(me)?'🔐 حساب محمي':rd.icon+' '+esc(roleCaption(me))}</small></div>`;
  const chipName=isLucasOwner(me)?E3.SYSTEM_ADMIN_LABEL:me.displayName;
  const chipUser=isLucasOwner(me)?'':` • <span dir="ltr">@${esc(me.username)}</span>`;
- $('#topUserChip').innerHTML=`<div class="avatar" style="width:32px;height:32px;font-size:13px">${userAvatar(me)}</div><div style="line-height:1.25"><b style="font-size:12.5px">${esc(chipName)}</b><br><small style="color:var(--muted);font-size:11px">${isLucasOwner(me)?'🛡️':rd.icon} ${esc(roleCaption(me))}${chipUser}</small></div>`;
+ $('#topUserChip').innerHTML=`<div class="avatar" style="width:32px;height:32px;font-size:13px">${userAvatar(me)}</div><div style="line-height:1.25"><b style="font-size:12.5px">${esc(chipName)}</b><br><small style="color:var(--muted);font-size:11px">${isLucasOwner(me)?'🔐 حساب محمي':rd.icon+' '+esc(roleCaption(me))}${chipUser}</small></div>`;
  $('#topNewStudent').style.display=hasPerm('edit_students')?'':'none';
  $('#orgNameSide').textContent=DB.settings.orgName||'إعداد الخدّام';
  $('#sideLogo').innerHTML=DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" alt="">`:`<img src="assets/img/logo-192.png" alt="">`;
  $$('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));
  const mobileView=state.view==='profile'?'students':state.view; $$('[data-mobile-view]').forEach(b=>{const allowed={dashboard:true,system:isLucasOwner(me),students:hasPerm('view_students'),attendance:hasPerm('manage_activities'),tasks:hasPerm('add_notes')}; b.style.display=allowed[b.dataset.mobileView]?'':'none'; b.classList.toggle('active',b.dataset.mobileView===mobileView)});
  const t=TITLES[state.view]||TITLES.dashboard; $('#pageTitle').textContent=t[0]; $('#pageSub').textContent=t[1];
+ /* تنبيه أمني: كلمة السر دي لسه كلمة السر الافتراضية */
+ if(me.mustChangePassword){
+   setTimeout(()=>{
+     const v=$('#view'); if(!v||v.querySelector('#pwWarn'))return;
+     const d=document.createElement('div');
+     d.id='pwWarn';
+     d.style.cssText='background:var(--surface-2);border:1.5px solid var(--gold);border-radius:15px;padding:14px 16px;margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
+     d.innerHTML='<div style="font-size:24px">🔑</div><div style="flex:1;min-width:210px;font-size:13px;line-height:1.9"><b>كلمة السر دي لسه الافتراضية</b> — غيّرها دلوقتي عشان حساب الإدارة يبقى في أمان.<br><small style="color:var(--muted)">لحد ما تغيّرها التنبيه ده هيفضل ظاهر.</small></div><button class="btn gold" onclick="openMyAccount()">🔒 غيّر كلمة السر</button>';
+     v.insertBefore(d, v.firstChild)
+   },50);
+ }
  const v=$('#view');
  if(state.view==='dashboard') v.innerHTML=viewDashboard();
  else if(state.view==='students') v.innerHTML=viewStudents();
@@ -546,7 +593,7 @@ function viewDashboard(){
  const openTasks=(DB.tasks||[]).filter(t=>t.status!=='done').length;
  const recent=[...sts].sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||'')).slice(0,6);
  return `
- <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;border:1px solid #e2bc5a"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'مدير النظام':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
+ <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;border:1px solid #e2bc5a"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'إدارة السيستم':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
  <div class="grid c4">
   <div class="card stat"><div class="icbox">👥</div><span>إجمالي الدارسين</span><b>${sts.length}</b><div class="trend">في ${new Set(sts.map(s=>s.batch).filter(Boolean)).size||0} دفعة</div></div>
   <div class="card stat"><div class="icbox">📈</div><span>متوسط الأداء العام</span><b>${avgAll}${avgAll!=='—'?'%':''}</b><div class="trend">من ${avgs.length} دارس له نتائج</div></div>
@@ -962,13 +1009,13 @@ function viewSettings(){if(!hasPerm('manage_settings'))return `<div class="card 
  <button class="btn primary" style="margin-top:14px" onclick="saveSettings()">💾 حفظ الإعدادات</button>
  <hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><h3>🔑 حسابات الخدام والصلاحيات</h3>
  <p style="color:var(--muted);font-size:13px;line-height:1.9">الدخول الآن <b>باسم مستخدم وكلمة سر لكل خادم</b>، والأدوار مبنية على هيكل الخدمة الكنسي: <b>أمين إعداد الخدام ← مساعد الأمين ← أمين سنة ← خادم ← خادم متابع</b>، مع صلاحيات تفصيلية لكل حساب على حدة.<br>ملحوظة أمان مهمة بصراحة: في النسخة الحالية الحسابات وكلمات السر (مشفّرة) محفوظة على هذا الجهاز — مناسبة للتجربة والاستخدام على جهاز واحد موثوق. الحماية الكاملة متعددة الأجهزة (كل خادم يدخل من موبايله على نفس البيانات) تحتاج الربط السحابي، وهي الخطوة الجاية الجاهزة.</p>
- <button class="btn gold" onclick="go('users')">🔑 فتح صفحة الخدام والصلاحيات</button>${isLucasOwner(currentUser())?'<button class="btn" style="margin-inline-start:8px" onclick="go(\'system\')">👑 لوحة مدير النظام</button>':''}</div>`}
+ <button class="btn gold" onclick="go('users')">🔑 فتح صفحة الخدام والصلاحيات</button>${isLucasOwner(currentUser())?'<button class="btn" style="margin-inline-start:8px" onclick="go(\'system\')">👑 لوحة إدارة السيستم</button>':''}</div>`}
 function clearOrgLogo(){DB.settings.orgLogo='';saveDB();render();toast('تمت إزالة صورة الخدمة')}
 function saveSettings(){DB.settings.orgName=$('#sOrg').value.trim()||'إعداد الخدّام';DB.settings.church=$('#sChurch').value.trim();DB.settings.passMark=+$('#sPass').value||60;DB.settings.attendanceWarn=+$('#sAtt').value||75;DB.settings.serviceHoursTarget=+$('#sService').value||100;DB.settings.spiritualMeetingsTarget=+$('#sSpirit').value||10;saveDB();render();toast('تم حفظ الإعدادات ✅')}
 
 /* ---------- مساعدة ---------- */
 function viewHelp(){return `<div class="grid c2">
- <div class="card" style="border-color:var(--gold)"><h3>🔐 الدخول والصلاحيات — للخدام فقط</h3><ol style="line-height:2;font-size:14px"><li>أول صفحة بتفتح هي <b>صفحة تسجيل الدخول</b> — مفيش دخول من غير حساب خادم مفعّل.</li><li>حسابات الخدام بتتعمل <b>من جوه النظام بس</b> — مفيش إنشاء حسابات من بره.</li><li><b>👑 مدير النظام (مدير النظام)</b> هو الحساب الوحيد اللي بيشوف كلمات السر. حساباته محمية تمامًا: مفيش حد يوقفه أو يحذفه أو يخفيه غيره.</li><li>كل كلمة سر بتتخزّن <b>مشفّرة (RSA-2048)</b> — أمين الخدمة يقدر يعيّن كلمة سر جديدة، لكن ميقدرش يقراها.</li><li>أي عملية عرض أو نسخ لكلمة سر بتتسجل في <b>سجل النشاطات</b> باسم مدير النظام ووقته.</li></ol></div>
+ <div class="card" style="border-color:var(--gold)"><h3>🔐 الدخول والصلاحيات — للخدام فقط</h3><ol style="line-height:2;font-size:14px"><li>أول صفحة بتفتح هي <b>صفحة تسجيل الدخول</b> — مفيش دخول من غير حساب خادم مفعّل.</li><li>حسابات الخدام بتتعمل <b>من جوه النظام بس</b> — مفيش إنشاء حسابات من بره.</li><li><b>👑 إدارة السيستم</b> هو الحساب الوحيد اللي بيشوف كلمات السر. حساباته محمية تمامًا: مفيش حد يوقفه أو يحذفه أو يخفيه غيره.</li><li>كل كلمة سر بتتخزّن <b>مشفّرة (RSA-2048)</b> — أمين الخدمة يقدر يعيّن كلمة سر جديدة، لكن ميقدرش يقراها.</li><li>أي عملية عرض أو نسخ لكلمة سر بتتسجل في <b>سجل النشاطات</b> باسم إدارة السيستم ووقته.</li></ol></div>
  <div class="card"><h3>📲 التثبيت على الموبايل والكمبيوتر</h3><ol style="line-height:2;font-size:14px"><li><b>أندرويد / كمبيوتر (Chrome أو Edge):</b> افتح التطبيق، هيظهر زرار «تثبيت التطبيق» في القائمة الجانبية — أو من قائمة المتصفح ⋮ اختر «تثبيت التطبيق / Install app». هيظهر بأيقونة على الشاشة الرئيسية ويشتغل ملء الشاشة.</li><li><b>آيفون (Safari):</b> زرار المشاركة ⤴ ثم «إضافة إلى الشاشة الرئيسية / Add to Home Screen».</li><li>بعد التثبيت، التطبيق بيشتغل <b>بدون إنترنت</b> والبيانات بتتحفظ على الجهاز.</li></ol></div>
  <div class="card"><h3>🔄 سير العمل اليومي</h3><ol style="line-height:2;font-size:14px"><li>ضيف الدارس مرة واحدة بس (بيانات ثابتة + صورة).</li><li>من ملفه: «بدء سنة / محاولة جديدة» وطبّق مواد المنهج.</li><li>طوال السنة: عدّل تقييمات كل مادة، وضيف الأنشطة والحضور وساعات الخدمة والملاحظات.</li><li>آخر السنة: «إنهاء السنة واتخاذ قرار» — نقل للسنة الجاية، أو إعادة سنة، أو إعادة مواد معينة، أو تخرج (سنة ٣). <b>المحاولة القديمة بتفضل محفوظة تلقائياً.</b></li><li>اطبع من «مركز التقارير»: فردي شامل، أو مجموعة، أو إعادات، أو خريجين — واحفظ PDF.</li><li>كل فترة: صدّر نسخة احتياطية من صفحة «النسخ الاحتياطي».</li></ol></div>
  <div class="card"><h3>⭐ مميزات إضافية من البحث في أنظمة مشابهة</h3><ul style="line-height:2;font-size:14px"><li>ساعات خدمة سنوية ولقاءات إرشاد كمطلب للانتقال للسنة التالية (مطبق في برامج إعداد خدام بالخارج).</li><li>تنبيه مبكر للمتعثرين (حضور/درجات/خدمة) للمتابعة قبل نهاية السنة.</li><li>تقارير جماعية وتصدير Excel، وسجل زمني (Timeline) كامل لكل دارس.</li><li>أنشطة مصاحبة منفصلة عن المواد: خلوات، مؤتمرات، تدريب عملي، خدمة ميدانية، مشروع تخرج.</li></ul></div>

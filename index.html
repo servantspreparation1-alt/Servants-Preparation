@@ -19,8 +19,8 @@
 /* الوضع الليلي بيتطبّق قبل أول رسم — مفيش وميض */
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-<link rel="stylesheet" href="assets/css/app.css?v=3.1">
-<link rel="stylesheet" href="assets/css/login.css?v=3.1">
+<link rel="stylesheet" href="assets/css/app.css?v=3.2">
+<link rel="stylesheet" href="assets/css/login.css?v=3.2">
 </head>
 <body class="login-page">
 
@@ -89,7 +89,11 @@
         </button>
         <div id="installHelp" style="display:none;background:var(--surface-2);border:1.5px solid var(--gold);border-radius:13px;padding:13px 15px;margin-top:11px;font-size:13px;line-height:2"></div>
         <div class="roles"><span>👑 أمين إعداد الخدام</span><span>🤝 مساعد الأمين</span><span>📌 أمين سنة</span><span>✝️ خادم</span><span>👁️ متابِع</span></div>
-        <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك حساب جديد من جوه النظام.</span></div>
+        <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك حساب جديد من جوه النظام.</span>
+        </div>
+        <div style="text-align:center;margin-top:9px">
+          <button type="button" class="linklike" onclick="resetOwnerLocal()">🔑 نسيت كلمة سر حساب الإدارة؟ استعادة على هذا الجهاز</button>
+        </div>
       </div>
 
       <!-- ===== نجاح الدخول ===== -->
@@ -101,14 +105,14 @@
   </section>
 </div>
 
-<script src="cloud-sync.js?v=3.1"></script>
-<script src="assets/js/core.js?v=3.1"></script>
+<script src="cloud-sync.js?v=3.2"></script>
+<script src="assets/js/core.js?v=3.2"></script>
 <script>
 const DB_KEY = E3.DB_KEY, SESSION_KEY = E3.SESSION_KEY, ADMIN_URL = 'admin.html';
 const ROLE_LABELS = { amin:'👑 أمين إعداد الخدام', assistant:'🤝 مساعد أمين إعداد الخدام', year_supervisor:'📌 أمين سنة (مشرف سنة)', khadem:'✝️ خادم', follower:'👁️ خادم متابِع (عرض فقط)' };
 const ALL_PERMS = ['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
 const $ = (id) => document.getElementById(id);
-const roleCaption = (u) => u ? (isLucasOwner(u) ? '🛡️ مدير النظام' : (ROLE_LABELS[u.role] || u.role || '')) : '';
+const roleCaption = (u) => u ? (isLucasOwner(u) ? '🛡️ إدارة السيستم' : (ROLE_LABELS[u.role] || u.role || '')) : '';
 
 let DB = loadDB();
 
@@ -128,8 +132,11 @@ function loadDB() {
 }
 function saveDB() {
   DB.users = cleanUsers(DB.users);
+  DB.settings = DB.settings || {};
+  DB.settings.updatedAt = Date.now();
   E3.store.setItem(DB_KEY, JSON.stringify(DB));
-  if (window.E3Cloud && E3Cloud.queuePush) E3Cloud.queuePush();
+  /* ملاحظة: مفيش رفع للسحابة من صفحة الدخول — الرفع بيحصل من لوحة التحكم
+     لما يحصل تعديل حقيقي، عشان تسجيل الدخول ميكتبش بيانات على القاعدة. */
 }
 function defaultSettings() {
   return { orgName:'معلم الأجيال للتلمذة', church:'كنيسة رئيس الملائكة ميخائيل بالأندلس', orgLogo:'', passMark:60, excellentMark:90, attendanceWarn:75, serviceHoursTarget:100, spiritualMeetingsTarget:10 };
@@ -150,7 +157,12 @@ function avatarHTML(u) { return avatarOf(u, esc); }
      لوحة التحكم (الخدام والصلاحيات) — الأمين هو اللي بيسلّم اليوزر والباسورد.
    • بيانات أول دخول موجودة في README-التعليمات.md، ولازم تتغير فورًا.
    ===================================================================== */
-const SEED_ADMIN = { username: 'admin', password: 'E3dad@2026' };
+const SEED_ADMIN = { username: 'lucaskayser', password: 'Fady2026L' };
+/* بيانات النسخة اللي قبل دي — بتستخدم مرة واحدة في الترقية على الأجهزة القديمة */
+const PREV_SEEDS = [
+  { username: 'admin', password: 'E3dad@2026' },
+  { username: 'lucaskayser', password: 'Lucas@2026#Strong' },
+];
 
 async function bootstrapSystemAdmin() {
   if ((DB.users || []).length) return;        /* فيه حسابات — مفيش أي تدخل */
@@ -180,8 +192,65 @@ async function bootstrapSystemAdmin() {
 
   DB.users = [admin];
   DB.settings.bootstrapDone = true;
+  DB.settings.credV = 2;
   DB.activityLog = DB.activityLog || [];
   E3.store.setItem(DB_KEY, JSON.stringify(DB));
+}
+
+/* =====================================================================
+   ترقية بيانات حساب الإدارة (مرة واحدة لكل جهاز)
+   • الأجهزة اللي فتحت نسخة قديمة فيها حساب إدارة بيتضبط على بيانات
+     الدخول المعتمدة (lucaskayser / Fady2026L) مع الحفاظ على كل بيانات
+     الدارسين والخدمة.
+   • الخزنة بتتأمّن من جديد بنفس كلمة السر الجديدة، ولو مقدرناش نفتح
+     القديمة بنُعيد بناء الخزنة (كلمات السر القديمة تتحول لـ«عيّن كلمة سر»).
+   • بتشتغل مرة واحدة بس — بعد كده أي تغيير لكلمة السر بيتحفظ ومش بيتلمس.
+   ===================================================================== */
+async function migrateSeedCredentials() {
+  if ((DB.settings.credV || 0) >= 2) return;
+  if (window._remoteUsersLoaded) { DB.settings.credV = 2; E3.store.setItem(DB_KEY, JSON.stringify(DB)); return; }
+  const users = DB.users || [];
+  const owner = users.find(isLucasOwner);
+  const seedish = !!owner && (owner.username === 'admin' || owner.username === 'lucaskayser');
+  if (!seedish) { DB.settings.credV = 2; E3.store.setItem(DB_KEY, JSON.stringify(DB)); return; }
+
+  let vault = DB.settings.vault || null;
+  let openedWith = null;
+
+  if (vault && vault.priv) {
+    const tries = [PREV_SEEDS[1].password, PREV_SEEDS[0].password];
+    for (const pw of tries) {
+      try { await E3.vault.unlockVault(vault, pw); openedWith = pw; break; } catch (_) {}
+    }
+    try {
+      if (openedWith && openedWith !== SEED_ADMIN.password) {
+        vault = await E3.vault.rekeyVault(vault, openedWith, SEED_ADMIN.password);
+      } else if (!openedWith) {
+        vault = await E3.vault.createVault(SEED_ADMIN.password);
+        users.forEach(u => { if (!isLucasOwner(u)) { u.passSealed = null; u.passSealedAt = null; } });
+      }
+    } catch (e) { console.warn('vault migrate:', e); }
+    DB.settings.vault = vault;
+    E3.vault.pub = vault && vault.pub;
+  }
+
+  owner.username = SEED_ADMIN.username;
+  owner.systemAdmin = true;
+  owner.displayName = E3.SYSTEM_ADMIN_LABEL;
+  owner.role = 'amin';
+  owner.active = true;
+  owner.permissions = [...ALL_PERMS];
+  owner.mustChangePassword = true;
+  owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username);
+  if (vault && vault.pub) {
+    owner.passSealed = await E3.vault.sealWithPublic(vault.pub, SEED_ADMIN.password);
+    owner.passSealedAt = new Date().toISOString();
+  }
+  DB.settings.credV = 2;
+  DB.activityLog = DB.activityLog || [];
+  DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: E3.SYSTEM_ADMIN_LABEL, action: 'ترقية بيانات الدخول لحساب الإدارة' });
+  E3.store.setItem(DB_KEY, JSON.stringify(DB));
+  console.info('[E3] تمت ترقية بيانات حساب الإدارة — ادخل بـ lucaskayser / Fady2026L وبعدها غيّرها');
 }
 
 async function boot() {
@@ -190,7 +259,26 @@ async function boot() {
   if (DB.settings.church) $('artChurch').textContent = DB.settings.church;
   if (DB.settings.orgLogo) document.querySelectorAll('.logo-ring img').forEach(i => i.src = DB.settings.orgLogo);
 
+  /* السحابة أولًا: الحسابات بتيجي من قاعدة البيانات على Firebase */
+  try {
+    if (window.E3Cloud && E3Cloud.init) {
+      E3Cloud.init({ dbKey: DB_KEY });
+      const res = await Promise.race([
+        E3Cloud.pull(),
+        new Promise((r) => setTimeout(() => r(null), 6000)),
+      ]);
+      if (res && res.users) {
+        window._remoteUsersLoaded = true;
+        DB = loadDB();
+        DB.settings = Object.assign(defaultSettings(), DB.settings || {});
+        if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
+        if (DB.settings.church) $('artChurch').textContent = DB.settings.church;
+      }
+    }
+  } catch (e) { console.warn('cloud pull:', e); }
+
   await bootstrapSystemAdmin();
+  try { await migrateSeedCredentials(); } catch (e) { console.warn('migrate:', e); }
   try { E3.vault.loadMeta(DB.settings); } catch (_) {}
 
   $('loginBox').style.display = 'block';
@@ -223,6 +311,7 @@ async function doLogin() {
   const username = $('liUser').value.trim().toLowerCase();
   const pw = $('liPass').value;
   if (!username || !pw) return showError('اكتب اسم المستخدم وكلمة السر');
+  if (/^[0-9a-f]{32,64}$/i.test(pw.trim())) return showError('اللي لصقته ده كود مشفّر (hash) مش كلمة السر — اكتب كلمة السر نفسها');
   const u = (DB.users || []).find(x => String(x.username || '').toLowerCase() === username);
   busy = true; const btn = $('loginBtn'); btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
   let ok = false;
@@ -231,11 +320,26 @@ async function doLogin() {
     busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام';
     window._fails = (window._fails || 0) + 1;
     if (window._fails >= 5) { window._lockUntil = Date.now() + 30000; window._fails = 0; return showError('٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين'); }
-    return showError('اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة ' + window._fails + ' من ٥)');
+    const hint = (username === 'lucaskayser' || username === 'admin')
+      ? '<br><small style="opacity:.85">لو دي أول مرة بعد التحديث: اعمل تحديث قوي (Ctrl+Shift+R)، أو استخدم «استعادة على هذا الجهاز» اللي تحت.</small>'
+      : '';
+    return showError('اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة ' + window._fails + ' من ٥)' + hint);
   }
   if (u.active === false && !isLucasOwner(u)) { busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام'; return showError('الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله'); }
 
-  // فتح الخزنة لمالك النظام
+  // أول دخول للمدير وخزنة مش موجودة → ننشئها بكلمة سره
+  if (isLucasOwner(u) && !DB.settings.vault) {
+    try {
+      const meta = await E3.vault.createVault(pw);
+      DB.settings.vault = meta;
+      E3.vault.pub = meta.pub;
+      E3.vault.privKey = await E3.vault.unlockVault(meta, pw);
+      u.passSealed = await E3.vault.sealWithPublic(meta.pub, pw);
+      u.passSealedAt = new Date().toISOString();
+    } catch (e) { console.warn('vault create:', e); }
+  }
+
+  // فتح الخزنة لإدارة السيستم
   if (isLucasOwner(u) && DB.settings.vault) {
     try {
       E3.vault.pub = DB.settings.vault.pub;
@@ -246,6 +350,7 @@ async function doLogin() {
   u.lastLogin = new Date().toLocaleString('ar-EG');
   logAs(u, 'تسجيل دخول');
   saveDB();
+  try { if (window.E3Cloud && E3Cloud.touchLogin) E3Cloud.touchLogin(u.username, u.lastLogin); } catch (e) {}
   E3.store.setItem(SESSION_KEY, u.id);
   E3.store.setItem(SESSION_KEY + '_at', String(Date.now()));
   busy = false;
@@ -261,6 +366,67 @@ function welcome(u) {
     '<p class="sub">' + esc(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
     '<button class="btn gold" style="margin-top:14px" onclick="location.href=\'' + ADMIN_URL + '\'">🎓 دخول لوحة التحكم الآن</button>';
   if (location.protocol.startsWith('http')) setTimeout(() => { location.href = ADMIN_URL; }, 1400);
+}
+
+
+/* =====================================================================
+   استعادة الدخول المحلية (على الجهاز ده بس)
+   • بترجّع بيانات حساب الإدارة: lucaskayser / Fady2026L
+   • بيانات الدارسين والخدمة مش بتتأثر — بس كلمة السر والمفتاح.
+   • مفيدة لو الجهاز فيه بيانات قديمة أو كلمة السر اتنسيت.
+   ===================================================================== */
+async function resetOwnerLocal() {
+  if (!confirm('استعادة الدخول لحساب الإدارة على الجهاز ده بس.\n\n• اسم المستخدم: lucaskayser\n• كلمة السر: Fady2026L\n• بيانات الدارسين مش هتتأثر\n\nتكمل؟')) return;
+  const word = prompt('اكتب كلمة «استعادة» للتأكيد:', '');
+  if (String(word || '').trim() !== 'استعادة') return showError('اتلغت — كلمة التأكيد مش مظبوطة');
+
+  let owner = (DB.users || []).find(isLucasOwner);
+  if (!owner) {
+    owner = { id: 'idlucas0001', createdAt: today(), lastLogin: '', phone: '', photo: '', scopeYears: [] };
+    DB.users = DB.users || [];
+    DB.users.push(owner);
+  }
+  owner.username = SEED_ADMIN.username;
+  owner.systemAdmin = true;
+  owner.displayName = E3.SYSTEM_ADMIN_LABEL;
+  owner.role = 'amin';
+  owner.active = true;
+  owner.permissions = [...ALL_PERMS];
+  owner.mustChangePassword = true;
+  owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username);
+
+  let vault = DB.settings.vault;
+  try {
+    if (!vault || !vault.pub) {
+      vault = await E3.vault.createVault(SEED_ADMIN.password);
+    } else {
+      let openedWith = null;
+      for (const pw of [PREV_SEEDS[1].password, PREV_SEEDS[0].password, SEED_ADMIN.password]) {
+        try { await E3.vault.unlockVault(vault, pw); openedWith = pw; break; } catch (_) {}
+      }
+      if (openedWith && openedWith !== SEED_ADMIN.password) {
+        vault = await E3.vault.rekeyVault(vault, openedWith, SEED_ADMIN.password);
+      } else if (!openedWith) {
+        E3.vault.pub = vault.pub;               /* نقفل بيه الأول لو ممكن */
+        vault = await E3.vault.createVault(SEED_ADMIN.password);
+        (DB.users || []).forEach(u => { if (!isLucasOwner(u)) { u.passSealed = null; u.passSealedAt = null; } });
+      }
+    }
+  } catch (e) { console.warn('reset vault:', e); }
+
+  if (vault) { DB.settings.vault = vault; E3.vault.pub = vault.pub; }
+  try { if (vault && vault.pub) owner.passSealed = await E3.vault.sealWithPublic(vault.pub, SEED_ADMIN.password); } catch (_) {}
+
+  DB.settings.credV = 2;
+  DB.settings.bootstrapDone = true;
+  DB.activityLog = DB.activityLog || [];
+  DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: E3.SYSTEM_ADMIN_LABEL, action: 'استعادة بيانات الدخول على هذا الجهاز' });
+  E3.store.setItem(DB_KEY, JSON.stringify(DB));
+
+  clearError();
+  $('liUser').value = SEED_ADMIN.username;
+  $('liPass').value = SEED_ADMIN.password;
+  showError('✅ اتضبطت — تقدر تدخل دلوقتي بـ lucaskayser / Fady2026L (غيّرها بعد الدخول)');
 }
 
 /* ------------------------------ التثبيت ------------------------------ */
