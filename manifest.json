@@ -13,8 +13,8 @@
     "minimal-ui"
   ],
   "orientation": "any",
-  "background_color": "#f8f8f3",
-  "theme_color": "#12325c",
+  "background_color": "#f3f2ec",
+  "theme_color": "#123a63",
   "categories": [
     "education",
     "productivity"
