@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>اعداد خدام ادمن | تسجيل الدخول</title>
 <meta name="description" content="اعداد خدام ادمن — نظام متابعة دارسي إعداد الخدّام بكنيسة رئيس الملائكة ميخائيل بالأندلس">
-<meta name="theme-color" content="#f8f8f3">
+<meta name="theme-color" content="#7a1257">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
@@ -21,382 +21,70 @@
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
-<link rel="stylesheet" href="assets/css/login.css?v=3.2">
-<style id="e3-gate-v3">
-/* =====================================================================
-   بوابة الدخول v3 — نفس روح تصميم «دخول الشمامسة» (كارت + معاينة حساب
-   + شاشة تحقق بخطوات) بس على هوية إعداد الخدام (كحلي/ذهبي/كريمي).
-   ===================================================================== */
-#loginBox,.gz-err,.gz-chip,.gz-reveal{
-  --gz-ink:#16375f; --gz-gold:#c9a227; --gz-gold2:#e6c766; --gz-soft:#fbf7ec;
-  --gz-line:#e6dcc2; --gz-mut:#7d6f58; --gz-red:#b3261e; --gz-green:#1d7a4c;
-  --gz-navy:#123a63;
-}
-html[data-theme="dark"] #loginBox,html[data-theme="dark"] .gz-err,html[data-theme="dark"] .gz-chip,html[data-theme="dark"] .gz-reveal{
-  --gz-ink:#f3ecda; --gz-gold:#e0c266; --gz-gold2:#f0d98f; --gz-soft:#231e15;
-  --gz-line:#4b4029; --gz-mut:#c8bda3; --gz-red:#ff9b90; --gz-green:#7fe0ae;
-  --gz-navy:#0d2742;
-}
-#loginBox [hidden]{display:none!important}
-
-/* ---------- رأس الكارت ---------- */
-#loginBox .gz-head{text-align:center;margin:0 0 14px}
-#loginBox .gz-title{
-  margin:0 0 5px;font-size:20px;line-height:1.4;font-weight:900;color:var(--gz-ink);
-  letter-spacing:-.2px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
-}
-#loginBox .gz-lock{
-  width:30px;height:30px;border-radius:10px;display:inline-grid;place-items:center;flex:0 0 30px;
-  background:radial-gradient(circle at 50% 30%,#fff6dc,#f0dda4 60%,#e2c778 100%);
-  border:1.5px solid rgba(201,162,39,.5);
-  box-shadow:0 5px 12px rgba(201,162,39,.25),inset 0 0 0 2px rgba(255,255,255,.5);
-  font-size:14px;line-height:1;
-}
-html[data-theme="dark"] #loginBox .gz-lock{
-  background:radial-gradient(circle at 50% 30%,#3a3018,#2a2313);border-color:rgba(224,194,102,.45);
-  box-shadow:0 5px 12px rgba(0,0,0,.3),inset 0 0 0 2px rgba(224,194,102,.08);
-}
-#loginBox .gz-sub{margin:0;font-size:12px;line-height:1.8;color:var(--gz-mut);font-weight:600}
-
-/* ---------- كارت معاينة الحساب ---------- */
-#loginBox .gz-preview{
-  display:flex;align-items:center;gap:11px;text-align:right;
-  margin:0 0 12px;padding:9px 11px;border-radius:16px;
-  background:linear-gradient(135deg,#fffdf6 0%,#fbf2d8 100%);
-  border:1.5px solid rgba(201,162,39,.45);
-  box-shadow:0 6px 18px rgba(24,20,8,.07);
-  animation:gzIn .22s ease both;
-}
-html[data-theme="dark"] #loginBox .gz-preview{
-  background:linear-gradient(135deg,#241e14 0%,#302716 100%);
-  border-color:rgba(224,194,102,.38);
-  box-shadow:0 6px 18px rgba(0,0,0,.35);
-}
-@keyframes gzIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-#loginBox .gz-av{
-  width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;
-  display:grid;place-items:center;color:#fff;font-weight:900;font-size:17px;
-  background:linear-gradient(135deg,#1d4a7a,#0f2c4d);
-  border:2px solid rgba(201,162,39,.7);
-}
-#loginBox .gz-av img{width:100%;height:100%;object-fit:cover}
-#loginBox .gz-pvcopy{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
-#loginBox .gz-pvcopy small{font-size:10.5px;color:var(--gz-mut);font-weight:700;letter-spacing:.2px}
-#loginBox .gz-pvcopy b{font-size:14px;color:var(--gz-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#loginBox .gz-pvrole{font-size:10.5px;color:var(--gz-mut);font-weight:700}
-#loginBox .gz-pvcheck{
-  flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(29,122,76,.12);color:var(--gz-green);font-weight:900;font-size:13px;
-}
-
-/* ---------- الحقول ---------- */
-#loginBox .gz-field{margin-bottom:11px;text-align:right}
-#loginBox .gz-field > label{
-  display:block;font-size:12px;font-weight:900;color:var(--gz-ink);margin:0 2px 5px;
-}
-#loginBox .gz-wrap{
-  position:relative;display:flex;align-items:center;gap:8px;
-  height:48px;padding:0 12px;border-radius:14px;
-  background:#fff;border:1.5px solid var(--gz-line);
-  transition:border-color .16s,box-shadow .16s,background .16s;
-}
-html[data-theme="dark"] #loginBox .gz-wrap{background:#1d1811}
-#loginBox .gz-wrap:focus-within{
-  border-color:var(--gz-gold);
-  box-shadow:0 0 0 4px rgba(201,162,39,.16);
-}
-#loginBox .gz-wrap.bad{border-color:#e0a19a;box-shadow:0 0 0 4px rgba(179,38,30,.08)}
-#loginBox .gz-wrap.good{border-color:#8ecfae;box-shadow:0 0 0 4px rgba(29,122,76,.08)}
-#loginBox .gz-ic{font-size:15px;opacity:.75;flex:0 0 auto;line-height:1}
-#loginBox .gz-wrap input{
-  flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;
-  font-family:inherit;font-size:15px;font-weight:700;color:var(--gz-ink);padding:0;
-}
-#loginBox .gz-wrap input::placeholder{font-weight:600;color:#a89a80;opacity:1}
-html[data-theme="dark"] #loginBox .gz-wrap input::placeholder{color:#8d7f66}
-#loginBox .gz-eye{
-  flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:0;cursor:pointer;
-  background:rgba(201,162,39,.12);color:inherit;font-size:15px;line-height:1;
-  display:grid;place-items:center;transition:.15s;
-}
-#loginBox .gz-eye:hover{background:rgba(201,162,39,.24)}
-#loginBox .gz-mark{flex:0 0 auto;font-size:15px;font-weight:900;line-height:1}
-#loginBox .gz-wrap.good .gz-mark{color:var(--gz-green)}
-#loginBox .gz-wrap.bad .gz-mark{color:var(--gz-red)}
-#loginBox .gz-hint{
-  margin:5px 2px 0;font-size:10.8px;line-height:1.8;color:var(--gz-mut);font-weight:600;
-}
-#loginBox .gz-hint b{color:var(--gz-ink);font-weight:800}
-#loginBox .gz-hint.good{color:var(--gz-green)}
-#loginBox .gz-hint.bad{color:var(--gz-red)}
-#loginBox .gz-caps{
-  display:inline-flex;align-items:center;gap:5px;margin:6px 2px 0;padding:3px 8px;border-radius:8px;
-  background:rgba(201,162,39,.16);color:#7a5c00;font-size:10.5px;font-weight:900;
-  animation:gzIn .18s ease both;
-}
-html[data-theme="dark"] #loginBox .gz-caps{color:#f0d98f;background:rgba(224,194,102,.14)}
-
-/* ---------- تذكرني ---------- */
-#loginBox .gz-remember{
-  display:flex;align-items:center;gap:10px;margin:13px 0 12px;padding:9px 11px;
-  border-radius:13px;border:1.5px solid var(--gz-line);background:var(--gz-soft);
-  cursor:pointer;user-select:none;transition:border-color .16s,background .16s;
-}
-#loginBox .gz-remember:has(input:checked){border-color:rgba(201,162,39,.55);background:rgba(201,162,39,.09)}
-#loginBox .gz-remember input{width:17px;height:17px;accent-color:#c9a227;flex:0 0 auto;margin:0}
-#loginBox .gz-remember .rm-txt{flex:1;min-width:0;text-align:right;line-height:1.5}
-#loginBox .gz-remember b{display:block;font-size:12.5px;color:var(--gz-ink);font-weight:900}
-#loginBox .gz-remember small{font-size:10.5px;color:var(--gz-mut);font-weight:600}
-#loginBox .gz-remember .rm-badge{
-  flex:0 0 auto;font-size:10px;font-weight:900;color:#3a2a00;background:var(--gz-gold2);
-  padding:3px 8px;border-radius:99px;white-space:nowrap;
-}
-
-/* ---------- زرار الدخول ---------- */
-#loginBox .gz-submit{
-  width:100%;height:50px;border:0;border-radius:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  font-family:inherit;font-size:15.5px;font-weight:900;color:#fff;
-  background:linear-gradient(135deg,#1c4574 0%,#123a63 55%,#0d2b4a 100%);
-  box-shadow:0 10px 22px rgba(13,43,74,.28),inset 0 1px 0 rgba(255,255,255,.14);
-  transition:transform .16s,box-shadow .16s,filter .16s;
-  position:relative;overflow:hidden;
-}
-#loginBox .gz-submit::after{
-  content:"";position:absolute;inset:0;border-radius:inherit;
-  background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.16) 48%,transparent 70%);
-  transform:translateX(-120%);transition:transform .55s ease;
-}
-#loginBox .gz-submit:hover{transform:translateY(-1px);box-shadow:0 14px 26px rgba(13,43,74,.34)}
-#loginBox .gz-submit:hover::after{transform:translateX(120%)}
-#loginBox .gz-submit:active{transform:translateY(0) scale(.995)}
-#loginBox .gz-submit:disabled{filter:saturate(.65) brightness(.95);cursor:progress;transform:none}
-#loginBox .gz-submit .gz-spin-sm{
-  width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);
-  border-top-color:#fff;animation:gzSpin .7s linear infinite;display:inline-block;
-}
-
-/* ---------- صندوق الرسائل ---------- */
-.gz-err{
-  display:none;margin:12px 0 0;padding:0;border-radius:14px;text-align:right;
-  border:1.5px solid transparent;overflow:hidden;
-}
-.gz-err.show{display:block;animation:gzIn .18s ease both}
-.gz-err.tone-bad{background:#fdf1ef;border-color:#ecc7c1}
-.gz-err.tone-warn{background:#fff8e6;border-color:#ead9a4}
-.gz-err.tone-ok{background:#eef8f1;border-color:#bfe3cd}
-html[data-theme="dark"] .gz-err.tone-bad{background:#33191a;border-color:#6d3a38}
-html[data-theme="dark"] .gz-err.tone-warn{background:#302814;border-color:#5f4f26}
-html[data-theme="dark"] .gz-err.tone-ok{background:#16301f;border-color:#2f5c40}
-.gz-err-head{
-  display:flex;align-items:center;gap:8px;padding:10px 13px 0;
-  font-size:13px;font-weight:900;color:var(--gz-ink);line-height:1.5;
-}
-.gz-err.tone-bad .gz-err-head{color:#a11c14}
-.gz-err.tone-warn .gz-err-head{color:#8a6200}
-.gz-err.tone-ok .gz-err-head{color:#17683f}
-html[data-theme="dark"] .gz-err.tone-bad .gz-err-head{color:#ffb3aa}
-html[data-theme="dark"] .gz-err.tone-warn .gz-err-head{color:#f2d78c}
-html[data-theme="dark"] .gz-err.tone-ok .gz-err-head{color:#9fe8c1}
-.gz-err-ic{font-size:15px;line-height:1}
-.gz-err-list{
-  margin:6px 0 0;padding:0 30px 0 13px;list-style:none;
-  font-size:11.8px;line-height:2;color:#5c4a3a;font-weight:600;
-}
-html[data-theme="dark"] .gz-err-list{color:#d8cbb2}
-.gz-err-list li{position:relative;padding-right:11px}
-.gz-err-list li::before{
-  content:"•";position:absolute;right:0;top:0;color:currentColor;opacity:.55;font-weight:900;
-}
-.gz-err-list b{font-weight:900;color:var(--gz-ink)}
-html[data-theme="dark"] .gz-err-list b{color:#fff}
-.gz-reveal{
-  margin:9px 13px 0;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.6);
-  border:1px dashed rgba(0,0,0,.12);display:flex;flex-wrap:wrap;align-items:center;gap:8px;
-  font-size:10.5px;font-weight:700;color:#6b5946;
-}
-html[data-theme="dark"] .gz-reveal{background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.14);color:#d8cbb2}
-.gz-reveal code{
-  direction:ltr;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  font-size:12px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;
-  padding:2px 7px;color:#2b2118;max-width:100%;overflow-wrap:anywhere;
-}
-html[data-theme="dark"] .gz-reveal code{background:#0f0d09;color:#f3ecda;border-color:#4b4029}
-.gz-reveal small{opacity:.8;font-weight:600}
-.gz-err-acts{display:flex;flex-wrap:wrap;gap:6px;padding:9px 13px 11px}
-.gz-chip{
-  display:inline-flex;align-items:center;gap:6px;
-  border:1.5px solid rgba(201,162,39,.5);background:#fffdf6;color:#5d4a17;
-  border-radius:11px;padding:7px 11px;font-family:inherit;font-size:11.5px;font-weight:900;
-  cursor:pointer;transition:.15s;white-space:nowrap;line-height:1.2;
-  box-shadow:0 2px 6px rgba(90,66,10,.07);
-}
-.gz-chip:hover{background:linear-gradient(180deg,#fff8e3,#fdf1cf);border-color:#c9a227;transform:translateY(-1px);box-shadow:0 5px 12px rgba(201,162,39,.22)}
-.gz-chip:active{transform:translateY(0) scale(.985)}
-html[data-theme="dark"] .gz-chip{background:#2a2316;color:#f0d98f;border-color:rgba(224,194,102,.4);box-shadow:none}
-html[data-theme="dark"] .gz-chip:hover{background:#3a301c;border-color:#e0c266}
-
-/* ---------- باقي عناصر الكارت ---------- */
-#loginBox .gz-sep{
-  display:flex;align-items:center;gap:10px;margin:15px 0 12px;color:var(--gz-mut);
-  font-size:10.5px;font-weight:800;
-}
-#loginBox .gz-sep::before,#loginBox .gz-sep::after{content:"";height:1px;flex:1;background:var(--gz-line)}
-
-/* ================= شاشة التحقق ================= */
-.vz-ov{
-  position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
-  padding:20px;background:rgba(12,8,3,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
-}
-.vz-ov.show{display:flex}
-.vz-box{
-  width:100%;max-width:384px;border-radius:20px;overflow:hidden;
-  background:#0b100d;border:1px solid rgba(201,162,39,.32);
-  box-shadow:0 28px 70px rgba(0,0,0,.6);
-  font-family:inherit;animation:vzPop .32s cubic-bezier(.2,.9,.3,1.2) both;
-  direction:rtl;
-}
-.vz-box.fail{background:#120b0b;border-color:rgba(248,113,113,.28)}
-.vz-box.done{border-color:rgba(74,222,128,.3)}
-@keyframes vzPop{from{opacity:0;transform:scale(.93) translateY(8px)}to{opacity:1;transform:none}}
-.vz-head{
-  display:flex;align-items:center;gap:9px;padding:11px 14px;
-  background:linear-gradient(95deg,#1c4574,#123a63 60%,#0d2b4a);color:#fff;
-  transition:background .25s ease;
-}
-.vz-box.fail .vz-head{background:linear-gradient(95deg,#7a1f1f,#b3261e)}
-.vz-box.done .vz-head{background:linear-gradient(95deg,#14603c,#1d7a4c)}
-.vz-dot{
-  width:9px;height:9px;border-radius:50%;background:#8ee6b5;flex:0 0 auto;
-  box-shadow:0 0 0 0 rgba(142,230,181,.55);animation:vzPulse 1.6s ease-out infinite;
-}
-.vz-box.fail .vz-dot{background:#ff9b90;animation:none}
-.vz-box.done .vz-dot{background:#8ee6b5;animation:none}
-@keyframes vzPulse{0%{box-shadow:0 0 0 0 rgba(142,230,181,.5)}70%{box-shadow:0 0 0 9px rgba(142,230,181,0)}100%{box-shadow:0 0 0 0 rgba(142,230,181,0)}}
-.vz-title{flex:1;min-width:0;font-size:12.5px;font-weight:900;letter-spacing:.1px}
-.vz-snd{
-  flex:0 0 auto;width:28px;height:28px;border-radius:8px;border:0;cursor:pointer;
-  background:rgba(255,255,255,.14);color:#fff;font-size:12px;line-height:1;display:grid;place-items:center;
-}
-.vz-snd:hover{background:rgba(255,255,255,.24)}
-.vz-body{padding:15px 15px 14px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
-.vz-ring{
-  width:64px;height:64px;margin:0 auto 9px;border-radius:50%;position:relative;
-  display:grid;place-items:center;color:#e6c766;font-size:24px;
-  border:2px solid rgba(230,199,102,.28);
-  box-shadow:0 0 26px rgba(201,162,39,.16) inset;
-}
-.vz-ring::before{
-  content:"";position:absolute;inset:-5px;border-radius:50%;
-  border:2px solid transparent;border-top-color:#e6c766;border-right-color:rgba(230,199,102,.35);
-  animation:vzSpin .95s linear infinite;
-}
-.vz-box.fail .vz-ring{color:#ff9b90;border-color:rgba(248,113,113,.28);box-shadow:none}
-.vz-box.fail .vz-ring::before{border-top-color:#f87171;border-right-color:rgba(248,113,113,.3);animation-play-state:paused;opacity:.4}
-.vz-box.done .vz-ring{color:#8ee6b5;border-color:rgba(74,222,128,.4)}
-.vz-box.done .vz-ring::before{border-top-color:#4ade80;border-right-color:rgba(74,222,128,.45);animation-duration:2.6s}
-@keyframes vzSpin{to{transform:rotate(360deg)}}
-.vz-ring-in{transform:translateY(-1px)}
-.vz-who{
-  text-align:center;font-size:11px;font-weight:800;color:#b9ac90;margin:0 0 11px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:15px;
-}
-.vz-who b{color:#f2e6c8;font-weight:900}
-.vz-log{
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  font-size:11.5px;line-height:1.95;color:#9fd8b4;min-height:70px;
-  direction:rtl;text-align:right;padding:0 2px;
-}
-.vz-log .ln{opacity:0;transform:translateY(3px);animation:vzLine .22s ease forwards;display:flex;gap:6px;align-items:flex-start}
-.vz-log .ln .ic{flex:0 0 14px}
-.vz-log .ln .tx{flex:1;min-width:0;overflow-wrap:anywhere}
-.vz-log .ln.ok .ic{color:#4ade80}
-.vz-log .ln.ok .tx{color:#c5e8d2}
-.vz-log .ln.bad .ic{color:#f87171}
-.vz-log .ln.bad .tx{color:#e6a3a3}
-.vz-log .ln.wait .ic{color:#e6c766}
-.vz-log .ln.wait .tx{color:#e8d9a8}
-@keyframes vzLine{to{opacity:1;transform:none}}
-.vz-bar{display:flex;align-items:center;gap:8px;margin-top:11px}
-.vz-bar-track,.vz-bar{position:relative}
-.vz-bar{--p:0%}
-.vz-bar .fill{
-  flex:1;height:10px;border-radius:3px;background:rgba(255,255,255,.06);
-  border:1px solid rgba(74,222,128,.28);overflow:hidden;display:block;
-}
-.vz-bar .fill > i{
-  display:block;height:100%;width:var(--p,0%);
-  background:repeating-linear-gradient(90deg,#4ade80 0,#4ade80 6px,#22c55e 6px,#22c55e 8px);
-  transition:width .35s ease;
-}
-.vz-box.fail .vz-bar .fill{border-color:rgba(248,113,113,.28)}
-.vz-box.fail .vz-bar .fill > i{background:repeating-linear-gradient(90deg,#f87171 0,#f87171 6px,#ef4444 6px,#ef4444 8px)}
-.vz-pct{flex:0 0 38px;text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#4ade80;font-weight:700;direction:ltr}
-.vz-box.fail .vz-pct{color:#f87171}
-.vz-res{
-  margin-top:10px;text-align:center;font-weight:900;font-size:13px;color:#9fd8b4;
-  padding:7px 8px;border-radius:8px;border:1px solid transparent;opacity:0;transition:.25s;
-}
-.vz-res.show{opacity:1}
-.vz-res.ok{color:#7fe0a8;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.28)}
-.vz-res.bad{color:#ffa9a2;background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.28);animation:vzShake .4s ease}
-@keyframes vzShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.vz-res-sub{
-  margin-top:5px;text-align:center;font-size:11px;font-weight:700;line-height:1.8;
-  color:#c9b9b9;opacity:0;transition:.25s;min-height:0;
-}
-.vz-res-sub.show{opacity:1}
-.vz-act{display:flex;justify-content:center;gap:8px;margin-top:11px;flex-wrap:wrap}
-.vz-btn{
-  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#f2e6c8;
-  border-radius:99px;padding:7px 14px;font-family:inherit;font-size:11.5px;font-weight:900;
-  cursor:pointer;transition:.15s;
-}
-.vz-btn:hover{background:rgba(255,255,255,.14)}
-@media (prefers-reduced-motion: reduce){
-  #loginBox .gz-crest::after,.vz-ring::before,.vz-dot{animation:none!important}
-  .vz-box{animation:none}
-}
-</style>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700&family=Markazi+Text:wght@500;600;700&family=Noto+Sans+Coptic:wght@400&display=swap" rel="stylesheet">
+<!-- 🎨 هوية «مدرسة الملاك ميخائيل للشمامسة» — تُحمَّل بعد app.css عشان تكسب في الكاسكيد -->
+<link rel="stylesheet" href="assets/css/shamamsa.css?v=1.0">
 </head>
 <body class="login-page">
 
-<div class="wrap">
-  <!-- ================= الجانب الكنسي ================= -->
-  <section class="art" aria-hidden="false">
-    <div class="art-img"></div>
-    <div class="art-in">
-      <div class="art-brand">
-        <img src="assets/img/logo-512.png" alt="شعار معلم الأجيال للتلمذة">
-        <div>
-          <b id="artOrg">معلم الأجيال للتلمذة</b>
-          <span id="artChurch">كنيسة رئيس الملائكة ميخائيل بالأندلس</span>
-        </div>
-      </div>
-      <div class="church">☦ خدمة إعداد الخدّام — الكنيسة القبطية الأرثوذكسية</div>
-      <div class="verse">«نَحْنُ عَامِلُونَ مَعَ اللهِ، وَأَنْتُمْ فَلَّاحَةُ اللهِ، بِنَاءُ اللهِ»</div>
-      <div class="ref">(١ كورنثوس ٣ : ٩) — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ» (١كو ٣ : ٥)</div>
-      <div class="feats">
-        <span>🎓 ٣ سنوات دراسية</span>
-        <span>🔁 كل المحاولات محفوظة</span>
-        <span>📝 ملاحظات وتقارير</span>
-        <span>🔐 حماية كلمات السر</span>
-        <span>📲 تثبيت على الموبايل</span>
-        <span>🌙 وضع ليلي</span>
-      </div>
+<nav class="cx-nav no-print" id="cxNav">
+  <div class="cx-nav-inner">
+    <a class="cx-brand" href="index.html" aria-label="مدرسة الملاك ميخائيل للشمامسة">
+      <img class="cx-logo" src="assets/img/logo-512.png" alt="شعار معلم الأجيال للتلمذة">
+      <span class="cx-brand-copy">
+        <b id="artOrg">معلم الأجيال للتلمذة</b>
+        <span id="artChurch">كنيسة رئيس الملائكة ميخائيل بالأندلس</span>
+      </span>
+    </a>
+    <div class="cx-links">
+      <a href="index.html" class="on">الدخول</a>
+      <a href="admin.html">لوحة التحكم</a>
+      <a href="شهادة-التخرج.html">الشهادات</a>
     </div>
-  </section>
-
-  <!-- ================= جانب الدخول ================= -->
-  <section class="side">
-    <div class="side-top">
-      <button class="theme-btn round" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي">
-        <span class="tico">🌙</span>
-      </button>
+    <div class="cx-actions">
+      <span class="cx-clock" title="توقيت القاهرة"><i></i><b data-cx-clock>--:--</b><span>القاهرة</span></span>
+      <button class="cx-icon" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي" title="الوضع الليلي"><span class="tico">🌙</span></button>
+      <button class="cx-icon cx-burger" type="button" id="cxBurger" aria-label="فتح القائمة" aria-expanded="false">☰</button>
     </div>
+  </div>
+</nav>
+<div class="cx-scrim" id="cxScrim" aria-hidden="true"></div>
+<aside class="cx-drawer" id="cxDrawer" aria-label="قائمة التنقل">
+  <div class="cx-dhead">
+    <img class="cx-logo" src="assets/img/logo-512.png" alt="">
+    <div>
+      <b>معلم الأجيال للتلمذة</b>
+      <span>إعداد الخدّام • ٣ سنوات</span>
+    </div>
+  </div>
+  <a class="nav-item" href="index.html">🔐 الدخول</a>
+  <a class="nav-item" href="admin.html">🏠 لوحة التحكم</a>
+  <a class="nav-item" href="شهادة-التخرج.html">🎓 شهادات التخرّج</a>
+  <div class="cx-dactions">
+    <button class="theme-btn" type="button" data-theme-toggle><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button>
+  </div>
+</aside>
 
-    <div class="card">
+<header class="hero-header no-print">
+  <div class="blessing-badge">☦ خدمة إعداد الخدّام — الكنيسة القبطية الأرثوذكسية</div>
+  <img class="hero-logo" src="assets/img/logo-512.png" alt="شعار معلم الأجيال للتلمذة">
+  <h1 class="hero-title">معلم الأجيال للتلمذة</h1>
+  <div class="hero-braid"></div>
+  <p class="subtitle">سجلّ دارسي إعداد الخدّام عبر ٣ سنوات — المواد والتقييمات والأنشطة والتقارير، وكل محاولة قديمة محفوظة.</p>
+  <div class="verse-line">«نَحْنُ عَامِلُونَ مَعَ اللهِ، وَأَنْتُمْ فَلَّاحَةُ اللهِ، بِنَاءُ اللهِ» (١كو ٣ : ٩)</div>
+  <div class="feats">
+    <span>🎓 ٣ سنوات دراسية</span>
+    <span>🔁 كل المحاولات محفوظة</span>
+    <span>📝 ملاحظات وتقارير</span>
+    <span>🔐 حماية كلمات السر</span>
+    <span>📲 تثبيت على الموبايل</span>
+    <span>🌙 وضع ليلي</span>
+  </div>
+</header>
+<main class="login-main">
+<div class="card login-card">
       <div class="logo-ring"><img src="assets/img/logo-512.png" alt="شعار الخدمة"></div>
       <div class="brand-kicker">معلم الأجيال للتلمذة</div>
       <h1>إعداد الخدّام <span class="admin">Admin</span></h1>
@@ -476,8 +164,14 @@ html[data-theme="dark"] .gz-chip:hover{background:#3a301c;border-color:#e0c266}
       <div class="card-theme-row"><button class="theme-btn" type="button" data-theme-toggle><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button></div>
       <p class="mini">يعمل بدون إنترنت بعد أول فتح • قابل للتثبيت على الموبايل والكمبيوتر 📲<br>اعداد خدام ادمن — معلم الأجيال للتلمذة</p>
     </div>
-  </section>
-</div>
+</main>
+<footer class="site-foot no-print">
+  <div class="braid"></div>
+  <div class="verse">«اِخْدِمُوا الرَّبَّ بِفَرَحٍ» — (مزمور ١٠٠ : ٢)</div>
+  <div><b>معلم الأجيال للتلمذة</b> — كنيسة رئيس الملائكة ميخائيل بالأندلس<br>
+  خدمة إعداد الخدّام • الكنيسة القبطية الأرثوذكسية</div>
+  <div class="copy">© اعداد خدام ادمن — كل الحقوق محفوظة</div>
+</footer>
 
 <!-- ===== شاشة التحقق من بيانات الخادم (على نفس فكرة دخول الشمامسة) ===== -->
 <div class="vz-ov" id="vzOv" role="dialog" aria-modal="true" aria-labelledby="vzTitle" aria-live="polite">
@@ -1920,7 +1614,7 @@ try{
   try{
     const style=document.createElement('style');
     style.textContent=`html{ overscroll-behavior-x: contain; } body{ overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-    .swipe-hint{ position:fixed; top:0; bottom:0; right:0; width:4px; background: linear-gradient(180deg, #c9a227, #8a6410); opacity:0; transition: opacity .18s; z-index:9999; pointer-events:none; }
+    .swipe-hint{ position:fixed; top:0; bottom:0; right:0; width:4px; background: linear-gradient(180deg, #c3922b, #8a6410); opacity:0; transition: opacity .18s; z-index:9999; pointer-events:none; }
     .swipe-hint.show{ opacity:.9; }
     @media (pointer:fine){ .swipe-hint{ display:none; } }`;
     document.head.appendChild(style);
@@ -1971,5 +1665,49 @@ try{
 E3.theme.init();
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfd0c80c57ed4b',t:'MTc5MjQxMzI1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfd0c80c57ed4b',t:'MTc5MjQxMzI1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script id="shamamsa-skin-js">
+(function(){
+  /* ── ساعة القاهرة 12 ساعة (زي شمامسة) ── */
+  try{
+    var f=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hour12:true});
+    var tick=function(){document.querySelectorAll('[data-cx-clock]').forEach(function(el){
+      el.textContent=f.format(new Date()).replace(/am/i,'ص').replace(/pm/i,'م');
+    });};
+    tick(); setInterval(tick,15000);
+  }catch(e){}
+
+  /* ── درجة/درج الموبايل (بيشتغل لو core.js مش موجود) ── */
+  var b=document.getElementById('cxBurger'), d=document.getElementById('cxDrawer'), sc=document.getElementById('cxScrim');
+  function closeD(){ if(d) d.classList.remove('open'); if(sc) sc.classList.remove('on'); }
+  if(b&&d) b.addEventListener('click',function(){ var on=d.classList.toggle('open'); if(sc) sc.classList.toggle('on',on); });
+  if(sc) sc.addEventListener('click',closeD);
+  if(d) d.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeD);});
+
+  /* ── الوضع الليلي: بنسيبه لـ E3.theme لو موجود، وإلا بنعمل fallback بسيط ── */
+  var hasThemeApi = !!(window.E3 && E3.theme && typeof E3.theme.init === 'function');
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    try{ localStorage.setItem('e3dad-theme',t); }catch(e){}
+  }
+  if(!hasThemeApi){
+    document.addEventListener('click',function(ev){
+      var t=ev.target.closest?ev.target.closest('[data-theme-toggle]'):null;
+      if(!t) return;
+      var cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      applyTheme(cur);
+      document.querySelectorAll('[data-theme-toggle] .tico').forEach(function(i){ i.textContent = cur==='dark' ? '☀️' : '🌙'; });
+    });
+  }
+  /* مزامنة أيقونة الشمس/القمر مع الوضع الحالي */
+  function syncIcons(){
+    var dark=document.documentElement.getAttribute('data-theme')==='dark';
+    document.querySelectorAll('[data-theme-toggle] .tico').forEach(function(i){ i.textContent = dark ? '☀️' : '🌙'; });
+  }
+  syncIcons();
+  new MutationObserver(syncIcons).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});
+})();
+</script>
+
+</body>
 </html>

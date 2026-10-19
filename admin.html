@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>إعداد الخدّام — لوحة التحكم</title>
 <meta name="description" content="نظام متابعة دارسي إعداد الخدام عبر ٣ سنوات — معلم الأجيال للتلمذة، كنيسة رئيس الملائكة ميخائيل بالأندلس">
-<meta name="theme-color" content="#123a63">
+<meta name="theme-color" content="#7a1257">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
@@ -16,92 +16,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="إعداد الخدام">
 <meta name="color-scheme" content="light dark">
-
-<script>
-// CX SMART THEME — نفس الشمامسة (الوضع الليلي تلقائي 6:30 م بتوقيت القاهرة)
-(function(){'use strict';var DARK_FROM=18*60+30,DARK_TO=6*60+30,K_MANUAL='cx-theme-manual',root=document.documentElement;var partsFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});function cairoParts(d){try{var o={},l=partsFmt.formatToParts(d||new Date());for(var i=0;i<l.length;i++)if(l[i].type!=='literal')o[l[i].type]=l[i].value;return{y:+o.year,m:+o.month,d:+o.day,h:(+o.hour)%24,mi:+o.minute,s:+o.second}}catch(e){var t=d||new Date();return{y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate(),h:t.getHours(),mi:t.getMinutes(),s:t.getSeconds()}}}function minutes(p){return p.h*60+p.mi}function isAutoDark(m){return m>=DARK_FROM||m<DARK_TO}function phaseKey(p){var s=Math.floor(Date.UTC(p.y,p.m-1,p.d)/86400000),m=minutes(p);if(m<DARK_TO)return(s-1)+'N';if(m>=DARK_FROM)return s+'N';return s+'D'}function readManual(k){try{var r=localStorage.getItem(K_MANUAL);if(!r)return null;var d=JSON.parse(r);if(!d||d.phase!==k||typeof d.dark!=='boolean'){localStorage.removeItem(K_MANUAL);return null}return d}catch(e){return null}}function paint(dark){root.classList.toggle('dark',!!dark);root.setAttribute('data-cx-theme',dark?'dark':'light')}function resolve(date){var p=cairoParts(date),k=phaseKey(p),a=isAutoDark(minutes(p)),m=readManual(k);return{parts:p,key:k,auto:a,manual:m,dark:m?m.dark:a}}function apply(date){var s=resolve(date);paint(s.dark);return s}var timer=0;function schedule(){clearTimeout(timer);var s=resolve(),m=minutes(s.parts),n=m<DARK_TO?DARK_TO:(m<DARK_FROM?DARK_FROM:DARK_TO+1440),ms=((n-m)*60-s.parts.s)*1000+400;timer=setTimeout(function(){apply();schedule()},Math.max(1000,Math.min(ms,300000)))}function resync(){apply();schedule()}document.addEventListener('visibilitychange',function(){if(!document.hidden)resync()});window.addEventListener('pageshow',resync);window.addEventListener('focus',resync);new MutationObserver(function(){var s=resolve(),isDark=root.classList.contains('dark');if(isDark!==s.auto)try{localStorage.setItem(K_MANUAL,JSON.stringify({dark:isDark,phase:s.key,at:Date.now()}))}catch(e){}else try{localStorage.removeItem(K_MANUAL)}catch(e){}}).observe(root,{attributes:true,attributeFilter:['class']});apply();schedule()})();
-</script>
 <script>
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
-<link rel="stylesheet" href="assets/css/e3dad-shamamsa-theme.css?v=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&family=Markazi+Text:wght@600;700&display=swap" rel="stylesheet">
-<style id="e3-auth-admin-v3">
-.auth-live{margin:2px 0 9px;font-size:11.5px;line-height:1.9;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:7px 10px}
-.auth-live:empty{display:none}
-.auth-live b{color:var(--head)}
-.auth-tol{display:flex;align-items:flex-start;gap:8px;margin:10px 0 4px;padding:9px 11px;border-radius:11px;background:rgba(201,162,39,.09);border:1px solid rgba(201,162,39,.35);font-size:12px;font-weight:700;line-height:1.7;cursor:pointer}
-.auth-tol input{width:17px;height:17px;accent-color:#c9a227;flex:0 0 auto;margin-top:2px}
-.auth-tol b{color:#8a6200;font-size:11px}
-.cred-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px}
-.cred-head{display:flex;align-items:center;gap:10px;padding:11px 13px;background:linear-gradient(135deg,rgba(201,162,39,.14),rgba(201,162,39,.03));border-bottom:1px solid var(--line)}
-.cred-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#1c4574,#0f2c4d);border:2px solid rgba(201,162,39,.6);flex:0 0 40px}
-.cred-head b{display:block;font-size:14px;color:var(--head)}
-.cred-head small{display:block;font-size:11px;color:var(--muted)}
-.cred-head .badge{margin-inline-start:auto}
-.cred-row{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px dashed var(--line)}
-.cred-row:last-of-type{border-bottom:0}
-.cred-k{flex:0 0 88px;font-size:11.5px;font-weight:800;color:var(--muted)}
-.cred-v{flex:1;min-width:0;font-size:14px;font-weight:900;color:var(--head);background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;overflow-wrap:anywhere}
-.cred-v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.6px}
-.cred-meta{display:flex;flex-wrap:wrap;gap:6px 14px;padding:9px 13px;font-size:11px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
-.cred-note{padding:9px 13px;font-size:11px;line-height:1.85;color:var(--muted);background:var(--surface-2)}
-.cred-note b{color:var(--head)}
-.cred-warn{padding:9px 13px;font-size:11.5px;font-weight:800;line-height:1.8;color:#a11c14;background:#fdf1ef;border-top:1px solid #ecc7c1}
-html[data-theme="dark"] .cred-warn{background:#33191a;border-color:#6d3a38;color:#ffb3aa}
-.audit-table{width:100%;border-collapse:collapse;font-size:11.5px}
-.audit-table th,.audit-table td{border:1px solid var(--line);padding:6px 8px;text-align:right}
-.audit-table th{background:var(--surface-2);font-weight:900;color:var(--head)}
-.audit-bad{color:#a11c14;font-weight:800}
-.audit-ok{color:#17683f;font-weight:800}
-html[data-theme="dark"] .audit-bad{color:#ffb3aa}
-html[data-theme="dark"] .audit-ok{color:#9fe8c1}
-
-.activity-page{background:var(--surface,#fff);border:1px solid var(--line,#dde4eb);border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(22,43,70,.06)}
-.activity-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:25px 28px;background:linear-gradient(115deg,#132d4b,#214b71);color:white}
-.activity-header h2{margin:6px 0;font-size:23px;color:white}.activity-header p{margin:0;color:#d0dfed;font-size:13px}.activity-eyebrow{font-size:11px;color:#efd28e;font-weight:800}
-.activity-counter{display:flex;flex-direction:column;align-items:center;background:#ffffff16;padding:11px 23px;border:1px solid #ffffff30;border-radius:14px;min-width:105px}.activity-counter strong{font-size:24px}.activity-counter span{font-size:11px;color:#d8e5ed}
-.activity-toolbar{display:flex;gap:12px;align-items:center;padding:15px 22px;background:var(--surface-2,#f7f9fb);border-bottom:1px solid var(--line,#ddd);flex-wrap:wrap}.activity-all{font-weight:800;font-size:12px;display:flex;gap:8px;align-items:center;cursor:pointer}.activity-all input,.activity-select{accent-color:#1c517d;width:17px;height:17px;cursor:pointer}.activity-toolbar #activitySelectedCount{margin-inline-start:auto;color:var(--muted);font-size:12px}.activity-toolbar button:disabled{opacity:.45;cursor:not-allowed}
-.activity-table-wrap{max-height:70vh;overflow:auto}.activity-table{width:100%;border-collapse:collapse;text-align:right;min-width:600px}.activity-table th{position:sticky;top:0;background:var(--surface-2,#f7f9fb);z-index:1;font-size:12px;color:var(--muted);padding:13px 15px;border-bottom:1px solid var(--line,#ddd)}.activity-table td{padding:13px 15px;border-bottom:1px solid var(--line,#ddd);font-size:12.5px;vertical-align:middle}.activity-table tbody tr:hover{background:rgba(34,97,144,.045)}.activity-check{width:55px}.activity-date{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}.activity-user{font-weight:800;color:var(--head)}.activity-action{min-width:230px}.activity-empty{text-align:center;padding:50px!important;color:var(--muted)}
-@media(max-width:650px){.activity-header{padding:18px;align-items:flex-start}.activity-header h2{font-size:19px}.activity-toolbar{padding:12px}.activity-toolbar #activitySelectedCount{margin-inline-start:0}}
-</style>
-
-<style id="e3dad-shamamsa-colors">
-/* إعداد خدام — كحلي/ذهبي بدل موف الشمامسة */
-:root{
-  --bg-body:#f8f6ef; --bg-card:rgba(255,253,246,0.96); --card-border:rgba(18,58,99,0.18);
-  --text-main:#1a2a44; --text-sub:#6b7a94; --title-select:#123a63;
-  --gold:#c9a227; --gold-light:#e8c873; --gold-soft:rgba(201,162,39,0.12);
-  --card-shadow:0 14px 36px rgba(18,42,92,0.10);
-  --indigo:#123a63; --indigo-light:#3b7cc0; --indigo-soft:rgba(18,58,99,0.10);
-  --field-bg:rgba(255,255,255,0.85); --field-border:rgba(18,58,99,0.22);
-  --brand:#123a63; --brand-2:#1e5a8a; --brand-dark:#0d2342; --brand-light:#5aa0e6;
-  --brand-rgb:18,58,99; --brand-2-rgb:30,90,138; --brand-dark-rgb:13,35,66;
-  --hero-grad:linear-gradient(150deg, #0a1d33 0%, #123a63 45%, #1e5a8a 75%, #2e7cc0 100%);
-}
-html.dark{
-  --bg-body:#0d1420; --bg-card:rgba(22,33,53,0.96); --card-border:rgba(201,162,39,0.18);
-  --text-main:#e8e6d9; --text-sub:#9aa8c3; --title-select:#e8c873; --gold:#d4af37;
-}
-body{
-  background: radial-gradient(circle at 12% 8%, var(--gold-soft), transparent 38%),
-              radial-gradient(circle at 88% 10%, var(--indigo-soft), transparent 42%),
-              var(--bg-body) !important;
-}
-/* أزرار pill نفس الشمامسة */
-.btn{border-radius:30px !important; font-weight:800 !important}
-.btn.primary{background:linear-gradient(110deg,var(--brand),var(--brand-2)) !important; color:#fff !important; border-color:transparent !important; box-shadow:0 8px 18px rgba(var(--brand-rgb),.28) !important}
-.btn.gold{background:linear-gradient(110deg,#c9a227,#e8c873) !important; color:#1a2a44 !important}
-.btn:hover{transform:translateY(-1px)}
-/* كروت نفس الشمامسة */
-.card, .panel, .student-card{border-radius:20px !important; border:1px solid var(--card-border) !important; background:var(--bg-card) !important; box-shadow:var(--card-shadow) !important}
-.student-card:hover{transform:translateY(-3px); border-color:rgba(var(--brand-rgb),.32) !important}
-/* sidebar كحلي */
-.sidebar{background:linear-gradient(180deg,#0d2342 0%,#123a63 55%,#1e5a8a 100%) !important}
-</style>
-
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700&family=Markazi+Text:wght@500;600;700&family=Noto+Sans+Coptic:wght@400&display=swap" rel="stylesheet">
+<!-- 🎨 هوية «مدرسة الملاك ميخائيل للشمامسة» — تُحمَّل بعد app.css عشان تكسب في الكاسكيد -->
+<link rel="stylesheet" href="assets/css/shamamsa.css?v=1.0">
 </head>
 
 <body>
@@ -129,12 +52,13 @@ body{
 
   <!-- ===== Main ===== -->
   <main class="main">
-    <div class="topbar no-print">
+        <div class="topbar no-print">
       <div style="display:flex;gap:10px;align-items:center;min-width:0">
         <button class="btn hamburger" type="button" onclick="toggleSidebar()" aria-label="فتح القائمة" aria-expanded="false">☰</button>
         <div style="min-width:0"><h1 id="pageTitle">لوحة المتابعة</h1><p id="pageSub">نظرة شاملة على دارسي إعداد الخدام</p></div>
       </div>
       <div class="searchbox">
+        <span class="cx-clock" title="توقيت القاهرة"><i></i><b data-cx-clock>--:--</b><span>القاهرة</span></span>
         <button class="theme-btn round" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي"><span class="tico">🌙</span></button>
         <div class="user-chip" id="topUserChip"></div>
         <button class="btn primary" id="topNewStudent" onclick="openStudentForm()">➕ دارس جديد</button>
@@ -142,6 +66,13 @@ body{
     </div>
     <div id="view"></div>
     <div id="printArea"></div>
+
+    <footer class="site-foot no-print" style="margin-top:26px">
+      <div class="braid"></div>
+      <div class="verse">«اِخْدِمُوا الرَّبَّ بِفَرَحٍ» — (مزمور ١٠٠ : ٢)</div>
+      <div><b>معلم الأجيال للتلمذة</b> — كنيسة رئيس الملائكة ميخائيل بالأندلس<br>
+      إعداد الخدّام • ٣ سنوات — لوحة التحكم</div>
+    </footer>
   </main>
 
   <nav class="mobile-nav no-print" aria-label="تنقل سريع للموبايل">
@@ -198,7 +129,7 @@ body{
 .doc-studio{position:fixed;inset:0;z-index:80;background:rgba(18,24,38,.55);backdrop-filter:blur(8px);display:flex;align-items:stretch;justify-content:center;padding:18px}
 .doc-studio[hidden]{display:none!important}
 .doc-studio-panel{background:var(--surface);border:1.5px solid var(--gold);border-radius:18px;width:min(980px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.28)}
-.doc-studio-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#12325c,#21569c 60%,#c9a227);color:#fff}
+.doc-studio-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7a1257,#a41a63 60%,#c3922b);color:#fff}
 .doc-studio-bar b{display:block;font-size:16px}
 .doc-studio-bar small{display:block;opacity:.9;font-size:12px;margin-top:2px}
 .doc-studio-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -956,7 +887,7 @@ function viewUsers(){
       <button class="btn gold sm" onclick="openVaultPanel()">🔎 فتح خزنة البيانات</button>
     </div>` : `
     <div class="vault-banner" style="border-color:var(--line);background:var(--surface-2)">
-      <div class="vic" style="background:linear-gradient(135deg,#21569c,#123a6b)">🔒</div>
+      <div class="vic" style="background:linear-gradient(135deg,#a41a63,#123a6b)">🔒</div>
       <div style="flex:1;min-width:200px">
         <b>كلمات السر مشفّرة — عرضها لإدارة السيستم فقط</b>
         <small>انت تقدر تضيف وتوقف وتعيد تعيين كلمة سر أي حساب، لكن <b>مش هتقدر تشوف كلمة السر نفسها</b> غير لو انت إدارة السيستم.</small>
@@ -1333,7 +1264,7 @@ function viewDashboard(){
  const openTasks=(DB.tasks||[]).filter(t=>t.status!=='done').length;
  const recent=[...sts].sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||'')).slice(0,6);
  return `
- <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;border:1px solid #e2bc5a"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'إدارة السيستم':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
+ <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#7a1257,#a41a63 56%,#c3922b);color:#f4f9ff;border:1px solid #e9c877"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'إدارة السيستم':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
  <div class="grid c4">
   <div class="card stat"><div class="icbox">👥</div><span>إجمالي الدارسين</span><b>${sts.length}</b><div class="trend">في ${new Set(sts.map(s=>s.batch).filter(Boolean)).size||0} دفعة</div></div>
   <div class="card stat"><div class="icbox">📈</div><span>متوسط الأداء العام</span><b>${avgAll}${avgAll!=='—'?'%':''}</b><div class="trend">من ${avgs.length} دارس له نتائج</div></div>
@@ -1603,7 +1534,7 @@ function printStudentCard(studentId){
   if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك');
   const st=getStudent(studentId); if(!st)return; const en=studentCurrent(st);
   showPrint(`<div style="max-width:520px;margin:0 auto;border:2.5px solid var(--gold);border-radius:18px;overflow:hidden">
-   <div style="background:linear-gradient(120deg,#12325c,#21569c);color:#f4f9ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:30px;width:30px;border-radius:50%;vertical-align:middle"> `:''}${esc(DB.settings.orgName)}</b><div style="font-size:11.5px;opacity:.85">كارت دارس — إعداد الخدام${DB.settings.church?' • '+esc(DB.settings.church):''}</div></div><div style="font-size:26px">☦</div></div>
+   <div style="background:linear-gradient(120deg,#7a1257,#a41a63);color:#f4f9ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:30px;width:30px;border-radius:50%;vertical-align:middle"> `:''}${esc(DB.settings.orgName)}</b><div style="font-size:11.5px;opacity:.85">كارت دارس — إعداد الخدام${DB.settings.church?' • '+esc(DB.settings.church):''}</div></div><div style="font-size:26px">☦</div></div>
    <div style="display:flex;gap:16px;padding:18px;align-items:center"><div class="avatar" style="width:104px;height:104px;font-size:36px;border-radius:16px">${avatarHTML(st)}</div>
    <div style="flex:1"><div style="font-size:20px;font-weight:900">${esc(st.name)}</div>
    <table style="margin-top:8px"><tr><th>الكود</th><td><b>${esc(st.code)}</b></td><th>الدفعة</th><td>${esc(st.batch||'—')}</td></tr>
@@ -1621,14 +1552,14 @@ function printCertificate(studentId){
   const avg=studentOverallAvg(st);
   const title=isGrad?'شهادة تخرّج من خدمة إعداد الخدّام':'شهادة إنهاء '+YEAR_NAMES[lastPassed.yearLevel]+' — إعداد الخدّام';
   const sub=isGrad?'أنهى بنجاح سنوات إعداد الخدام الثلاث (٣ سنوات) بكل موادها وتدريبها العملي وأنشطتها':'أنهى بنجاح متطلبات '+YEAR_NAMES[lastPassed.yearLevel]+' من برنامج إعداد الخدام — مواد وتقييمات وأنشطة وتدريب عملي';
-  showPrint(`<div style="border:4px double #c9a227;border-radius:10px;padding:38px 30px;text-align:center;background:#fffef9">
+  showPrint(`<div style="border:4px double #c3922b;border-radius:10px;padding:38px 30px;text-align:center;background:#fffef9">
    <div style="font-size:44px;color:#70162b">☦</div>
-   ${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:74px;width:74px;object-fit:cover;border-radius:50%;border:2px solid #c9a227">`:''}
+   ${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:74px;width:74px;object-fit:cover;border-radius:50%;border:2px solid #c3922b">`:''}
    <div style="font-size:15px;color:#8a6410;margin-top:8px">${esc(DB.settings.orgName)}${DB.settings.church?' — '+esc(DB.settings.church):''}</div>
    <h1 style="font-size:32px;color:#40182c;margin:10px 0 4px">${title}</h1>
    <div style="color:#8a7663">«حَسَناً أَيُّهَا الْعَبْدُ الصَّالِحُ وَالأَمِينُ» (متى ٢٥ : ٢١)</div>
    <p style="font-size:16px;margin-top:24px">تشهد خدمة إعداد الخدام بأن الدارس</p>
-   <div style="font-size:30px;font-weight:900;color:#70162b;border-bottom:2px solid #c9a227;display:inline-block;padding:0 26px 8px">${esc(st.name)}</div>
+   <div style="font-size:30px;font-weight:900;color:#70162b;border-bottom:2px solid #c3922b;display:inline-block;padding:0 26px 8px">${esc(st.name)}</div>
    <div style="color:#8a7663;margin-top:7px">كود ${esc(st.code)} — ${esc(st.batch||'')}</div>
    <p style="font-size:15.5px;line-height:2;max-width:640px;margin:18px auto 4px">${sub}، بمتوسط عام <b>${avg??'—'}%</b> عبر ${(st.enrollments||[]).length} محاولة محفوظة في سجله الكامل من ${esc(st.joinDate||'—')}.</p>
    <div style="display:flex;justify-content:space-between;gap:20px;margin-top:46px;text-align:center;font-size:13.5px">
@@ -2217,7 +2148,7 @@ window.addEventListener('popstate', (e)=>{
     // عنصر بصري يظهر أثناء السحب
     const s=document.createElement('style');
     s.textContent=`html{ overscroll-behavior-x: contain; } body{ overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-    .swipe-glow{ position:fixed; top:0; bottom:0; right:0; width:5px; background: linear-gradient(180deg, #c9a227, #8a6410); opacity:0; transition: opacity .2s; z-index:9998; pointer-events:none; }
+    .swipe-glow{ position:fixed; top:0; bottom:0; right:0; width:5px; background: linear-gradient(180deg, #c3922b, #8a6410); opacity:0; transition: opacity .2s; z-index:9998; pointer-events:none; }
     .swipe-glow.on{ opacity:.85; }
     .swipe-hint-bubble{ position:fixed; top:50%; right:12px; transform:translateY(-50%) scale(.8); background: rgba(18,50,92,.92); color:#fff8e8; font-size:22px; padding:10px 12px; border-radius:24px; box-shadow:0 6px 18px rgba(0,0,0,.28); opacity:0; transition: all .2s; z-index:9999; pointer-events:none; }
     .swipe-hint-bubble.on{ opacity:1; transform:translateY(-50%) scale(1); }
@@ -2338,5 +2269,49 @@ window.addEventListener('beforeunload', persistViewState);
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') persistViewState(); });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfd0a16e0fed4b',t:'MTc5MjQxMzI0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfd0a16e0fed4b',t:'MTc5MjQxMzI0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script id="shamamsa-skin-js">
+(function(){
+  /* ── ساعة القاهرة 12 ساعة (زي شمامسة) ── */
+  try{
+    var f=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hour12:true});
+    var tick=function(){document.querySelectorAll('[data-cx-clock]').forEach(function(el){
+      el.textContent=f.format(new Date()).replace(/am/i,'ص').replace(/pm/i,'م');
+    });};
+    tick(); setInterval(tick,15000);
+  }catch(e){}
+
+  /* ── درجة/درج الموبايل (بيشتغل لو core.js مش موجود) ── */
+  var b=document.getElementById('cxBurger'), d=document.getElementById('cxDrawer'), sc=document.getElementById('cxScrim');
+  function closeD(){ if(d) d.classList.remove('open'); if(sc) sc.classList.remove('on'); }
+  if(b&&d) b.addEventListener('click',function(){ var on=d.classList.toggle('open'); if(sc) sc.classList.toggle('on',on); });
+  if(sc) sc.addEventListener('click',closeD);
+  if(d) d.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeD);});
+
+  /* ── الوضع الليلي: بنسيبه لـ E3.theme لو موجود، وإلا بنعمل fallback بسيط ── */
+  var hasThemeApi = !!(window.E3 && E3.theme && typeof E3.theme.init === 'function');
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    try{ localStorage.setItem('e3dad-theme',t); }catch(e){}
+  }
+  if(!hasThemeApi){
+    document.addEventListener('click',function(ev){
+      var t=ev.target.closest?ev.target.closest('[data-theme-toggle]'):null;
+      if(!t) return;
+      var cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      applyTheme(cur);
+      document.querySelectorAll('[data-theme-toggle] .tico').forEach(function(i){ i.textContent = cur==='dark' ? '☀️' : '🌙'; });
+    });
+  }
+  /* مزامنة أيقونة الشمس/القمر مع الوضع الحالي */
+  function syncIcons(){
+    var dark=document.documentElement.getAttribute('data-theme')==='dark';
+    document.querySelectorAll('[data-theme-toggle] .tico').forEach(function(i){ i.textContent = dark ? '☀️' : '🌙'; });
+  }
+  syncIcons();
+  new MutationObserver(syncIcons).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class']});
+})();
+</script>
+
+</body>
 </html>
