@@ -267,15 +267,7 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:14px;border-color:var(--red)">
-      <h3 style="color:var(--red)">⚠️ منطقة الخطر — لحسابك انت بس</h3>
-      <p style="color:var(--muted);font-size:13px;line-height:1.9">مفيش حد غيرك يوصل هنا. من هنا تقدر تحذف حساب إدارة السيستم نهائيًا (النظام هيفضل شغّال بس مفيش حد هيشوف كلمات السر)، أو تعيد بناء الخزنة من جديد.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn danger" onclick="deleteUser('${me.id}')">🗑️ حذف حساب إدارة السيستم</button>
-        <button class="btn" onclick="ownerRebuildVault()">♻️ إعادة بناء الخزنة</button>
-        <button class="btn" onclick="ownerExportAccounts()">⬇️ تصدير قائمة الحسابات (بدون كلمات السر)</button>
-      </div>
-    </div>`;
+`;
   }
 
   /* ------------------------------ أدوات اللوحة ------------------------------ */
