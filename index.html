@@ -1,207 +1,288 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>اعداد خدام ادمن | إعداد الخدّام — تسجيل الدخول</title>
-<meta name="description" content="اعداد خدام ادمن — صفحة تسجيل دخول الخدام فقط لنظام إعداد الخدام بالكنيسة القبطية الأرثوذكسية">
-<meta name="theme-color" content="#2b1020">
+<title>اعداد خدام ادمن | تسجيل الدخول</title>
+<meta name="description" content="اعداد خدام ادمن — نظام متابعة دارسي إعداد الخدّام بكنيسة رئيس الملائكة ميخائيل بالأندلس">
+<meta name="theme-color" content="#f8f8f3">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="اعداد خدام ادمن">
-<style>
-:root{--wine:#70162b;--wine2:#3d0f24;--gold:#c9a227;--gold2:#e8c55a;--navy:#1d2a4d;--bg:#faf6ee;--card:#fffdf8;--line:#e8dcc3;--text:#33262e;--muted:#8a7663;--red:#b3261e;--red-bg:#fbe3e0;--green:#2e7d4f}
-*{box-sizing:border-box}
-body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-button{font-family:inherit;cursor:pointer}input{font-family:inherit}
-.wrap{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr}
-/* ---- الجانب الكنسي ---- */
-.art{position:relative;background:url('images/login-church.jpg') center/cover no-repeat;min-height:320px}
-.art:before{content:"";position:absolute;inset:0;background:linear-gradient(205deg,rgba(43,16,32,.05) 35%,rgba(43,16,32,.90))}
-.art-in{position:absolute;inset-inline:0;bottom:0;padding:36px;color:#fdf6df;z-index:1}
-.art-in .church{color:var(--gold2);font-size:15px;font-weight:700}
-.art-in .verse{font-size:clamp(19px,2.5vw,28px);line-height:1.95;font-weight:800;text-shadow:0 2px 16px rgba(0,0,0,.55);margin-top:8px}
-.art-in .ref{color:#e8d9ad;font-size:13px;margin-top:6px}
-.feats{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
-.feats span{background:rgba(43,16,32,.62);border:1px solid rgba(201,162,39,.65);color:#fdf6df;border-radius:999px;padding:7px 13px;font-size:12.5px;backdrop-filter:blur(3px)}
-/* ---- جانب الدخول ---- */
-.side{display:flex;align-items:center;justify-content:center;padding:28px 18px;background:radial-gradient(760px 380px at 50% -4%,rgba(201,162,39,.18),transparent 65%),var(--bg)}
-.card{width:min(450px,100%);background:var(--card);border:1px solid var(--line);border-top:6px solid var(--gold);border-radius:24px;padding:30px 28px 24px;box-shadow:0 26px 64px rgba(75,32,20,.17)}
-.logo-place{width:122px;height:122px;margin:0 auto 8px;border-radius:50%;border:3px dashed var(--gold);background:#fff8e8;display:grid;place-items:center;font-size:54px;color:var(--wine);overflow:hidden;text-align:center}
-.logo-place img{width:100%;height:100%;object-fit:cover}
-.logo-hint{text-align:center;font-size:11px;color:var(--muted);margin-bottom:6px}
-h1{margin:4px 0 2px;text-align:center;font-size:25px;color:var(--wine2)}
-h1 .admin{color:#8a6410}
-.sub{text-align:center;color:var(--muted);font-size:13px;line-height:1.9;margin:0}
-.orn{display:flex;align-items:center;gap:10px;color:var(--gold);margin:17px 0 15px;font-size:17px}
-.orn:before,.orn:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.field{margin-bottom:13px}
-.field label{display:block;font-size:12.5px;font-weight:800;color:#6d5636;margin-bottom:6px}
-.field input{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;font-size:15px;background:#fff;outline:none}
-.field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.24)}
-.pass-row{display:flex;gap:7px}.pass-row input{flex:1}
-.btn{border:1px solid var(--line);background:#fff;color:var(--text);padding:11px 16px;border-radius:12px;font-weight:800;font-size:14px;display:inline-flex;gap:7px;align-items:center;justify-content:center}
-.btn.primary{background:linear-gradient(135deg,var(--wine),var(--wine2));border-color:var(--wine2);color:#fff;width:100%;padding:14px;font-size:16px}
-.btn.primary:hover{filter:brightness(1.1)}
-.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));border-color:var(--gold);color:#2b1020;width:100%;padding:13px;font-size:15px}
-.only{display:flex;gap:8px;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--muted);margin-top:15px;background:#fdf6df;border:1px dashed var(--gold);border-radius:11px;padding:9px;line-height:1.8}
-.error{display:none;background:var(--red-bg);color:var(--red);border:1px solid #f0b8b3;padding:11px 13px;border-radius:11px;font-size:13px;margin-bottom:13px;font-weight:700;line-height:1.7}
-.error.show{display:block;animation:shake .3s}
-@keyframes shake{25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
-.servant-preview{display:none;gap:11px;align-items:center;background:#fff8e8;border:1.5px solid var(--gold);border-radius:14px;padding:10px 13px;margin-bottom:13px}
-.servant-preview.show{display:flex}
-.servant-preview .ph{width:52px;height:52px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(135deg,var(--wine),var(--wine2));color:#fff;display:grid;place-items:center;font-weight:900;font-size:19px;overflow:hidden;flex-shrink:0}
-.servant-preview .ph img{width:100%;height:100%;object-fit:cover}
-.badge{display:inline-flex;padding:3.5px 10px;border-radius:999px;font-size:11px;font-weight:800;background:#fdf0cd;color:#8a6410;border:1px solid var(--gold)}
-.roles{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
-.roles span{font-size:11px;background:#fff;border:1px solid var(--line);color:#6d5636;border-radius:999px;padding:5px 10px}
-.success{display:none;text-align:center;padding:8px 0 2px}.success.show{display:block}
-.success .ph{width:88px;height:88px;border-radius:50%;border:3px solid var(--gold);margin:6px auto;background:linear-gradient(135deg,var(--wine),var(--wine2));color:#fff;display:grid;place-items:center;font-size:34px;font-weight:900;overflow:hidden}
-.success .ph img{width:100%;height:100%;object-fit:cover}
-.photo-up{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:14px}
-.photo-up .ph{width:74px;height:74px;border-radius:18px;border:2px solid var(--gold);background:linear-gradient(135deg,var(--wine),var(--wine2));color:#fff;display:grid;place-items:center;font-size:27px;overflow:hidden;flex-shrink:0}
-.photo-up .ph img{width:100%;height:100%;object-fit:cover}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.topbar-mini{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted)}
-
-/* ===== زر التثبيت — هوية النظام ===== */
-.install-btn{display:flex;align-items:center;gap:11px;width:100%;padding:12px 14px;border-radius:15px;border:1.5px solid var(--gold2);background:linear-gradient(135deg,var(--gold),var(--gold2) 55%,#f3d97e);color:#2b1020;font-weight:900;font-size:14.5px;box-shadow:0 10px 22px rgba(201,162,39,.35),inset 0 1px 0 rgba(255,255,255,.65);transition:.18s;text-align:right;position:relative;overflow:hidden}
-.install-btn:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(201,162,39,.45),inset 0 1px 0 rgba(255,255,255,.7)}
-.install-btn:active{transform:translateY(0)}
-.install-btn .install-ic{width:38px;height:38px;border-radius:50%;background:var(--wine2);color:var(--gold2);display:grid;place-items:center;font-size:19px;flex-shrink:0;box-shadow:inset 0 0 0 2px rgba(232,197,90,.5)}
-.install-btn b{display:block;font-size:14.5px}.install-btn small{display:block;font-weight:700;font-size:11px;opacity:.75;margin-top:1px}
-.install-btn .go{margin-inline-start:auto;font-size:20px;opacity:.65}
-.install-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.5) 48%,transparent 62%);transform:translateX(120%);transition:.6s;pointer-events:none}
-.install-btn:hover::after{transform:translateX(-120%)}
-@media(max-width:900px){.field input{font-size:16px;min-height:50px}.btn{min-height:48px}.wrap{grid-template-columns:1fr}.art{min-height:300px}.art-in{padding:22px 20px}.side{padding:18px 12px calc(28px + env(safe-area-inset-bottom))}.grid2{grid-template-columns:1fr}.card{padding:24px 20px}.logo-place{width:104px;height:104px;font-size:46px}h1{font-size:23px}}
-@media(max-width:600px){body{min-height:100dvh}.art{min-height:238px}.art-in{padding:18px 16px}.art-in .verse{font-size:19px;line-height:1.8}.art-in .ref{display:none}.feats{display:none}.side{align-items:flex-start}.card{border-radius:21px;padding:21px 16px 19px;box-shadow:0 18px 44px rgba(75,32,20,.15)}.logo-hint{display:none}.sub{font-size:12.5px}.field input{font-size:16px;min-height:50px;padding:13px 14px}.btn{min-height:48px}.btn.primary{min-height:52px}.pass-row .btn{width:52px;flex:0 0 52px;padding:0}.install-btn{min-height:58px}.only{font-size:11.5px}}
-@media(max-width:380px){.art{min-height:205px}.art-in .church{font-size:13px}.art-in .verse{font-size:17px}.logo-place{width:88px;height:88px;font-size:39px}h1{font-size:21px}}
-</style>
+<meta name="color-scheme" content="light dark">
+<script>
+/* الوضع الليلي بيتطبّق قبل أول رسم — مفيش وميض */
+(function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="assets/css/app.css?v=3.1">
+<link rel="stylesheet" href="assets/css/login.css?v=3.1">
 </head>
-<body>
+<body class="login-page">
+
 <div class="wrap">
-  <!-- الجانب الكنسي -->
-  <section class="art"><div class="art-in">
-    <div class="church">☦ <span id="artOrg">خدمة إعداد الخدّام — الكنيسة القبطية الأرثوذكسية</span></div>
-    <div class="verse">«نَحْنُ عَامِلُونَ مَعَ اللهِ، وَأَنْتُمْ فَلَّاحَةُ اللهِ، بِنَاءُ اللهِ»</div>
-    <div class="ref">(١ كورنثوس ٣ : ٩) — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ» (١كو ٣ : ٥)</div>
-    <div class="feats"><span>🎓 ٣ سنوات دراسية</span><span>🔁 كل المحاولات محفوظة</span><span>📝 ملاحظات وتقارير</span><span>🖨️ طباعة و PDF</span><span>📲 تثبيت على الموبايل</span></div>
-  </div></section>
-
-  <!-- جانب الدخول -->
-  <section class="side"><div class="card">
-    <div class="topbar-mini"><span>☦ اعداد خدام ادمن</span><span>E3dad Khoddam • Admin</span></div>
-
-    <!-- مكان الصورة: شعار الكنيسة / الخدمة -->
-    <div class="logo-place" id="logoPlace">☦</div>
-    <div class="logo-hint">مكان صورة / شعار الكنيسة أو الخدمة — الأمين يقدر يغيّرها من الإعدادات من جوه</div>
-
-    <h1>إعداد الخدّام <span class="admin">Admin</span></h1>
-    <p class="sub" id="cardSub">سجلّ دارسي إعداد الخدام عبر ٣ سنوات<br>المواد والتقييمات والأنشطة والتقارير — وكل محاولة قديمة محفوظة</p>
-    <div class="orn">✝</div>
-
-    <!-- ===== وضع الدخول العادي: Username & Password فقط ===== -->
-    <div id="loginBox" style="display:none">
-      <div id="noUsersBox" style="display:none;background:#fff7e0;border:1.5px dashed var(--gold);border-radius:12px;padding:12px 14px;margin-bottom:13px;font-size:13px;line-height:1.9;text-align:center">
-        <b>لسه مفيش حسابات خدّام مفعّلة على الجهاز ده.</b><br>
-        حسابات الخدام بتتعمل <b>من جوه النظام نفسه</b> بواسطة أمين الخدمة بس — وصفحة الدخول هنا للدخول فقط، ومفيش إنشاء حسابات من برّه النظام.
+  <!-- ================= الجانب الكنسي ================= -->
+  <section class="art" aria-hidden="false">
+    <div class="art-img"></div>
+    <div class="art-in">
+      <div class="art-brand">
+        <img src="assets/img/logo-512.png" alt="شعار معلم الأجيال للتلمذة">
+        <div>
+          <b id="artOrg">معلم الأجيال للتلمذة</b>
+          <span id="artChurch">كنيسة رئيس الملائكة ميخائيل بالأندلس</span>
+        </div>
       </div>
-      <div class="servant-preview" id="servantPreview"></div>
-      <div class="error" id="liError"></div>
-      <div class="field"><label>اسم المستخدم</label><input id="liUser" placeholder="اسم المستخدم اللي استلمته من الأمين" autocomplete="username"></div>
-      <div class="field"><label>كلمة السر</label><div class="pass-row"><input id="liPass" type="password" placeholder="••••••••" autocomplete="current-password"><button class="btn" type="button" id="eyeBtn">👁️</button></div></div>
-      <button class="btn primary" onclick="doLogin()">✝️ دخول الخدّام</button>
-      <button class="install-btn" type="button" onclick="handleInstall()" style="margin-top:11px"><span class="install-ic">⬇</span><span><b>تثبيت التطبيق</b><small>على الموبايل أو الكمبيوتر — زي أي أبليكيشن</small></span><span class="go">‹</span></button>
-      <div id="installHelp" style="display:none;background:#fff8e8;border:1.5px solid var(--gold);border-radius:13px;padding:13px 15px;margin-top:11px;font-size:13px;line-height:2"></div>
-      <div class="roles"><span>👑 أمين إعداد الخدام</span><span>🤝 مساعد الأمين</span><span>📌 أمين سنة</span><span>✝️ خادم</span><span>👁️ متابِع</span></div>
-      <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر أو معندكش حساب؟ كلّم أمين إعداد الخدام — هو الوحيد اللي يقدر يعمل لك حساب من جوه النظام.</span></div>
+      <div class="church">☦ خدمة إعداد الخدّام — الكنيسة القبطية الأرثوذكسية</div>
+      <div class="verse">«نَحْنُ عَامِلُونَ مَعَ اللهِ، وَأَنْتُمْ فَلَّاحَةُ اللهِ، بِنَاءُ اللهِ»</div>
+      <div class="ref">(١ كورنثوس ٣ : ٩) — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ» (١كو ٣ : ٥)</div>
+      <div class="feats">
+        <span>🎓 ٣ سنوات دراسية</span>
+        <span>🔁 كل المحاولات محفوظة</span>
+        <span>📝 ملاحظات وتقارير</span>
+        <span>🔐 حماية كلمات السر</span>
+        <span>📲 تثبيت على الموبايل</span>
+        <span>🌙 وضع ليلي</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= جانب الدخول ================= -->
+  <section class="side">
+    <div class="side-top">
+      <button class="theme-btn round" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي">
+        <span class="tico">🌙</span>
+      </button>
     </div>
 
-    <!-- ===== نجاح الدخول ===== -->
-    <div class="success" id="successBox"></div>
+    <div class="card">
+      <div class="logo-ring"><img src="assets/img/logo-512.png" alt="شعار الخدمة"></div>
+      <div class="brand-kicker">معلم الأجيال للتلمذة</div>
+      <h1>إعداد الخدّام <span class="admin">Admin</span></h1>
+      <p class="sub" id="cardSub">سجلّ دارسي إعداد الخدّام عبر ٣ سنوات<br>المواد والتقييمات والأنشطة والتقارير — وكل محاولة قديمة محفوظة</p>
+      <div class="orn"><span style="font-size:12px">✦ ✝ ✦</span></div>
 
-    <p style="text-align:center;font-size:11.5px;color:var(--muted);margin:15px 0 0">يعمل بدون إنترنت بعد أول فتح • قابل للتثبيت على الموبايل والكمبيوتر 📲<br>اعداد خدام ادمن — E3dad Khoddam Admin</p>
-  </div></section>
+      <div class="error" id="liError" role="alert"></div>
+
+      <!-- ===== الدخول ===== -->
+      <div id="loginBox" style="display:none">
+        <div class="servant-preview" id="servantPreview"></div>
+        <div class="field">
+          <label for="liUser">اسم المستخدم</label>
+          <input id="liUser" autocomplete="username" spellcheck="false" placeholder="اسم المستخدم اللي استلمته من أمين الخدمة">
+        </div>
+        <div class="field">
+          <label for="liPass">كلمة السر</label>
+          <div class="pass-row">
+            <input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••">
+            <button class="btn" type="button" id="eyeBtn" aria-label="إظهار كلمة السر">👁️</button>
+          </div>
+        </div>
+        <button class="btn primary" id="loginBtn" onclick="doLogin()">☦️ دخول الخدّام</button>
+        <button class="install-btn" type="button" onclick="handleInstall()" style="margin-top:11px">
+          <span class="install-ic">⬇</span>
+          <span><b>تثبيت التطبيق</b><small>على الموبايل أو الكمبيوتر — زي أي أبليكيشن</small></span>
+          <span class="go">‹</span>
+        </button>
+        <div id="installHelp" style="display:none;background:var(--surface-2);border:1.5px solid var(--gold);border-radius:13px;padding:13px 15px;margin-top:11px;font-size:13px;line-height:2"></div>
+        <div class="roles"><span>👑 أمين إعداد الخدام</span><span>🤝 مساعد الأمين</span><span>📌 أمين سنة</span><span>✝️ خادم</span><span>👁️ متابِع</span></div>
+        <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك حساب جديد من جوه النظام.</span></div>
+      </div>
+
+      <!-- ===== نجاح الدخول ===== -->
+      <div class="success" id="successBox"></div>
+
+      <div class="card-theme-row"><button class="theme-btn" type="button" data-theme-toggle><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button></div>
+      <p class="mini">يعمل بدون إنترنت بعد أول فتح • قابل للتثبيت على الموبايل والكمبيوتر 📲<br>اعداد خدام ادمن — معلم الأجيال للتلمذة</p>
+    </div>
+  </section>
 </div>
 
-<script src="cloud-sync.js?v=20"></script>
+<script src="cloud-sync.js?v=3.1"></script>
+<script src="assets/js/core.js?v=3.1"></script>
 <script>
-const DB_KEY='e3dad_khoddam_db_v1', SESSION_KEY='e3dad_khoddam_session_v1';
-const ADMIN_URL='admin.html';
-const ROLE_LABELS={amin:'👑 أمين إعداد الخدام',assistant:'🤝 مساعد أمين إعداد الخدام',year_supervisor:'📌 أمين سنة (مشرف سنة)',khadem:'✝️ خادم',follower:'👁️ خادم متابِع (عرض فقط)'};
-function roleCaption(u){return u&&String(u.username||'').toLowerCase()==='lucaskayser'?'👑 مالك النظام':(ROLE_LABELS[u&&u.role]||u&&u.role||'')}
-const ALL_PERMS=['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const uid=()=>'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-function isLucasOwner(u){return !!u&&(String(u.username||'').toLowerCase()==='lucaskayser'||String(u.id||'').toLowerCase()==='idlucas0001')}
-const initials=n=>(n||'خ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('');
-let DB=loadDB();
-function cleanUsers(users){ const list=Array.isArray(users)?users:(users&&typeof users==='object'?Object.keys(users).map(k=>{const u=users[k];return u&&typeof u==='object'?{...u,id:u.id||k}:u}):[]); return list.map(u=>{if(typeof u==='string'){try{u=JSON.parse(u)}catch(e){return null}} if(!u||typeof u!=='object'||Array.isArray(u))return null; const v={...u}; if(v.password)v.passHash=fallbackHash(String(v.password),String(v.username||'').toLowerCase()); delete v.password; if(isLucasOwner(v))v.active=true; return v}).filter(Boolean) }
-function loadDB(){ try{const raw=localStorage.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.users=cleanUsers(d.users); d.students=d.students||[]; d.activityLog=d.activityLog||[]; d.settings=d.settings||{}; return d}}catch(e){} return {students:[],users:[],activityLog:[],templates:{},settings:{}} }
-function saveDB(){const list=cleanUsers(DB.users);let owner=null;try{const old=JSON.parse(localStorage.getItem(DB_KEY)||'null');owner=cleanUsers(old&&old.users).find(isLucasOwner)||null}catch(e){} if(owner){const at=list.findIndex(isLucasOwner);if(at<0)list.push(owner);else list[at]=owner} DB.users=list; localStorage.setItem(DB_KEY,JSON.stringify(DB)); if(window.E3Cloud)E3Cloud.queuePush()}
-async function hashPassword(pw,salt){ const txt=(salt||'')+'::'+pw; try{ if(window.crypto&&crypto.subtle){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')} }catch(e){} let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16) }
-function fallbackHash(pw,salt){const txt=(salt||'')+'::'+pw; let h1=0xdeadbeef,h2=0x41c6ce57; for(let i=0;i<txt.length;i++){const c=txt.charCodeAt(i); h1=Math.imul(h1^c,2654435761); h2=Math.imul(h2^c,1597334677)} return 'fb'+(h1>>>0).toString(16)+(h2>>>0).toString(16)}
-async function verifyPassword(pw,username,stored){ if(!stored)return false; if(await hashPassword(pw,username)===stored)return true; return fallbackHash(pw,username)===stored }
-function purgeSeededDemo(){ const before=(DB.users||[]).length; DB.users=(DB.users||[]).filter(u=>!(u.username==='amin'&&!u.lastLogin&&u.passHash==='fbf4c8031b39a13c37')); if(DB.users.length!==before)saveDB(); }
-function logAs(u,action){DB.activityLog=DB.activityLog||[]; DB.activityLog.unshift({date:new Date().toLocaleString('ar-EG'),user:u.displayName+' ('+u.username+')',action}); DB.activityLog=DB.activityLog.slice(0,120)}
-function showError(id,msg){const e=$(id); e.textContent=msg; e.classList.add('show')}
-function avatarHTML(u){return u&&u.photo?'<img src="'+u.photo+'" alt="">':'<span>'+esc(initials(u?u.displayName:'خ'))+'</span>'}
-async function boot(){
-  if(window.E3Cloud){ E3Cloud.init({dbKey:DB_KEY,auto:false}); const r=await E3Cloud.sync({timeout:6000}); DB=loadDB(); }
-  if(DB.settings&&DB.settings.orgName){$('artOrg').textContent=DB.settings.orgName+(DB.settings.church?' — '+DB.settings.church:' — الكنيسة القبطية الأرثوذكسية')}
-  if(DB.settings&&DB.settings.orgLogo){$('logoPlace').innerHTML='<img src="'+DB.settings.orgLogo+'" alt="">'}
-  purgeSeededDemo();
-  const hasUsers=(DB.users||[]).length>0;
-  $('loginBox').style.display='block';
-  $('noUsersBox').style.display=hasUsers?'none':'block';
-  if(window.matchMedia('(min-width: 901px) and (pointer: fine)').matches) setTimeout(()=>$('liUser').focus(),80);
+const DB_KEY = E3.DB_KEY, SESSION_KEY = E3.SESSION_KEY, ADMIN_URL = 'admin.html';
+const ROLE_LABELS = { amin:'👑 أمين إعداد الخدام', assistant:'🤝 مساعد أمين إعداد الخدام', year_supervisor:'📌 أمين سنة (مشرف سنة)', khadem:'✝️ خادم', follower:'👁️ خادم متابِع (عرض فقط)' };
+const ALL_PERMS = ['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
+const $ = (id) => document.getElementById(id);
+const roleCaption = (u) => u ? (isLucasOwner(u) ? '🛡️ مدير النظام' : (ROLE_LABELS[u.role] || u.role || '')) : '';
+
+let DB = loadDB();
+
+function loadDB() {
+  try {
+    const raw = E3.store.getItem(DB_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      d.users = cleanUsers(d.users);
+      d.students = d.students || [];
+      d.activityLog = d.activityLog || [];
+      d.settings = d.settings || {};
+      return d;
+    }
+  } catch (e) {}
+  return { students: [], users: [], activityLog: [], templates: {}, settings: {} };
 }
-$('eyeBtn').addEventListener('click',()=>{const i=$('liPass'); i.type=i.type==='password'?'text':'password'; $('eyeBtn').textContent=i.type==='password'?'👁️':'🙈'});
-$('liUser').addEventListener('input',()=>{
-  const v=$('liUser').value.trim().toLowerCase(); const u=(DB.users||[]).find(x=>x.username.toLowerCase()===v); const box=$('servantPreview');
-  if(u){ box.className='servant-preview show'; box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><div><b>'+esc(u.displayName)+'</b><br><span class="badge">'+esc(roleCaption(u))+'</span> <small style="color:var(--muted)">@'+esc(u.username)+'</small></div>' }
-  else{ box.className='servant-preview'; box.innerHTML='' }
-});
-$('liPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
-async function doLogin(){
-  const now=Date.now();
-  if(window._lockUntil&&now<window._lockUntil)return showError('liError','محاولات كتير غلط — استنى '+Math.ceil((window._lockUntil-now)/1000)+' ثانية وحاول تاني');
-  const username=$('liUser').value.trim().toLowerCase(), pw=$('liPass').value;
-  if(!(DB.users||[]).length)return showError('liError','لا توجد حسابات خدّام مفعّلة بعد على هذا الجهاز — حسابات الخدام تُنشأ من داخل النظام بواسطة أمين الخدمة فقط');
-  let u=(DB.users||[]).find(x=>x.username.toLowerCase()===username);
-  if(!u&&window.E3Cloud){ const r=await E3Cloud.sync({timeout:6000}); if(r&&r.changed){DB=loadDB(); u=(DB.users||[]).find(x=>x.username.toLowerCase()===username)} }
-  let ok=false;
-  if(u&&pw)ok=await verifyPassword(pw,u.username.toLowerCase(),u.passHash);
-  if(!ok){
-    window._fails=(window._fails||0)+1;
-    if(window._fails>=5){window._lockUntil=Date.now()+30000; window._fails=0; return showError('liError','٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين')}
-    return showError('liError','اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة '+window._fails+' من ٥)');
+function saveDB() {
+  DB.users = cleanUsers(DB.users);
+  E3.store.setItem(DB_KEY, JSON.stringify(DB));
+  if (window.E3Cloud && E3Cloud.queuePush) E3Cloud.queuePush();
+}
+function defaultSettings() {
+  return { orgName:'معلم الأجيال للتلمذة', church:'كنيسة رئيس الملائكة ميخائيل بالأندلس', orgLogo:'', passMark:60, excellentMark:90, attendanceWarn:75, serviceHoursTarget:100, spiritualMeetingsTarget:10 };
+}
+function logAs(u, action) {
+  DB.activityLog = DB.activityLog || [];
+  DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: (isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || u.username) + ' (' + u.username + ')'), action });
+  DB.activityLog = DB.activityLog.slice(0, 200);
+}
+function showError(msg) { const e = $('liError'); e.textContent = msg; e.classList.add('show'); }
+function clearError() { $('liError').classList.remove('show'); }
+function avatarHTML(u) { return avatarOf(u, esc); }
+
+/* =====================================================================
+   أول تشغيل — تجهيز صامت لحساب «إدارة السيستم»
+   • مفيش أي شاشة إنشاء حسابات على صفحة الدخول نهائيًا.
+   • النظام نفسه بيزرع حساب الإدارة مرة واحدة، والباقي بيتعمل من داخل
+     لوحة التحكم (الخدام والصلاحيات) — الأمين هو اللي بيسلّم اليوزر والباسورد.
+   • بيانات أول دخول موجودة في README-التعليمات.md، ولازم تتغير فورًا.
+   ===================================================================== */
+const SEED_ADMIN = { username: 'admin', password: 'E3dad@2026' };
+
+async function bootstrapSystemAdmin() {
+  if ((DB.users || []).length) return;        /* فيه حسابات — مفيش أي تدخل */
+  if (DB.settings.bootstrapDone) return;      /* اتعمل مرة قبل كده */
+
+  const admin = {
+    id: 'idlucas0001', systemAdmin: true,
+    displayName: E3.SYSTEM_ADMIN_LABEL, username: SEED_ADMIN.username,
+    phone: '', photo: '', role: 'amin', permissions: [...ALL_PERMS], scopeYears: [],
+    active: true, createdAt: today(), lastLogin: '',
+    passHash: await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username),
+    mustChangePassword: true,
+  };
+
+  /* الخزنة (تشفير كلمات السر) — لو المتصفح مش بيدعمها، الحساب بيتعمل برضه
+     والدخول بيشتغل عادي، وبس تتقفل ميزة عرض كلمات السر. */
+  try {
+    const vaultMeta = await E3.vault.createVault(SEED_ADMIN.password);
+    admin.passSealed = await E3.vault.sealWithPublic(vaultMeta.pub, SEED_ADMIN.password);
+    admin.passSealedAt = new Date().toISOString();
+    DB.settings.vault = vaultMeta;
+    E3.vault.pub = vaultMeta.pub;
+    try { E3.vault.privKey = await E3.vault.unlockVault(vaultMeta, SEED_ADMIN.password); } catch (_) {}
+  } catch (e) {
+    console.warn('vault skipped:', e);
   }
-  if(u.active===false&&!isLucasOwner(u))return showError('liError','الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله');
-  if(!isLucasOwner(u))u.lastLogin=new Date().toLocaleString('ar-EG'); logAs(u,'تسجيل دخول من صفحة اعداد خدام ادمن'); saveDB();
-  localStorage.setItem(SESSION_KEY,u.id); localStorage.setItem(SESSION_KEY+'_at',String(Date.now())); welcome(u);
+
+  DB.users = [admin];
+  DB.settings.bootstrapDone = true;
+  DB.activityLog = DB.activityLog || [];
+  E3.store.setItem(DB_KEY, JSON.stringify(DB));
 }
-function welcome(u){
-  $('loginBox').style.display='none';
-  const box=$('successBox'); box.className='success show';
-  box.innerHTML='<div class="ph">'+avatarHTML(u)+'</div><h2 style="margin:8px 0 2px;color:var(--wine2)">نورت يا '+esc(u.displayName.split(' ')[0])+' ☦</h2><p class="sub">'+esc(roleCaption(u))+'<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p><button class="btn gold" style="margin-top:14px" onclick="location.href=\''+ADMIN_URL+'\'">🎓 دخول لوحة التحكم الآن</button>';
-  if(location.protocol.startsWith('http')) setTimeout(()=>{location.href=ADMIN_URL},1400);
+
+async function boot() {
+  DB.settings = Object.assign(defaultSettings(), DB.settings || {});
+  if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
+  if (DB.settings.church) $('artChurch').textContent = DB.settings.church;
+  if (DB.settings.orgLogo) document.querySelectorAll('.logo-ring img').forEach(i => i.src = DB.settings.orgLogo);
+
+  await bootstrapSystemAdmin();
+  try { E3.vault.loadMeta(DB.settings); } catch (_) {}
+
+  $('loginBox').style.display = 'block';
+  if (window.matchMedia('(min-width: 901px) and (pointer: fine)').matches) setTimeout(() => $('liUser').focus(), 120);
 }
-let deferredInstall=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); deferredInstall=e});
-window.addEventListener('appinstalled',()=>{deferredInstall=null; const h=document.getElementById('installHelp'); if(h){h.style.display='block'; h.innerHTML='🎉 <b>تم التثبيت بنجاح!</b> هتلاقي أيقونة «اعداد خدام ادمن» على شاشة جهازك.'}});
-async function handleInstall(){
-  if(deferredInstall){ deferredInstall.prompt(); const c=await deferredInstall.userChoice; deferredInstall=null; return }
-  const h=document.getElementById('installHelp'); const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  h.style.display='block';
-  h.innerHTML=ios
+
+$('eyeBtn').addEventListener('click', () => {
+  const i = $('liPass'); i.type = i.type === 'password' ? 'text' : 'password';
+  $('eyeBtn').textContent = i.type === 'password' ? '👁️' : '🙈';
+});
+$('liUser').addEventListener('input', () => {
+  const v = $('liUser').value.trim().toLowerCase();
+  const u = (DB.users || []).find(x => String(x.username || '').toLowerCase() === v);
+  const box = $('servantPreview');
+  if (u) {
+    box.className = 'servant-preview show';
+    const uname = isLucasOwner(u) ? '' : ' <small style="color:var(--muted)">@' + esc(u.username) + '</small>';
+    box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div><div><b>' + esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : u.displayName) + '</b><br><span class="badge">' + esc(roleCaption(u)) + '</span>' + uname + '</div>';
+  } else { box.className = 'servant-preview'; box.innerHTML = ''; }
+});
+$('liPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+$('liUser').addEventListener('keydown', e => { if (e.key === 'Enter') $('liPass').focus(); });
+
+let busy = false;
+async function doLogin() {
+  if (busy) return;
+  clearError();
+  const now = Date.now();
+  if (window._lockUntil && now < window._lockUntil) return showError('محاولات كتير غلط — استنى ' + Math.ceil((window._lockUntil - now) / 1000) + ' ثانية وحاول تاني');
+  const username = $('liUser').value.trim().toLowerCase();
+  const pw = $('liPass').value;
+  if (!username || !pw) return showError('اكتب اسم المستخدم وكلمة السر');
+  const u = (DB.users || []).find(x => String(x.username || '').toLowerCase() === username);
+  busy = true; const btn = $('loginBtn'); btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
+  let ok = false;
+  try { ok = await verifyPassword(pw, username, u && u.passHash); } catch (e) {}
+  if (!ok) {
+    busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام';
+    window._fails = (window._fails || 0) + 1;
+    if (window._fails >= 5) { window._lockUntil = Date.now() + 30000; window._fails = 0; return showError('٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين'); }
+    return showError('اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة ' + window._fails + ' من ٥)');
+  }
+  if (u.active === false && !isLucasOwner(u)) { busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام'; return showError('الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله'); }
+
+  // فتح الخزنة لمالك النظام
+  if (isLucasOwner(u) && DB.settings.vault) {
+    try {
+      E3.vault.pub = DB.settings.vault.pub;
+      E3.vault.privKey = await E3.vault.unlockVault(DB.settings.vault, pw);
+      if (!u.passSealed) { u.passSealed = await E3.vault.seal(pw); }
+    } catch (e) { console.warn('vault:', e); }
+  }
+  u.lastLogin = new Date().toLocaleString('ar-EG');
+  logAs(u, 'تسجيل دخول');
+  saveDB();
+  E3.store.setItem(SESSION_KEY, u.id);
+  E3.store.setItem(SESSION_KEY + '_at', String(Date.now()));
+  busy = false;
+  welcome(u);
+}
+
+function welcome(u) {
+  $('loginBox').style.display = 'none';
+  const box = $('successBox');
+  box.className = 'success show';
+  box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div>' +
+    '<h2 style="margin:8px 0 2px;color:var(--head)">نورت يا ' + esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || '').split(' ')[0]) + ' ☦</h2>' +
+    '<p class="sub">' + esc(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
+    '<button class="btn gold" style="margin-top:14px" onclick="location.href=\'' + ADMIN_URL + '\'">🎓 دخول لوحة التحكم الآن</button>';
+  if (location.protocol.startsWith('http')) setTimeout(() => { location.href = ADMIN_URL; }, 1400);
+}
+
+/* ------------------------------ التثبيت ------------------------------ */
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
+window.addEventListener('appinstalled', () => {
+  deferredInstall = null;
+  const h = $('installHelp'); if (h) { h.style.display = 'block'; h.innerHTML = '🎉 <b>تم التثبيت بنجاح!</b> هتلاقي أيقونة «اعداد خدام ادمن» على شاشة جهازك.'; }
+});
+async function handleInstall() {
+  if (deferredInstall) { deferredInstall.prompt(); const c = await deferredInstall.userChoice; deferredInstall = null; return; }
+  const h = $('installHelp'); const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  h.style.display = 'block';
+  h.innerHTML = ios
     ? '📱 <b>على الآيفون:</b> افتح الصفحة من <b>Safari</b> ← زرار المشاركة ⤴️ ← <b>«إضافة إلى الشاشة الرئيسية»</b> ← إضافة. هتلاقي الأيقونة على شاشتك وبتشتغل ملء الشاشة وبدون إنترنت.'
-    : '💻📱 <b>على الكمبيوتر أو أندرويد (Chrome/Edge):</b> من قائمة المتصفح ⋮ اختر <b>«تثبيت التطبيق / Install app»</b> — أو زرار التثبيت الصغير في آخر شريط العنوان. بعد التثبيت بيشتغل زي أي أبليكيشن وبدون إنترنت.';
+    : '💻📱 <b>على الكمبيوتر أو أندرويد (Chrome / Edge):</b> من قائمة المتصفح ⋮ اختر <b>«تثبيت التطبيق / Install app»</b> — أو زرار التثبيت الصغير في آخر شريط العنوان. بعد التثبيت بيشتغل زي أي أبليكيشن وبدون إنترنت.';
 }
-if('serviceWorker' in navigator && location.protocol.startsWith('http')){ try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){} }
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
+E3.theme.init();
 boot();
 </script>
 </body>
