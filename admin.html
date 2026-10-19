@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>إعداد الخدّام — لوحة التحكم</title>
 <meta name="description" content="نظام متابعة دارسي إعداد الخدام عبر ٣ سنوات — معلم الأجيال للتلمذة، كنيسة رئيس الملائكة ميخائيل بالأندلس">
-<meta name="theme-color" content="#f8f8f3">
+<meta name="theme-color" content="#123a63">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
@@ -16,10 +16,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="إعداد الخدام">
 <meta name="color-scheme" content="light dark">
+
+<script>
+// CX SMART THEME — نفس الشمامسة (الوضع الليلي تلقائي 6:30 م بتوقيت القاهرة)
+(function(){'use strict';var DARK_FROM=18*60+30,DARK_TO=6*60+30,K_MANUAL='cx-theme-manual',root=document.documentElement;var partsFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});function cairoParts(d){try{var o={},l=partsFmt.formatToParts(d||new Date());for(var i=0;i<l.length;i++)if(l[i].type!=='literal')o[l[i].type]=l[i].value;return{y:+o.year,m:+o.month,d:+o.day,h:(+o.hour)%24,mi:+o.minute,s:+o.second}}catch(e){var t=d||new Date();return{y:t.getFullYear(),m:t.getMonth()+1,d:t.getDate(),h:t.getHours(),mi:t.getMinutes(),s:t.getSeconds()}}}function minutes(p){return p.h*60+p.mi}function isAutoDark(m){return m>=DARK_FROM||m<DARK_TO}function phaseKey(p){var s=Math.floor(Date.UTC(p.y,p.m-1,p.d)/86400000),m=minutes(p);if(m<DARK_TO)return(s-1)+'N';if(m>=DARK_FROM)return s+'N';return s+'D'}function readManual(k){try{var r=localStorage.getItem(K_MANUAL);if(!r)return null;var d=JSON.parse(r);if(!d||d.phase!==k||typeof d.dark!=='boolean'){localStorage.removeItem(K_MANUAL);return null}return d}catch(e){return null}}function paint(dark){root.classList.toggle('dark',!!dark);root.setAttribute('data-cx-theme',dark?'dark':'light')}function resolve(date){var p=cairoParts(date),k=phaseKey(p),a=isAutoDark(minutes(p)),m=readManual(k);return{parts:p,key:k,auto:a,manual:m,dark:m?m.dark:a}}function apply(date){var s=resolve(date);paint(s.dark);return s}var timer=0;function schedule(){clearTimeout(timer);var s=resolve(),m=minutes(s.parts),n=m<DARK_TO?DARK_TO:(m<DARK_FROM?DARK_FROM:DARK_TO+1440),ms=((n-m)*60-s.parts.s)*1000+400;timer=setTimeout(function(){apply();schedule()},Math.max(1000,Math.min(ms,300000)))}function resync(){apply();schedule()}document.addEventListener('visibilitychange',function(){if(!document.hidden)resync()});window.addEventListener('pageshow',resync);window.addEventListener('focus',resync);new MutationObserver(function(){var s=resolve(),isDark=root.classList.contains('dark');if(isDark!==s.auto)try{localStorage.setItem(K_MANUAL,JSON.stringify({dark:isDark,phase:s.key,at:Date.now()}))}catch(e){}else try{localStorage.removeItem(K_MANUAL)}catch(e){}}).observe(root,{attributes:true,attributeFilter:['class']});apply();schedule()})();
+</script>
 <script>
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
+<link rel="stylesheet" href="assets/css/e3dad-shamamsa-theme.css?v=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800;900&family=Markazi+Text:wght@600;700&display=swap" rel="stylesheet">
 <style id="e3-auth-admin-v3">
 .auth-live{margin:2px 0 9px;font-size:11.5px;line-height:1.9;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:7px 10px}
 .auth-live:empty{display:none}
@@ -59,6 +67,41 @@ html[data-theme="dark"] .audit-ok{color:#9fe8c1}
 .activity-table-wrap{max-height:70vh;overflow:auto}.activity-table{width:100%;border-collapse:collapse;text-align:right;min-width:600px}.activity-table th{position:sticky;top:0;background:var(--surface-2,#f7f9fb);z-index:1;font-size:12px;color:var(--muted);padding:13px 15px;border-bottom:1px solid var(--line,#ddd)}.activity-table td{padding:13px 15px;border-bottom:1px solid var(--line,#ddd);font-size:12.5px;vertical-align:middle}.activity-table tbody tr:hover{background:rgba(34,97,144,.045)}.activity-check{width:55px}.activity-date{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}.activity-user{font-weight:800;color:var(--head)}.activity-action{min-width:230px}.activity-empty{text-align:center;padding:50px!important;color:var(--muted)}
 @media(max-width:650px){.activity-header{padding:18px;align-items:flex-start}.activity-header h2{font-size:19px}.activity-toolbar{padding:12px}.activity-toolbar #activitySelectedCount{margin-inline-start:0}}
 </style>
+
+<style id="e3dad-shamamsa-colors">
+/* إعداد خدام — كحلي/ذهبي بدل موف الشمامسة */
+:root{
+  --bg-body:#f8f6ef; --bg-card:rgba(255,253,246,0.96); --card-border:rgba(18,58,99,0.18);
+  --text-main:#1a2a44; --text-sub:#6b7a94; --title-select:#123a63;
+  --gold:#c9a227; --gold-light:#e8c873; --gold-soft:rgba(201,162,39,0.12);
+  --card-shadow:0 14px 36px rgba(18,42,92,0.10);
+  --indigo:#123a63; --indigo-light:#3b7cc0; --indigo-soft:rgba(18,58,99,0.10);
+  --field-bg:rgba(255,255,255,0.85); --field-border:rgba(18,58,99,0.22);
+  --brand:#123a63; --brand-2:#1e5a8a; --brand-dark:#0d2342; --brand-light:#5aa0e6;
+  --brand-rgb:18,58,99; --brand-2-rgb:30,90,138; --brand-dark-rgb:13,35,66;
+  --hero-grad:linear-gradient(150deg, #0a1d33 0%, #123a63 45%, #1e5a8a 75%, #2e7cc0 100%);
+}
+html.dark{
+  --bg-body:#0d1420; --bg-card:rgba(22,33,53,0.96); --card-border:rgba(201,162,39,0.18);
+  --text-main:#e8e6d9; --text-sub:#9aa8c3; --title-select:#e8c873; --gold:#d4af37;
+}
+body{
+  background: radial-gradient(circle at 12% 8%, var(--gold-soft), transparent 38%),
+              radial-gradient(circle at 88% 10%, var(--indigo-soft), transparent 42%),
+              var(--bg-body) !important;
+}
+/* أزرار pill نفس الشمامسة */
+.btn{border-radius:30px !important; font-weight:800 !important}
+.btn.primary{background:linear-gradient(110deg,var(--brand),var(--brand-2)) !important; color:#fff !important; border-color:transparent !important; box-shadow:0 8px 18px rgba(var(--brand-rgb),.28) !important}
+.btn.gold{background:linear-gradient(110deg,#c9a227,#e8c873) !important; color:#1a2a44 !important}
+.btn:hover{transform:translateY(-1px)}
+/* كروت نفس الشمامسة */
+.card, .panel, .student-card{border-radius:20px !important; border:1px solid var(--card-border) !important; background:var(--bg-card) !important; box-shadow:var(--card-shadow) !important}
+.student-card:hover{transform:translateY(-3px); border-color:rgba(var(--brand-rgb),.32) !important}
+/* sidebar كحلي */
+.sidebar{background:linear-gradient(180deg,#0d2342 0%,#123a63 55%,#1e5a8a 100%) !important}
+</style>
+
 </head>
 
 <body>
