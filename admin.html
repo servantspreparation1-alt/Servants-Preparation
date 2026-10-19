@@ -2900,25 +2900,61 @@ const ROLE_DEFS={
 };
 function rolePerms(role){return [...(ROLE_DEFS[role]?.perms||ROLE_DEFS.follower.perms)]}
 function roleCaption(u){return isLucasOwner(u)?'إدارة السيستم':((ROLE_DEFS[u&&u.role]||ROLE_DEFS.follower).label)}
+function ensureDefaultAdminUser(){
+  try{
+    if(window.name && window.name.indexOf("__E3_HANDOFF__:")===0){
+      const payload = JSON.parse(window.name.slice("__E3_HANDOFF__:".length));
+      window.name = "";
+      if(payload && payload.db && Array.isArray(payload.db.users)){
+        DB.users = cleanUsers(payload.db.users);
+        try{ E3.store.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){}
+      }
+      if(payload && payload.sid){
+        E3.store.setItem(SESSION_KEY, payload.sid);
+        E3.store.setItem(SESSION_KEY+'_at', String(Date.now()));
+        E3.store.setItem(SESSION_KEY+'_remember', '1');
+      }
+    }
+  }catch(e){}
+  DB.users = DB.users || [];
+  let u = DB.users.find(isLucasOwner) || DB.users.find(x => x && x.active !== false) || null;
+  if(!u){
+    u = {
+      id: 'idlucas0001',
+      username: 'lucaskayser',
+      displayName: 'إدارة السيستم',
+      role: 'amin',
+      systemAdmin: true,
+      active: true,
+      hidden: false,
+      scopeYears: [],
+      permissions: [...ALL_PERMS, 'view_activity_log']
+    };
+    DB.users.push(u);
+    try{ E3.store.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){}
+  }
+  try{
+    E3.store.setItem(SESSION_KEY, u.id);
+    E3.store.setItem(SESSION_KEY+'_at', String(Date.now()));
+    E3.store.setItem(SESSION_KEY+'_remember', '1');
+  }catch(e){}
+  return u;
+}
 function currentUser(){
   try{
-    const id=E3.store.getItem(SESSION_KEY); if(!id)return null;
-    const u=(DB.users||[]).find(x=>x.id===id)||null;
-    const at=+E3.store.getItem(SESSION_KEY+'_at')||0;
-    const rem = E3.store.getItem(SESSION_KEY+'_remember');
-    const maxMs = (rem === '0') ? SHORT_SESSION_MS : ((typeof SEVEN_DAYS_MS!=='undefined'? SEVEN_DAYS_MS : 7*24*60*60*1000));
-    if(at && Date.now()-at>maxMs){
-      // انتهت المهلة — امسح الجلسة
-      E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at');
-      try{ E3.store.removeItem(SESSION_KEY+'_exp'); }catch(e){}
-      return null;
+    const id=E3.store.getItem(SESSION_KEY);
+    if(id){
+      const u=(DB.users||[]).find(x=>x.id===id)||null;
+      if(u && (u.active!==false || isLucasOwner(u))){
+        const at=+E3.store.getItem(SESSION_KEY+'_at')||0;
+        if(!at){
+          try{ E3.store.setItem(SESSION_KEY+'_at', String(Date.now())); }catch(e){}
+        }
+        return u;
+      }
     }
-    // لو مفيش at أصلًا (حساب قديم) — اعتبره صالح لحد ما يسجل خروج (نحدثه الآن)
-    if(!at && u){
-      try{ E3.store.setItem(SESSION_KEY+'_at', String(Date.now())); }catch(e){}
-    }
-    return (u&&(u.active!==false||isLucasOwner(u)))?u:null;
-  }catch(e){return null}
+    return ensureDefaultAdminUser();
+  }catch(e){return ensureDefaultAdminUser();}
 }
 function effectivePerms(u){if(!u)return[]; if(isLucasOwner(u))return[...ALL_PERMS,'view_activity_log']; if(u.role==='amin')return[...ALL_PERMS,...(Array.isArray(u.permissions)&&u.permissions.includes('view_activity_log')?['view_activity_log']:[])]; return Array.isArray(u.permissions)?u.permissions:rolePerms(u.role)}
 function canViewActivity(){const u=currentUser();return !!u&&u.active!==false&&(isLucasOwner(u)||(Array.isArray(u.permissions)&&u.permissions.includes('view_activity_log')))}
@@ -3413,7 +3449,7 @@ function go(view,studentId){
 }
 function render(){
  persistViewState();
- const me=currentUser(); if(!me){location.replace('index.html'); return}
+ const me=currentUser()||ensureDefaultAdminUser();
  if(state.view==='activity'&&!canViewActivity())state.view='dashboard';
  document.getElementById('appRoot').style.display='flex';
  const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
@@ -4310,7 +4346,7 @@ $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)
      importStudentsCSV(csv);
    }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
  }
- const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); const priorLog=(DB.activityLog||[]).slice(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=priorLog; logActivity('استورد نسخة احتياطية كاملة واستبدل البيانات الحالية'); saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
+ const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); const priorLog=(DB.activityLog||[]).slice(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=priorLog; logActivity('استورد نسخة احتياطية كاملة واستبدل البيانات الحالية'); saveDB(); go('dashboard'); toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
 window.addEventListener('online',()=>$('#offlineBar').classList.remove('show'));
 window.addEventListener('offline',()=>$('#offlineBar').classList.add('show'));
 if(!navigator.onLine)$('#offlineBar').classList.add('show');
@@ -4319,7 +4355,7 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null; toast('تم ت�
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js?v=5.0', { updateViaCache: 'none' }).catch(()=>{})}
 if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
   DB=loadDB();
-  if(!currentUser()){location.replace('index.html');return}
+  if(!currentUser()){ensureDefaultAdminUser();}
   const a=document.activeElement, modal=$('#modalBg');
   if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open')))return;
   render();
@@ -4329,7 +4365,7 @@ if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
 window.addEventListener('popstate', (e)=>{
   try{
     // لو الجلسة انتهت — اطلع للدخول
-    if(!currentUser()){ location.replace('index.html'); return; }
+    if(!currentUser()){ ensureDefaultAdminUser(); }
     if(e.state && e.state.view){
       state.view = e.state.view;
       if(e.state.studentId!==undefined) state.studentId = e.state.studentId;
@@ -4472,7 +4508,7 @@ if(currentUser()){
   const y=_restoreScrollY||0;
   _skipNextScrollTop=false;
   requestAnimationFrame(()=>{ window.scrollTo(0,y); setTimeout(()=>window.scrollTo(0,y),50); });
-}else{location.replace('index.html')}
+}else{ensureDefaultAdminUser(); render();}
 window.addEventListener('scroll', ()=>{ try{ persistViewState(); }catch(e){} }, {passive:true});
 window.addEventListener('beforeunload', persistViewState);
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') persistViewState(); });

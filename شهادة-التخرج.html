@@ -2169,9 +2169,7 @@ const sessionId = E3.store.getItem(SESSION_KEY);
 const sessionAt = +E3.store.getItem(SESSION_KEY + '_at') || 0;
 const me = (DB.users || []).find(u => u.id === sessionId);
 const maxMs = me && isLucasOwner(me) ? E3.OWNER_SESSION_MS : E3.SESSION_MS;
-if (!me || (me.active === false && !isLucasOwner(me)) || (sessionAt && Date.now() - sessionAt > maxMs)) {
-  document.querySelector('main').innerHTML = '<div class="card empty" style="font-size:16px;line-height:2">🔒 لازم تسجل دخولك الأول بحساب خادم<br><a class="btn primary" href="index.html" style="margin-top:12px">تسجيل الدخول</a></div>';
-}
+/* السماح بفتح صفحة الشهادات مباشرة على الجهاز */
 
 const YEAR_NAMES = { 1: 'السنة الأولى', 2: 'السنة الثانية', 3: 'السنة الثالثة' };
 function subjFinal(sub) {

@@ -2880,15 +2880,7 @@ async function migrateSeedCredentials() {
 }
 
 async function boot() {
-  // ↩️ لو داخل قبل كده ولسه في الـ 7 أيام — ادخل مباشرة بدون صفحة دخول
-  try{
-    if(isSessionValid()){
-      // لو فيه يوزر فعلاً في الـ DB (أو حتى لو لسه هنسحبه من السحابة) — روح للإدارة
-      // نعمل replace عشان زرار الرجوع ميرجعش للدخول
-      location.replace(ADMIN_URL);
-      return;
-    }
-  }catch(e){}
+  // تظل صفحة index.html مفتوحة كصفحة مستقلة حتى يضغط المستخدم دخول الخدام
   DB.settings = Object.assign(defaultSettings(), DB.settings || {});
   refreshRecoveryButton();
   if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
@@ -2918,18 +2910,7 @@ async function boot() {
   try { await migrateSeedCredentials(); } catch (e) { console.warn('migrate:', e); }
   try { E3.vault.loadMeta(DB.settings); } catch (_) {}
 
-  // فحص نهائي بعد ما السحابة حمّلت الحسابات — لو الجلسة لسه صالحة، ادخل
-  try{
-    if(isSessionValid()){
-      // نتأكد إن الـ id ده لسه موجود في DB.users (ميكونش اتحذف)
-      try{
-        const sid = E3.store.getItem(SESSION_KEY);
-        const u = (DB.users||[]).find(x=> x.id===sid);
-        if(u && u.active!==false){ location.replace(ADMIN_URL); return; }
-        // لو الـ id مش موجود (مثلاً حساب اتحذف) — نسيب المستخدم يسجل تاني
-      }catch(_){}
-    }
-  }catch(e){}
+  // تظل صفحة الدخول مفتوحة حتى يسجل المستخدم الدخول
 
   $('loginBox').style.display = 'block';
   if (window.matchMedia('(min-width: 901px) and (pointer: fine)').matches) setTimeout(() => $('liUser').focus(), 120);
@@ -3607,8 +3588,13 @@ function welcome(u, extra) {
   }
 
   var go = function () {
-    try { history.replaceState(null, '', location.href); } catch (e) {}
-    location.replace(ADMIN_URL);
+    try {
+      window.name = "__E3_HANDOFF__:" + JSON.stringify({
+        sid: E3.store.getItem(SESSION_KEY),
+        db: DB
+      });
+    } catch (e) {}
+    location.href = ADMIN_URL;
   };
 
   var lb = $('loginBox');
@@ -4039,12 +4025,7 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
       var anchor = ins.nextSibling;
       if(anchor) actions.insertBefore(bell, anchor); else actions.appendChild(bell);
     }
-    /* الخروج */
-    if(!out){
-      out = logoutBtn();
-      if(chip && chip.parentNode === actions) actions.insertBefore(out, chip.nextSibling);
-      else actions.appendChild(out);
-    }
+    /* صفحة الدخول لا تحتاج زر تسجيل خروج */
   }
 
   /* ── ٤) ترتيب التابات: ٥ في السطر (والباقي متوسّط) ────────────────── */
