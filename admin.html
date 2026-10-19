@@ -19,6 +19,37 @@
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
+<style id="e3-auth-admin-v3">
+.auth-live{margin:2px 0 9px;font-size:11.5px;line-height:1.9;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:7px 10px}
+.auth-live:empty{display:none}
+.auth-live b{color:var(--head)}
+.auth-tol{display:flex;align-items:flex-start;gap:8px;margin:10px 0 4px;padding:9px 11px;border-radius:11px;background:rgba(201,162,39,.09);border:1px solid rgba(201,162,39,.35);font-size:12px;font-weight:700;line-height:1.7;cursor:pointer}
+.auth-tol input{width:17px;height:17px;accent-color:#c9a227;flex:0 0 auto;margin-top:2px}
+.auth-tol b{color:#8a6200;font-size:11px}
+.cred-card{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.cred-head{display:flex;align-items:center;gap:10px;padding:11px 13px;background:linear-gradient(135deg,rgba(201,162,39,.14),rgba(201,162,39,.03));border-bottom:1px solid var(--line)}
+.cred-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#1c4574,#0f2c4d);border:2px solid rgba(201,162,39,.6);flex:0 0 40px}
+.cred-head b{display:block;font-size:14px;color:var(--head)}
+.cred-head small{display:block;font-size:11px;color:var(--muted)}
+.cred-head .badge{margin-inline-start:auto}
+.cred-row{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px dashed var(--line)}
+.cred-row:last-of-type{border-bottom:0}
+.cred-k{flex:0 0 88px;font-size:11.5px;font-weight:800;color:var(--muted)}
+.cred-v{flex:1;min-width:0;font-size:14px;font-weight:900;color:var(--head);background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;overflow-wrap:anywhere}
+.cred-v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.6px}
+.cred-meta{display:flex;flex-wrap:wrap;gap:6px 14px;padding:9px 13px;font-size:11px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+.cred-note{padding:9px 13px;font-size:11px;line-height:1.85;color:var(--muted);background:var(--surface-2)}
+.cred-note b{color:var(--head)}
+.cred-warn{padding:9px 13px;font-size:11.5px;font-weight:800;line-height:1.8;color:#a11c14;background:#fdf1ef;border-top:1px solid #ecc7c1}
+html[data-theme="dark"] .cred-warn{background:#33191a;border-color:#6d3a38;color:#ffb3aa}
+.audit-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.audit-table th,.audit-table td{border:1px solid var(--line);padding:6px 8px;text-align:right}
+.audit-table th{background:var(--surface-2);font-weight:900;color:var(--head)}
+.audit-bad{color:#a11c14;font-weight:800}
+.audit-ok{color:#17683f;font-weight:800}
+html[data-theme="dark"] .audit-bad{color:#ffb3aa}
+html[data-theme="dark"] .audit-ok{color:#9fe8c1}
+</style>
 </head>
 
 <body>
@@ -193,15 +224,358 @@ function touchSessionAdmin(){
 try{ history.replaceState({view: (typeof state!=='undefined'?state.view:'dashboard')}, '', location.href); }catch(e){}
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-function showOneTimeCredentials(displayName,username,password){
-  openModal('بيانات دخول '+displayName,`<div style="background:var(--surface-2);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وسلّمها لصاحب الحساب بأمان. كلمة السر دي <b>متشفّرة في الخزنة</b> — إدارة السيستم بس هي اللي تقدر تشوفها تاني؛ باقي الإدارة مش هتقدر.</div>
-  <div class="field"><label>اسم المستخدم</label><input id="createdUsername" readonly autocomplete="off" value="${esc(username)}"></div>
-  <div class="field"><label>كلمة السر — تظهر الآن فقط</label><div class="pw-wrap"><input id="createdPassword" type="password" readonly autocomplete="off" value="${esc(password)}"><button class="btn" id="createdPasswordEye" type="button">👁️</button></div></div>
-  <button class="btn gold" id="copyCreatedPassword" type="button">📋 نسخ كلمة السر</button>`,()=>closeModal(),'✅ تم حفظها — إغلاق');
-  const input=document.getElementById('createdPassword'),eye=document.getElementById('createdPasswordEye'),copy=document.getElementById('copyCreatedPassword');
-  eye.onclick=()=>{input.type=input.type==='password'?'text':'password';eye.textContent=input.type==='password'?'👁️':'🙈'};
-  copy.onclick=async()=>{try{if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(password);else{input.type='text';input.select();document.execCommand('copy');input.type='password'}toast('تم نسخ كلمة السر — ابعتها لصاحب الحساب الآن')}catch(e){input.type='text';input.select();toast('حدد كلمة السر وانسخها يدويًا')}};
+
+/* =====================================================================
+   E3A v3 — طبقة توحيد بيانات الدخول
+   • اسم المستخدم: مش بيفرّق بين كابيتال/سمول، ولا مسافات (حتى اللي في
+     النص)، ولا همزات (أ إ آ ← ا)، ولا ة/ه ولا ى/ي، ولا أرقام عربي/إنجليزي،
+     ولا الحروف المخفية (zero-width / RTL marks / tatweel).
+   • كلمة السر: المسافات الزيادة من الأول والآخر بتتشال، والمسافات المتكررة
+     بتتحول لمسافة واحدة — والحالة (كابيتال/سمول) بيفرّق فيها إلا لو الحساب
+     مفعّل عليه «التسامح».
+   • كل حساب ليه مفتاح ثابت (usernameKey) — البصمة بتتعمل بيه على طول،
+     عشان نفس الكلمة تشتغل سواء اتكتبت في نموذج الإضافة أو إعادة التعيين.
+   • التحقق بيجرّب المفاتيح القديمة كلها كمان، فالحسابات القديمة بتدخل زي ما هي.
+   ===================================================================== */
+var E3A = (function () {
+  'use strict';
+
+  var ZW = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g;
+  var TATWEEL = /\u0640/g;
+  var SPACES = /[\s\u2000-\u200A\u202F\u205F\u3000]+/g;
+
+  function str(v) { return v == null ? '' : String(v); }
+  function nfkc(t) { try { return t.normalize('NFKC'); } catch (e) { return t; } }
+  function digits(t) {
+    return t.replace(/[\u0660-\u0669]/g, function (c) { return String(c.charCodeAt(0) - 0x0660); })
+            .replace(/[\u06F0-\u06F9]/g, function (c) { return String(c.charCodeAt(0) - 0x06F0); });
+  }
+  function clean(t) {
+    return digits(nfkc(str(t)).replace(ZW, '').replace(TATWEEL, '').replace(/\u00A0/g, ' '));
+  }
+
+  /* مفتاح اسم المستخدم — كل الاختلافات الشكلية بتختفي هنا */
+  function userKey(v) {
+    return clean(v)
+      .replace(/[\u064B-\u0652\u0670]/g, '')
+      .toLowerCase()
+      .replace(/[أإآٱ]/g, 'ا')
+      .replace(/[ىئ]/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ک/g, 'ك')
+      .replace(/ی/g, 'ي')
+      .replace(/ۀ/g, 'ه')
+      .replace(SPACES, '');
+  }
+
+  /* الشكل اللي بيتخزن ويتشفّر بيه: من غير مسافات زيادة */
+  function passCanon(v) {
+    return clean(v).replace(/^[ \t]+/, '').replace(/[ \t]+$/, '').replace(/[ \t]+/g, ' ');
+  }
+  function passFold(v) { return passCanon(v).toLowerCase(); }
+
+  function sameAsUser(pw, username) {
+    var a = userKey(passCanon(pw)), b = userKey(username);
+    return !!a && !!b && a === b;
+  }
+
+  /* الشكل اللي بيتعرض بيه اسم المستخدم في الجداول */
+  function displayUsername(v) {
+    return clean(v).replace(SPACES, ' ').replace(/^ +| +$/g, '');
+  }
+
+  /* كل المفاتيح المحتملة — للتوافق مع الحسابات القديمة */
+  function salts(u) {
+    var out = [], seen = {};
+    function add(s) {
+      s = str(s);
+      if (!s || seen[s]) return;
+      seen[s] = 1; out.push(s);
+    }
+    if (!u) return out;
+    add(u.usernameKey);
+    add(u.username);
+    add(displayUsername(u.username));
+    add(str(u.username).toLowerCase());
+    add(str(u.username).trim().toLowerCase());
+    add(userKey(u.username));
+    return out;
+  }
+  function passVariants(pw) {
+    var out = [], seen = {};
+    function add(s) { s = str(s); if (!s || seen[s]) return; seen[s] = 1; out.push(s); }
+    add(pw);
+    add(passCanon(pw));
+    return out;
+  }
+
+  function meta(u) {
+    var m = {};
+    try { if (typeof DB !== 'undefined' && DB && DB.authMeta && u && u.id) m = DB.authMeta[u.id] || {}; } catch (e) {}
+    var ci = (u && u.passHashCI) || m.ci || '';
+    var tol;
+    if (u && u.pwTolerant !== undefined && u.pwTolerant !== null) tol = !!u.pwTolerant;
+    else if (m.tol !== undefined && m.tol !== null) tol = !!m.tol;
+    else tol = undefined;
+    return {
+      key: (u && u.usernameKey) || m.key || (u ? userKey(u.username) : ''),
+      ci: ci,
+      tol: tol,
+      v: (u && u.passAlgo) || m.v || 0
+    };
+  }
+
+  function required(name, fn) {
+    if (typeof fn !== 'function') throw new Error(name + ' مش متاحة — اتأكد إن core.js محمّل قبل الصفحة');
+    return fn;
+  }
+
+  /* ============ التحقق ============ */
+  async function verify(u, pw) {
+    if (!u || !u.passHash) return { ok: false, why: 'nohash' };
+    var vp = required('verifyPassword', (typeof verifyPassword !== 'undefined' ? verifyPassword : undefined));
+    var M = meta(u);
+    var keys = salts(u), pws = passVariants(pw);
+    var tried = {};
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = 0; j < pws.length; j++) {
+        var sig = keys[i] + '\u0000' + pws[j];
+        if (tried[sig]) continue;
+        tried[sig] = 1;
+        var ok = false;
+        try { ok = await vp(pws[j], keys[i], u.passHash); } catch (e) {}
+        if (ok) return { ok: true, mode: 'exact', salt: keys[i], pass: pws[j], tolerant: M.tol === true };
+      }
+    }
+    if (M.ci && M.tol !== false) {
+      var folds = [passFold(pw), passCanon(pw)];
+      for (var k = 0; k < keys.length; k++) {
+        for (var f = 0; f < folds.length; f++) {
+          var ok2 = false;
+          try { ok2 = await vp(folds[f], keys[k], M.ci); } catch (e) {}
+          if (ok2) return { ok: true, mode: 'tolerant', salt: keys[k], pass: folds[f], tolerant: true };
+        }
+      }
+    }
+    return { ok: false, why: 'mismatch', tolerant: M.tol === true };
+  }
+
+  /* ============ بناء بصمة جديدة + اختبار فوري ============ */
+  async function setPassword(u, pw, opts) {
+    opts = opts || {};
+    if (!u) throw new Error('setPassword: مفيش حساب');
+    var hp = required('hashPassword', (typeof hashPassword !== 'undefined' ? hashPassword : undefined));
+    var canonical = passCanon(pw);
+    var key = userKey(u.username) || displayUsername(u.username);
+    if (!key) throw new Error('setPassword: اسم المستخدم فاضي');
+    var tolerant = opts.tolerant !== false;
+
+    u.username = displayUsername(u.username);
+    u.usernameKey = key;
+    u.passAlgo = 3;
+    u.passHash = await hp(canonical, key);
+    u.pwTolerant = tolerant;
+    if (tolerant) u.passHashCI = await hp(passFold(canonical), key);
+    else { try { delete u.passHashCI; } catch (e) { u.passHashCI = ''; } u.passHashCI = u.passHashCI || ''; }
+
+    /* مرآة للبيانات في مكان منفصل — لو cleanUsers شالت الحقول الجديدة */
+    try {
+      if (typeof DB !== 'undefined' && DB && u.id) {
+        DB.authMeta = DB.authMeta || {};
+        DB.authMeta[u.id] = { key: key, ci: u.passHashCI || '', tol: tolerant, v: 3, at: Date.now() };
+      }
+    } catch (e) {}
+
+    var check = await verify(u, canonical);
+    return { ok: check.ok, canonical: canonical, key: key, tolerant: tolerant, check: check };
+  }
+
+  /* ============ تحليل كلمة السر المكتوبة (لرسائل الغلط) ============ */
+  function analyze(pw) {
+    var raw = str(pw), canon = passCanon(pw);
+    return {
+      raw: raw,
+      len: raw.length,
+      spaces: (raw.match(/ /g) || []).length,
+      lead: /^[ \t]/.test(raw),
+      trail: /[ \t]$/.test(raw),
+      upper: /[A-Z]/.test(raw) || /[\u0621-\u064A]/.test(raw),
+      lower: /[a-z]/.test(raw),
+      num: /[0-9٠-٩]/.test(raw),
+      sym: /[^A-Za-z0-9\u0621-\u064A0-9٠-٩ ]/.test(raw),
+      hasArabic: /[\u0600-\u06FF]/.test(raw),
+      trimmed: canon !== raw,
+      canon: canon
+    };
+  }
+
+  /* ============ اقتراح أقرب أسماء (لما الاسم يكون غلط) ============ */
+  function lev(a, b) {
+    a = str(a); b = str(b);
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    var prev = [], cur = [], i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur[0] = i;
+      for (j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+      }
+      prev = cur.slice();
+    }
+    return prev[b.length];
+  }
+  function suggest(raw, users, max) {
+    var key = userKey(raw);
+    if (!key) return [];
+    var scored = [];
+    (users || []).forEach(function (u) {
+      var k = userKey(u.username);
+      if (!k) return;
+      var d = lev(key, k);
+      if (d > 0 && d <= Math.max(1, Math.min(3, Math.floor(key.length / 3) + 1))) {
+        scored.push({ u: u, d: d });
+      }
+    });
+    scored.sort(function (a, b) { return a.d - b.d; });
+    return scored.slice(0, max || 2).map(function (x) { return x.u; });
+  }
+
+  return {
+    userKey: userKey,
+    passCanon: passCanon,
+    passFold: passFold,
+    sameAsUser: sameAsUser,
+    displayUsername: displayUsername,
+    salts: salts,
+    meta: meta,
+    verify: verify,
+    setPassword: setPassword,
+    analyze: analyze,
+    suggest: suggest,
+    lev: lev
+  };
+})();
+if (typeof window !== 'undefined') window.E3A = E3A;
+
+window._togglePw=(id,btn)=>{const i=document.getElementById(id); if(!i)return; i.type=i.type==='password'?'text':'password'; if(btn)btn.textContent=i.type==='password'?'👁️':'🙈';};
+window._authLive=function(passId,pass2Id,outId,userName){
+  const p=document.getElementById(passId),p2=document.getElementById(pass2Id),out=document.getElementById(outId);
+  if(!out)return;
+  const raw=p?p.value:'',raw2=p2?p2.value:'';
+  const canon=E3A.passCanon(raw), a=E3A.analyze(raw);
+  if(!raw){ out.innerHTML='<span style="color:var(--muted)">اكتب كلمة السر — ٨ حروف على الأقل، ومختلفة عن اسم المستخدم.</span>'; return; }
+  const bits=[];
+  bits.push('الطول: <b>'+toArabicDigits(canon.length)+'</b> حرف');
+  if(a.lead||a.trail)bits.push('⚠️ فيها مسافة زيادة — هتتشال تلقائي');
+  if(E3A.sameAsUser(canon,userName))bits.push('<b class="audit-bad">❌ نفس اسم المستخدم</b>');
+  if(raw2)bits.push(raw2===raw?'<b class="audit-ok">✓ التأكيد مطابق</b>':'<b class="audit-bad">✕ التأكيد مش مطابق</b>');
+  out.innerHTML=bits.join(' · ');
+};
+window._userKeyLive=function(v){
+  const el=document.getElementById('uUserKey'); if(!el)return;
+  const key=E3A.userKey(v||'');
+  el.innerHTML=key?('مفتاح المطابقة في الدخول: <b dir="ltr">'+esc(key)+'</b> — «'+esc(v)+'» و«'+esc(E3A.displayUsername(v).toLowerCase().replace(/\s+/g,''))+'» نفس الحساب'):'الكابيتال والمسافات مش بتفرق في الدخول — هنحسبها تلقائي';
+};
+
+function showOneTimeCredentials(displayName,username,password,opts){
+  opts=opts||{};
+  const key=E3A.userKey(username);
+  const pw=String(password||'');
+  const shown=pw.replace(/ /g,'␣').replace(/\t/g,'⇥');
+  const caseShape=[/[a-z]/.test(pw)?'a':'',/[A-Z]/.test(pw)?'A':'',/[0-9٠-٩]/.test(pw)?'1':'',/[^A-Za-z0-9]/.test(pw)?'#':''].join('')||'—';
+  const risk=E3A.sameAsUser(pw,username);
+  const tolerant=opts.tolerant!==false;
+  const page=(location.href.split('#')[0].split('?')[0]).replace(/admin\.html?$/i,'index.html');
+  const msg='سلام ونعمة يا '+displayName+' 🕊️\nاتعملك حساب على نظام متابعة إعداد الخدّام.\n\n👤 اسم المستخدم: '+username+'\n🔑 كلمة السر: '+pw+'\n🔗 رابط الدخول: '+page+'\n\nملاحظة: اسم المستخدم مش بيفرق فيه الكابيتال ولا المسافات، أما كلمة السر فبتتكتب زي ما هي.';
+  window._credUser=username; window._credPw=pw; window._credMsg=msg;
+  window._credCopy=function(what,btn){
+    const map={user:username,pass:pw,both:'اسم المستخدم: '+username+'\nكلمة السر: '+pw,all:msg};
+    const txt=map[what]||'';
+    const done=function(){ if(btn){const old=btn.textContent;btn.textContent='✓ اتنسخ';setTimeout(function(){btn.textContent=old},1400);} toast('اتنسخ ✅'); };
+    const fallback=function(){ try{const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();done();}catch(e){toast('حدد النص وانسخه يدويًا');} };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done).catch(fallback); } else fallback();
+  };
+  openModal('🔑 بيانات دخول '+esc(displayName),`
+    <div class="cred-card">
+      <div class="cred-head">
+        <div class="cred-av">${esc(String(displayName||'؟').trim().charAt(0))}</div>
+        <div><b>${esc(displayName)}</b><small>الحساب اتحفظ وجاهز للدخول على طول</small></div>
+        <span class="badge ${tolerant?'b-green':'b-gold'}">${tolerant?'🔓 متسامح مع الكابيتال':'🔐 حروف حسّاسة'}</span>
+      </div>
+      <div class="cred-row"><span class="cred-k">اسم المستخدم</span><span class="cred-v" dir="ltr">${esc(username)}</span><button class="btn sm" type="button" onclick="window._credCopy('user',this)">📋</button></div>
+      <div class="cred-row"><span class="cred-k">كلمة السر</span><span class="cred-v mono" dir="ltr">${esc(shown)}</span><button class="btn sm" type="button" onclick="window._credCopy('pass',this)">📋</button></div>
+      <div class="cred-meta">
+        <span>الطول: <b>${toArabicDigits(pw.length)}</b></span>
+        <span>شكل الحروف: <b dir="ltr">${caseShape}</b></span>
+        ${/ /.test(pw)?'<span>فيها مسافة — معروضة بـ ␣</span>':''}
+      </div>
+      <div class="cred-note">مفتاح المطابقة في الدخول: <b dir="ltr">${esc(key)}</b><br>«${esc(username)}» و«${esc(E3A.displayUsername(username).toLowerCase())}» و«${esc(E3A.displayUsername(username).replace(/\s+/g,''))}» كلهم بيفتحوا نفس الحساب — مش هتفرق مسافة ولا كابيتال.</div>
+      ${risk?'<div class="cred-warn">⚠️ كلمة السر دي هي نفسها اسم المستخدم — خلي الخادم يغيّرها فورًا من «حسابي».</div>':''}
+      ${!tolerant?'<div class="cred-warn" style="color:#7a5c00;background:#fff8e6;border-color:#ead9a4">🔐 الحساب ده بيفرّق بين الكابيتال والسمول — سلّمها للخادم بنفس شكل الحروف بالظبط.</div>':''}
+    </div>
+    <div class="field"><label>رسالة جاهزة للواتساب</label><textarea id="credMsg" rows="6" readonly style="font-size:12px;line-height:1.85">${esc(msg)}</textarea></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn gold" type="button" onclick="window._credCopy('all',this)">📋 نسخ الرسالة كاملة</button>
+      <button class="btn" type="button" onclick="window._credCopy('both',this)">📋 نسخ الاسم + كلمة السر</button>
+      <a class="btn" href="index.html" target="_blank" rel="noopener">🔗 جرّب الدخول</a>
+    </div>
+    <p style="font-size:11.5px;color:var(--muted);line-height:1.8;margin:10px 0 0">🔒 كلمة السر متشفّرة في الخزنة — إدارة السيستم بس اللي تقدر تشوفها تاني من الجدول.</p>`,
+  ()=>closeModal(),'✅ تم — إغلاق');
 }
+
+/* ================== 🩺 فحص حسابات الدخول ================== */
+function auditUsers(){
+  const users=DB.users||[];
+  const rows=users.map(u=>{
+    const key=E3A.userKey(u.username);
+    const m=E3A.meta(u);
+    const issues=[];
+    if(!u.username) issues.push('اسم المستخدم فاضي');
+    if(/[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/.test(String(u.username||''))) issues.push('فيه حروف مخفية في الاسم');
+    if(!u.passHash) issues.push('مفيش كلمة سر — لازم «كلمة سر جديدة»');
+    if(!m.key||m.key!==key) issues.push('مفتاح الاسم قديم — هيتصلّح تلقائي عند أول دخول');
+    if(!m.ci) issues.push('مش مفعّل التسامح مع الكابيتال');
+    if(u.passAlgo!==3) issues.push('بصمة من نسخة قديمة');
+    const dup=users.filter(x=>x.id!==u.id&&E3A.userKey(x.username)===key).length;
+    if(dup) issues.push('الاسم مكرر مع '+toArabicDigits(dup)+' حساب');
+    return {u,issues,key};
+  });
+  const serious=rows.filter(r=>r.issues.some(x=>/فاضي|مفيش|مكرر|مخفية/.test(x)));
+  const body=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <span class="badge ${serious.length?'b-red':'b-green'}">${serious.length?'⚠️ '+toArabicDigits(serious.length)+' حساب محتاج تدخّل':'✅ مفيش مشاكل خطيرة'}</span>
+      <span class="badge b-gray">${toArabicDigits(users.length)} حساب</span>
+    </div>
+    <div style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:12px">
+      <table class="audit-table">
+        <thead><tr><th>الخادم</th><th>اسم المستخدم</th><th>مفتاح الدخول</th><th>الحالة</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td><b>${esc(r.u.displayName||'—')}</b><br><small style="color:var(--muted)">${esc(roleCaption(r.u))}</small></td>
+          <td dir="ltr">${esc(r.u.username||'—')}</td>
+          <td dir="ltr" style="font-size:10.5px">${esc(r.key||'—')}</td>
+          <td>${r.issues.length?r.issues.map(x=>`<div class="${/فاضي|مفيش|مكرر|مخفية/.test(x)?'audit-bad':'audit-ok'}">• ${esc(x)}</div>`).join(''):'<span class="audit-ok">✓ تمام</span>'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">
+      <button class="btn gold" type="button" onclick="window._fixUserKeys()">🔧 إصلاح مفاتيح الأسماء</button>
+      <span style="font-size:11px;color:var(--muted);line-height:1.8;align-self:center">الإصلاح بيظبط مفتاح الدخول لكل حساب، وبيمنع اللخبطة بين الأسماء المتشابهة.</span>
+    </div>`;
+  openModal('🩺 فحص حسابات الدخول',body,()=>closeModal(),'✅ تمام');
+  window._fixUserKeys=function(){
+    (DB.users||[]).forEach(u=>{
+      const key=E3A.userKey(u.username);
+      u.usernameKey=key;
+      DB.authMeta=DB.authMeta||{};
+      const m=DB.authMeta[u.id]||{};
+      DB.authMeta[u.id]=Object.assign({},m,{key:key,tol:u.pwTolerant===true});
+    });
+    saveDB(); closeModal(); render(); toast('اتصلحت مفاتيح كل الأسماء ✅ — الحسابات القديمة هتترقّى عند أول دخول ناجح');
+  };
+}
+
 const YEAR_NAMES={1:'السنة الأولى',2:'السنة الثانية',3:'السنة الثالثة'};
 const ATTEMPT_STATUS={ongoing:'جارية',completed:'مكتملة',passed:'ناجح / منتقل',repeat_year:'إعادة سنة',repeat_courses:'إعادة مواد',paused:'موقوفة مؤقتاً',withdrawn:'منسحب'};
 let deferredPrompt=null;
@@ -402,23 +776,35 @@ function openMyAccount(){
   </div></div>
   <div class="acct-sec"><h4>🔒 كلمة السر</h4><div class="form-grid">
     <div class="field"><label>كلمة السر الحالية (مطلوبة بس لو هتغيّرها)</label><div class="pw-wrap"><input id="myOld" type="password" placeholder="••••••••"><button class="btn" type="button" onclick="window._togglePw('myOld',this)">👁️</button></div></div>
-    <div class="field"><label>كلمة سر جديدة (سيبها فاضية لو مش هتغيّرها)</label><div class="pw-wrap"><input id="myNew" type="password" placeholder="٨ حروف على الأقل" oninput="window._pwStrength(this.value)"><button class="btn" type="button" onclick="window._togglePw('myNew',this)">👁️</button></div>
+    <div class="field"><label>كلمة سر جديدة (سيبها فاضية لو مش هتغيّرها)</label><div class="pw-wrap"><input id="myNew" type="password" placeholder="٨ حروف على الأقل"><button class="btn" type="button" onclick="window._togglePw('myNew',this)">👁️</button></div></div>
+    <div class="field"><label>تأكيد كلمة السر الجديدة</label><div class="pw-wrap"><input id="myNew2" type="password" placeholder="اكتبها تاني"><button class="btn" type="button" onclick="window._togglePw('myNew2',this)">👁️</button></div>
     <div class="pw-meter"><i id="pwBar"></i></div><div id="pwTxt" style="font-size:11px;color:var(--muted)"></div></div>
+    <div class="field full"><div class="auth-live" id="myPwLive"></div>
+      <label class="auth-tol"><input type="checkbox" id="myTol" ${iAmOwner?(me.pwTolerant===true?'checked':''):(me.pwTolerant!==false?'checked':'')}> 🔓 أقبل الدخول بكلمة السر دي حتى لو الكابيتال/السمول أو المسافات مختلفة
+        <span style="display:block;color:var(--muted);font-weight:600;font-size:10.5px">${iAmOwner?'حساب الإدارة بيفتح خزنة كلمات السر بنفس شكل الحروف — لو فعّلتها والخزنة اتقفلت، هتحتاج تكتب كلمة السر بنفس الحروف.':'مريّح في الاستخدام اليومي.'}</span></label></div>
   </div>
   ${iAmOwner?`<div class="acct-sec"><h4>🆘 كود الاستعادة السرّي</h4><div class="form-grid"><div class="field"><label>كود استعادة جديد (سيبه فاضي لو مش هتغيّره)</label><div class="pw-wrap"><input id="myRecCode" type="password" placeholder="اكتب كود تحفظه في مكان آمن"><button class="btn" type="button" onclick="window._togglePw('myRecCode',this)">👁️</button></div><div class="file-name">${DB.settings.ownerRecoveryHash?'✅ الكود معيّن دلوقتي — وزرار «استعادة الدخول» باين في صفحة الدخول':'⚠️ لسه ما فيش كود — زرار «استعادة الدخول» مش هيظهر في صفحة الدخول لحد ما تعيّنه'}</div></div></div><p style="font-size:12px;color:var(--muted);margin:0">الكود ده هو <b>الطريق الوحيد</b> لاستعادة حساب إدارة السيستم لو نسيت كلمة السر. احفظه في مكان آمن <b>برّه الموقع</b> (موبايلك أو ورقة مقفولة) — ومفيش حد تاني يعرفه.</p></div>`:''}
   <p style="font-size:12px;color:var(--muted);margin:0">${iAmOwner?'🛡️ انت إدارة السيستم: كلمة سرك هي مفتاح خزنة كلمات السر — لما تغيّرها النظام بيعيد تأمين الخزنة تلقائيًا، وكل الكلمات المشفّرة القديمة تفضل شغالة.':'💡 صورتك واسمك بيظهروا جنب اسمك في القائمة وصفحة الخدام. تغيير الدور أو الصلاحيات أو اسم المستخدم مسؤولية الأمين من «الخدام والصلاحيات».'}</p></div>`,
   async()=>{
-    const newPw=document.getElementById('myNew').value;
-    if(newPw){
+    const rawNew=document.getElementById('myNew').value;
+    const rawNew2=document.getElementById('myNew2').value;
+    const newPw=E3A.passCanon(rawNew);
+    if(rawNew){
       const minLen=iAmOwner?10:8;
       if(newPw.length<minLen)return toast('كلمة السر الجديدة: '+minLen+' حروف على الأقل');
+      if(rawNew2!==rawNew)return toast('❌ كلمة السر الجديدة وتأكيدها مش متطابقين');
+      if(E3A.sameAsUser(newPw,me.username))return toast('❌ كلمة السر لازم تختلف عن اسم المستخدم');
       const oldPw=document.getElementById('myOld').value;
-      if(!(await verifyPassword(oldPw,me.username.toLowerCase(),me.passHash)))return toast('كلمة السر الحالية غير صحيحة');
+      const v=await E3A.verify(me,oldPw);
+      if(!v.ok)return toast('كلمة السر الحالية غير صحيحة');
       if(iAmOwner){
         const r=await rekeyVault(oldPw,newPw);
-        if(!r.ok){ toast('⚠️ '+r.message); return; }
+        if(!r.ok){ toast('⚠️ '+(r.message||'الخزنة مش فتحت — اكتب كلمة السر الحالية بنفس شكل الحروف المسجّل')); return; }
       }
-      me.passHash=await hashPassword(newPw,me.username.toLowerCase());
+      const tolEl=document.getElementById('myTol');
+      const tol=tolEl?!!tolEl.checked:(E3A.meta(me).tol===true);
+      const sr=await E3A.setPassword(me,newPw,{tolerant:tol});
+      if(!sr.ok)return toast('❌ مشكلة في تشفير كلمة السر — ما اتحفظتش');
       me.mustChangePassword=false;
       if(iAmOwner){
         try{ if(E3.vault.pub) me.passSealed=await E3.vault.seal(newPw); }catch(_){}
@@ -436,6 +822,7 @@ function openMyAccount(){
   window._removeMyPhoto=()=>{window._myPhoto=''; const pv=document.getElementById('myPhotoPrev'); if(pv)pv.innerHTML='<span>'+esc(initials(me.displayName))+'</span>'; toast('هتتشال الصورة عند الحفظ')};
   window._pwStrength=(v)=>{const bar=document.getElementById('pwBar'),txt=document.getElementById('pwTxt'); if(!bar)return; let sc=0; if(v.length>=8)sc++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))sc++; if(/[0-9]/.test(v))sc++; if(/[^A-Za-z0-9]/.test(v))sc++;
     const conf=[['','#d84a41',''],['ضعيفة — زوّدها شوية','#d84a41','25%'],['مقبولة','#e39a13','50%'],['كويسة','#7fb069','75%'],['ممتازة 💪','#2e7d4f','100%']][sc]; bar.style.width=conf[2]; bar.style.background=conf[1]; txt.textContent=v?('قوة كلمة السر: '+conf[0]):''};
+  (function bindMyPw(){const p1=document.getElementById('myNew'),p2=document.getElementById('myNew2');const live=()=>{if(p1)window._pwStrength(p1.value);window._authLive('myNew','myNew2','myPwLive',me.username)};if(p1)p1.addEventListener('input',live);if(p2)p2.addEventListener('input',live);live();})();
   setTimeout(()=>{const ph=document.getElementById('myPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._myPhoto=data; document.getElementById('myPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
 function openInstallHelp(){
@@ -503,6 +890,7 @@ function viewUsers(){
       <h3 style="margin:0">حسابات الخدام (${toArabicDigits(users.length)}) — الدخول للخدام فقط</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn gold" onclick="openUserForm()">➕ إضافة خادم جديد</button>
+        <button class="btn" onclick="auditUsers()" title="بيفحص أسماء المستخدمين والبصمات ويوضح أي حساب ممكن يلخبط الدخول">🩺 فحص الحسابات</button>
         ${owner?'<button class="btn" onclick="createDemoUsers()">🧪 حسابات تجريبية</button>':''}
       </div>
     </div>
@@ -559,16 +947,26 @@ function openUserForm(userId){
   if(editingOwner&&!iAmOwner)return toast('🔒 حساب إدارة السيستم مقفول تمامًا — مفيش حد غير صاحبه يقدر يعدّله');
   if(u&&u.role==='amin'&&!isAdmin()&&!iAmOwner)return toast('مساعد الأمين لا يعدّل حسابات الأمين');
   const selPerms=u?effectivePerms(u):rolePerms('khadem');
+  const tolDefault=u?(u.pwTolerant===true||(!editingOwner&&u.pwTolerant!==false)):true;
   const ownerNotice=editingOwner?`<div class="secret-warn gold">🛡️ انت بتعدّل <b>حساب إدارة السيستم</b> نفسه — اسم المستخدم والدور مقفولين، لكن تقدر تغيّر اسمك وصورتك وكلمة سرك. الحساب ده مفيش حد غيرك يقدر يوقفه أو يحذفه.</div>`:'';
   openModal(u?(editingOwner?'تعديل حساب إدارة السيستم':'تعديل حساب خادم وصلاحياته'):'إضافة خادم جديد — Username & Password',`
   ${ownerNotice}
   <div class="photo-up"><div class="avatar" id="uPhotoPrev">${u?userAvatar(u):'✝️'}</div><div><input class="file-input" type="file" id="uPhoto" accept="image/*"><label class="upload-btn" for="uPhoto">📷 اختيار صورة الخادم</label><div class="file-name" id="uPhotoName">الصورة اختيارية — وبتتضغط تلقائياً عشان النظام يفضل خفيف</div></div></div>
   <div class="form-grid" style="margin-top:12px">
   ${field('اسم الخادم بالكامل *','uName',u?.displayName)}${field('رقم الهاتف','uPhone',u?.phone||'')}
-  <div class="field"><label>اسم المستخدم للدخول * (عربي أو إنجليزي — مسافات وكابيتال عادي)</label><input id="uUser" dir="auto" value="${esc(u?.username||'')}" placeholder="مثال: مينا عادل أو Mina Adel" ${editingOwner?'disabled':''}></div>
+  <div class="field"><label>اسم المستخدم للدخول * (عربي أو إنجليزي — مسافات وكابيتال عادي)</label><input id="uUser" dir="auto" value="${esc(u?.username||'')}" placeholder="مثال: مينا عادل أو Mina Adel" oninput="window._userKeyLive(this.value)" ${editingOwner?'disabled':''}>
+    <div class="file-name" id="uUserKey">${u?('مفتاح المطابقة في الدخول: <b dir="ltr">'+esc(E3A.meta(u).key||E3A.userKey(u.username))+'</b> — الكابيتال والمسافات مش بتفرق'):'الكابيتال والمسافات مش بتفرق في الدخول — هنحسبها تلقائي'}</div></div>
   <div class="field"><label>${u?'كلمة سر جديدة (اتركها فارغة للإبقاء على الحالية)':'كلمة السر * (٨ على الأقل)'}</label>
     <div class="pw-wrap"><input id="uPass" type="password" autocomplete="new-password" placeholder="••••••••"><button class="btn" type="button" onclick="window._genPw()" title="توليد كلمة سر قوية">🎲</button><button class="btn" type="button" onclick="window._eyePw(this)">👁️</button></div>
     <div class="file-name">🔐 بتتخزّن مشفّرة — إدارة السيستم بس هي اللي تقدر تشوفها بعد كده</div>
+  </div>
+  <div class="field"><label>تأكيد كلمة السر</label>
+    <div class="pw-wrap"><input id="uPass2" type="password" autocomplete="new-password" placeholder="اكتبها تاني بنفس الشكل"><button class="btn" type="button" onclick="window._eyePw2(this)">👁️</button></div>
+    <div class="file-name">مهم: لو مش متطابقة مع اللي فوق مش هنحفظ الحساب</div>
+  </div>
+  <div class="field full"><div class="auth-live" id="uPwLive"></div>
+    <label class="auth-tol"><input type="checkbox" id="uTolerant" ${tolDefault?'checked':''}> 🔓 أقبل الدخول بكلمة السر دي حتى لو <b>الكابيتال/السمول</b> أو <b>المسافات</b> مختلفة
+      <span style="display:block;color:var(--muted);font-weight:600;font-size:10.5px">${editingOwner?'حساب الإدارة بيفتح خزنة كلمات السر بنفس شكل الحروف — الأفضل تسيبه مقفول.':'مريّح جدًا للخدام — بيقلل مشاكل «بكتبها صح وبتطلع غلط».'}</span></label>
   </div>
   <div class="field"><label>الدور في خدمة إعداد الخدام *</label><select id="uRole" onchange="window._rolePreset(this.value)" ${editingOwner?'disabled':''}>${Object.entries(ROLE_DEFS).map(([k,r])=>`<option value="${k}" ${(u?.role||'khadem')===k?'selected':''} ${k==='amin'&&!isAdmin()?'disabled':''}>${r.icon} ${r.label}</option>`).join('')}</select></div>
   <div class="field"><label>الحساب مفعّل؟</label><select id="uActive" ${editingOwner?'disabled':''}><option value="1" ${u?.active!==false?'selected':''}>✅ مفعّل — يقدر يدخل</option><option value="0" ${u?.active===false?'selected':''}>⏸️ موقوف — لا يستطيع الدخول</option></select></div>
@@ -579,32 +977,60 @@ function openUserForm(userId){
   <div class="perm-grid" id="permGrid" ${editingOwner?'style="opacity:.6;pointer-events:none"':''}>${permCheckboxes(editingOwner?ALL_PERMS:selPerms)}</div>`,
   async()=>{
     const displayName=document.getElementById('uName').value.trim();
-    const username=(editingOwner?(u.username):document.getElementById('uUser').value.trim().replace(/\s+/g,' '));
-    const pw=document.getElementById('uPass').value;
+    const oldUsername=u?u.username:'';
+    const oldKey=u?E3A.userKey(u.username):'';
+    const username=E3A.displayUsername(editingOwner?(u.username):document.getElementById('uUser').value);
+    const pwRaw=document.getElementById('uPass').value;
+    const pw2=document.getElementById('uPass2').value;
+    const pw=E3A.passCanon(pwRaw);
+    const tolEl=document.getElementById('uTolerant');
+    const tolerant=tolEl?!!tolEl.checked:true;
     const role=editingOwner?'amin':document.getElementById('uRole').value;
-    const unorm=s=>String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+    const unorm=E3A.userKey;
+    const usernameChanged=!!u&&unorm(username)!==oldKey;
     if(displayName.length<3)return toast('اكتب اسم الخادم بالكامل');
     if(!editingOwner&&(username.length<2||!/^[\p{L}\p{N}._\-\s]+$/u.test(username)))return toast('اسم المستخدم غير صالح — عربي أو إنجليزي، مسافات وكابيتال مسموح');
     if((unorm(username)===unorm(E3.OWNER_USERNAME)||unorm(username)==='admin')&&!editingOwner)return toast('اسم المستخدم ده محجوز لإدارة السيستم — اختار اسم تاني');
-    if(!editingOwner&&(DB.users||[]).some(x=>unorm(x.username)===unorm(username)&&(!u||x.id!==u.id)))return toast('اسم المستخدم ده مستخدم بالفعل — اختر غيره');
-    if(!u&&pw.length<8)return toast('لازم تحدد كلمة سر ٨ حروف على الأقل للحساب الجديد');
-    if(u&&pw&&pw.length<(editingOwner?10:8))return toast('كلمة السر الجديدة: '+(editingOwner?'١٠':'٨')+' على الأقل');
+    if(!editingOwner&&(DB.users||[]).some(x=>unorm(x.username)===unorm(username)&&(!u||x.id!==u.id)))return toast('اسم المستخدم ده مستخدم بالفعل — اختار غيره');
+    if(!u&&!pw)return toast('لازم تحدد كلمة سر للحساب الجديد');
+    if(pw&&pw2!==pwRaw)return toast('❌ كلمة السر وتأكيدها مش متطابقين — اكتبهم بنفس الشكل');
+    if(pw&&pw.length<(editingOwner?10:8))return toast('كلمة السر الجديدة: '+(editingOwner?'١٠':'٨')+' حروف على الأقل');
+    if(pw&&E3A.sameAsUser(pw,username))return toast('❌ كلمة السر لازم تكون مختلفة عن اسم المستخدم — ده اللي بيلخبط الدخول بعدين');
+    if(usernameChanged&&!pw)return toast('غيّرت اسم المستخدم — لازم تحدد كلمة سر جديدة مع التغيير عشان الدخول يفضل شغال');
     if(role==='amin'&&!isAdmin()&&!iAmOwner)return toast('إنشاء حساب أمين متاح للأمين الحالي فقط');
     const permissions=editingOwner?[...ALL_PERMS]:role==='amin'?[...ALL_PERMS]:$$('#permGrid .perm-check').filter(c=>c.checked).map(c=>c.value);
     const scopeYears=$$('.scope-year').filter(c=>c.checked).map(c=>+c.value);
-    const data={displayName,username,phone:document.getElementById('uPhone').value.trim(),role,permissions,scopeYears,
+    const data={displayName,username,usernameKey:unorm(username),phone:document.getElementById('uPhone').value.trim(),role,permissions,scopeYears,
       active:editingOwner?true:document.getElementById('uActive').value==='1',
       photo:window._userPhoto!==undefined?window._userPhoto:(u?.photo||'')};
-    if(pw){data.passHash=await hashPassword(pw,username); delete data.password}
-    let target=u;
-    if(u){Object.assign(u,data); logActivity('عدّل حساب '+displayName+' ('+(ROLE_DEFS[role]?.label||'')+')')}
-    else{target={id:uid(),createdAt:today(),lastLogin:'',...data}; DB.users.push(target); logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label))}
-    if(pw)await sealPassword(target,pw);
+    const merged=u?Object.assign({},u,data):Object.assign({id:uid(),createdAt:today(),lastLogin:''},data);
+    if(u&&usernameChanged){const aliases=(u.authAliases||[]).slice(); if(oldUsername&&aliases.indexOf(oldUsername)<0)aliases.push(oldUsername); merged.authAliases=aliases;}
+    let auth=null;
+    if(pw){
+      auth=await E3A.setPassword(merged,pw,{tolerant});
+      if(!auth.ok)return toast('❌ مشكلة في تشفير كلمة السر — الحساب ما اتحفظش، جرّب تاني');
+      try{ await sealPassword(merged,pw); }catch(e){ console.warn('seal:',e); }
+    }
+    if(u){
+      Object.assign(u,merged);
+      logActivity('عدّل حساب '+displayName+' ('+(ROLE_DEFS[role]?.label||'')+')');
+    } else {
+      DB.users.push(merged);
+      logActivity('أضاف حساب خادم جديد: '+displayName+' — '+(ROLE_DEFS[role]?.label));
+    }
     window._userPhoto=undefined; saveDB(); closeModal(); render();
     toast('تم حفظ حساب '+displayName+' ✅ بالدور: '+(ROLE_DEFS[role]?.label||''));
-    if(pw)showOneTimeCredentials(displayName,username,pw);
+    if(auth)showOneTimeCredentials(displayName,merged.username,auth.canonical,{tolerant:auth.tolerant,id:merged.id});
   });
   window._rolePreset=(role)=>{const perms=rolePerms(role); $$('#permGrid .perm-check').forEach(c=>c.checked=perms.includes(c.value))};
+  window._eyePw2=(btn)=>{const i=document.getElementById('uPass2'); if(!i)return; i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁️':'🙈'};
+  (function bindPwLive(){
+    const p1=document.getElementById('uPass'),p2=document.getElementById('uPass2'),un=document.getElementById('uUser');
+    const live=()=>window._authLive('uPass','uPass2','uPwLive',un?un.value:'');
+    if(p1)p1.addEventListener('input',live); if(p2)p2.addEventListener('input',live); if(un)un.addEventListener('input',live);
+    if(un)window._userKeyLive(un.value);
+    live();
+  })();
   window._eyePw=(btn)=>{const i=document.getElementById('uPass'); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁️':'🙈'};
   window._genPw=()=>{const sets='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';let s='';const a=new Uint32Array(12);(crypto.getRandomValues?crypto.getRandomValues(a):a.map(()=>Math.random()*1e9)).forEach(v=>{s+=sets[v%sets.length]});const i=document.getElementById('uPass');i.type='text';i.value=s;toast('اتولدت كلمة سر قوية — انسخها وسلّمها لصاحب الحساب')};
   setTimeout(()=>{const ph=document.getElementById('uPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._userPhoto=data; const n=document.getElementById('uPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; document.getElementById('uPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
@@ -650,7 +1076,7 @@ async function deleteUser(id){
       requireField:true});
     if(!pw)return;
     let good=false;
-    try{ good=await verifyPassword(pw,u.username,u.passHash); if(!good) good=await verifyPassword(pw,String(u.username||'').toLowerCase(),u.passHash);}catch(e){}
+    try{ good=(await E3A.verify(u,pw)).ok; }catch(e){}
     if(!good)return toast('كلمة السر غلط — الحذف اتلغى');
     DB.users=DB.users.filter(x=>x.id!==id);
     logActivity('حذف حساب إدارة السيستم (إجراء نهائي)');
@@ -668,20 +1094,32 @@ async function deleteUser(id){
 function resetUserPassword(id){
   const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
   if(isLucasOwner(u))return toast('🔑 كلمة سر إدارة السيستم يغيّرها صاحب الحساب بنفسه من «حسابي» — مفيش حد يقدر يغيّرها له');
+  const tolDefault=u.pwTolerant!==false;
   openModal('إعادة تعيين كلمة سر '+u.displayName,`
     <div class="secret-warn gold">⚠️ كلمة السر دي هتتخزّن مشفّرة في الخزنة، وإدارة السيستم بس هي اللي تقدر تشوفها بعد كده.</div>
-    <div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><div class="pw-wrap"><input id="rpPass" type="password" autocomplete="new-password" placeholder="اكتبها وبلّغها للخادم شخصياً"><button class="btn" type="button" onclick="(function(b){var i=document.getElementById('rpPass');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈'})(this)">👁️</button></div></div>
+    <div class="form-grid">
+      <div class="field"><label>كلمة السر الجديدة (٨ على الأقل)</label><div class="pw-wrap"><input id="rpPass" type="password" autocomplete="new-password" placeholder="اكتبها وبلّغها للخادم شخصياً"><button class="btn" type="button" onclick="window._togglePw('rpPass',this)">👁️</button></div></div>
+      <div class="field"><label>تأكيد كلمة السر</label><div class="pw-wrap"><input id="rpPass2" type="password" autocomplete="new-password" placeholder="اكتبها تاني بنفس الشكل"><button class="btn" type="button" onclick="window._togglePw('rpPass2',this)">👁️</button></div></div>
+    </div>
+    <div class="auth-live" id="rpLive"></div>
+    <label class="auth-tol"><input type="checkbox" id="rpTol" ${tolDefault?'checked':''}> 🔓 أقبل الدخول بيها حتى لو الكابيتال/السمول أو المسافات مختلفة</label>
     <p style="font-size:12px;color:var(--muted)">الأفضل الخادم يغيّرها بنفسه بعد أول دخول من «حسابي».</p>`,
   async()=>{
-    const pw=document.getElementById('rpPass').value;
-    if(pw.length<8)return toast('كلمة السر: ٨ على الأقل');
-    u.passHash=await hashPassword(pw,u.username.toLowerCase());
-    await sealPassword(u,pw);
+    const raw=document.getElementById('rpPass').value, raw2=document.getElementById('rpPass2').value;
+    const pw=E3A.passCanon(raw);
+    if(pw.length<8)return toast('كلمة السر: ٨ حروف على الأقل');
+    if(raw2!==raw)return toast('❌ كلمة السر وتأكيدها مش متطابقين');
+    if(E3A.sameAsUser(pw,u.username))return toast('❌ كلمة السر لازم تختلف عن اسم المستخدم');
+    const tol=!!document.getElementById('rpTol').checked;
+    const r=await E3A.setPassword(u,pw,{tolerant:tol});
+    if(!r.ok)return toast('❌ مشكلة في تشفير كلمة السر — ما اتحفظش، جرّب تاني');
+    try{ await sealPassword(u,pw); }catch(e){}
     delete u.password;
     logActivity('أعاد تعيين كلمة سر '+u.displayName); saveDB(); closeModal();
     toast('تم تعيين كلمة سر جديدة لـ '+u.displayName+' ✅');
-    showOneTimeCredentials(u.displayName,u.username,pw);
+    showOneTimeCredentials(u.displayName,u.username,r.canonical,{tolerant:tol,id:u.id});
   });
+  (function bindRp(){const p1=document.getElementById('rpPass'),p2=document.getElementById('rpPass2');const live=()=>window._authLive('rpPass','rpPass2','rpLive',u.username);if(p1)p1.addEventListener('input',live);if(p2)p2.addEventListener('input',live);live();})();
 }
 
 async function createDemoUsers(){
@@ -690,7 +1128,8 @@ async function createDemoUsers(){
   let added=0, createdList=[];
   for(const [name,username,pw,role,scope] of demo){
     if(DB.users.some(u=>u.username===username))continue;
-    const nu={id:uid(),displayName:name,username,phone:'',photo:'',role,permissions:rolePerms(role),scopeYears:scope,active:true,createdAt:today(),lastLogin:'',passHash:await hashPassword(pw,username)};
+    const nu={id:uid(),displayName:name,username,phone:'',photo:'',role,permissions:rolePerms(role),scopeYears:scope,active:true,createdAt:today(),lastLogin:'',passHash:''};
+    await E3A.setPassword(nu,pw,{tolerant:true});
     await sealPassword(nu,pw);
     DB.users.push(nu); createdList.push(username); added++;
   }
@@ -1784,5 +2223,5 @@ window.addEventListener('beforeunload', persistViewState);
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') persistViewState(); });
 
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cf924b1853edc6',t:'MTc5MjQxMDY5Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

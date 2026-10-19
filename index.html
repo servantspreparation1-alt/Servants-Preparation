@@ -21,6 +21,343 @@
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
 <link rel="stylesheet" href="assets/css/login.css?v=3.2">
+<style id="e3-gate-v3">
+/* =====================================================================
+   بوابة الدخول v3 — نفس روح تصميم «دخول الشمامسة» (كارت + معاينة حساب
+   + شاشة تحقق بخطوات) بس على هوية إعداد الخدام (كحلي/ذهبي/كريمي).
+   ===================================================================== */
+#loginBox,.gz-err,.gz-chip,.gz-reveal{
+  --gz-ink:#16375f; --gz-gold:#c9a227; --gz-gold2:#e6c766; --gz-soft:#fbf7ec;
+  --gz-line:#e6dcc2; --gz-mut:#7d6f58; --gz-red:#b3261e; --gz-green:#1d7a4c;
+  --gz-navy:#123a63;
+}
+html[data-theme="dark"] #loginBox,html[data-theme="dark"] .gz-err,html[data-theme="dark"] .gz-chip,html[data-theme="dark"] .gz-reveal{
+  --gz-ink:#f3ecda; --gz-gold:#e0c266; --gz-gold2:#f0d98f; --gz-soft:#231e15;
+  --gz-line:#4b4029; --gz-mut:#c8bda3; --gz-red:#ff9b90; --gz-green:#7fe0ae;
+  --gz-navy:#0d2742;
+}
+#loginBox [hidden]{display:none!important}
+
+/* ---------- رأس الكارت ---------- */
+#loginBox .gz-head{text-align:center;margin:0 0 14px}
+#loginBox .gz-title{
+  margin:0 0 5px;font-size:20px;line-height:1.4;font-weight:900;color:var(--gz-ink);
+  letter-spacing:-.2px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+}
+#loginBox .gz-lock{
+  width:30px;height:30px;border-radius:10px;display:inline-grid;place-items:center;flex:0 0 30px;
+  background:radial-gradient(circle at 50% 30%,#fff6dc,#f0dda4 60%,#e2c778 100%);
+  border:1.5px solid rgba(201,162,39,.5);
+  box-shadow:0 5px 12px rgba(201,162,39,.25),inset 0 0 0 2px rgba(255,255,255,.5);
+  font-size:14px;line-height:1;
+}
+html[data-theme="dark"] #loginBox .gz-lock{
+  background:radial-gradient(circle at 50% 30%,#3a3018,#2a2313);border-color:rgba(224,194,102,.45);
+  box-shadow:0 5px 12px rgba(0,0,0,.3),inset 0 0 0 2px rgba(224,194,102,.08);
+}
+#loginBox .gz-sub{margin:0;font-size:12px;line-height:1.8;color:var(--gz-mut);font-weight:600}
+
+/* ---------- كارت معاينة الحساب ---------- */
+#loginBox .gz-preview{
+  display:flex;align-items:center;gap:11px;text-align:right;
+  margin:0 0 12px;padding:9px 11px;border-radius:16px;
+  background:linear-gradient(135deg,#fffdf6 0%,#fbf2d8 100%);
+  border:1.5px solid rgba(201,162,39,.45);
+  box-shadow:0 6px 18px rgba(24,20,8,.07);
+  animation:gzIn .22s ease both;
+}
+html[data-theme="dark"] #loginBox .gz-preview{
+  background:linear-gradient(135deg,#241e14 0%,#302716 100%);
+  border-color:rgba(224,194,102,.38);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+@keyframes gzIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+#loginBox .gz-av{
+  width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;
+  display:grid;place-items:center;color:#fff;font-weight:900;font-size:17px;
+  background:linear-gradient(135deg,#1d4a7a,#0f2c4d);
+  border:2px solid rgba(201,162,39,.7);
+}
+#loginBox .gz-av img{width:100%;height:100%;object-fit:cover}
+#loginBox .gz-pvcopy{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+#loginBox .gz-pvcopy small{font-size:10.5px;color:var(--gz-mut);font-weight:700;letter-spacing:.2px}
+#loginBox .gz-pvcopy b{font-size:14px;color:var(--gz-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#loginBox .gz-pvrole{font-size:10.5px;color:var(--gz-mut);font-weight:700}
+#loginBox .gz-pvcheck{
+  flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(29,122,76,.12);color:var(--gz-green);font-weight:900;font-size:13px;
+}
+
+/* ---------- الحقول ---------- */
+#loginBox .gz-field{margin-bottom:11px;text-align:right}
+#loginBox .gz-field > label{
+  display:block;font-size:12px;font-weight:900;color:var(--gz-ink);margin:0 2px 5px;
+}
+#loginBox .gz-wrap{
+  position:relative;display:flex;align-items:center;gap:8px;
+  height:48px;padding:0 12px;border-radius:14px;
+  background:#fff;border:1.5px solid var(--gz-line);
+  transition:border-color .16s,box-shadow .16s,background .16s;
+}
+html[data-theme="dark"] #loginBox .gz-wrap{background:#1d1811}
+#loginBox .gz-wrap:focus-within{
+  border-color:var(--gz-gold);
+  box-shadow:0 0 0 4px rgba(201,162,39,.16);
+}
+#loginBox .gz-wrap.bad{border-color:#e0a19a;box-shadow:0 0 0 4px rgba(179,38,30,.08)}
+#loginBox .gz-wrap.good{border-color:#8ecfae;box-shadow:0 0 0 4px rgba(29,122,76,.08)}
+#loginBox .gz-ic{font-size:15px;opacity:.75;flex:0 0 auto;line-height:1}
+#loginBox .gz-wrap input{
+  flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;
+  font-family:inherit;font-size:15px;font-weight:700;color:var(--gz-ink);padding:0;
+}
+#loginBox .gz-wrap input::placeholder{font-weight:600;color:#a89a80;opacity:1}
+html[data-theme="dark"] #loginBox .gz-wrap input::placeholder{color:#8d7f66}
+#loginBox .gz-eye{
+  flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:0;cursor:pointer;
+  background:rgba(201,162,39,.12);color:inherit;font-size:15px;line-height:1;
+  display:grid;place-items:center;transition:.15s;
+}
+#loginBox .gz-eye:hover{background:rgba(201,162,39,.24)}
+#loginBox .gz-mark{flex:0 0 auto;font-size:15px;font-weight:900;line-height:1}
+#loginBox .gz-wrap.good .gz-mark{color:var(--gz-green)}
+#loginBox .gz-wrap.bad .gz-mark{color:var(--gz-red)}
+#loginBox .gz-hint{
+  margin:5px 2px 0;font-size:10.8px;line-height:1.8;color:var(--gz-mut);font-weight:600;
+}
+#loginBox .gz-hint b{color:var(--gz-ink);font-weight:800}
+#loginBox .gz-hint.good{color:var(--gz-green)}
+#loginBox .gz-hint.bad{color:var(--gz-red)}
+#loginBox .gz-caps{
+  display:inline-flex;align-items:center;gap:5px;margin:6px 2px 0;padding:3px 8px;border-radius:8px;
+  background:rgba(201,162,39,.16);color:#7a5c00;font-size:10.5px;font-weight:900;
+  animation:gzIn .18s ease both;
+}
+html[data-theme="dark"] #loginBox .gz-caps{color:#f0d98f;background:rgba(224,194,102,.14)}
+
+/* ---------- تذكرني ---------- */
+#loginBox .gz-remember{
+  display:flex;align-items:center;gap:10px;margin:13px 0 12px;padding:9px 11px;
+  border-radius:13px;border:1.5px solid var(--gz-line);background:var(--gz-soft);
+  cursor:pointer;user-select:none;transition:border-color .16s,background .16s;
+}
+#loginBox .gz-remember:has(input:checked){border-color:rgba(201,162,39,.55);background:rgba(201,162,39,.09)}
+#loginBox .gz-remember input{width:17px;height:17px;accent-color:#c9a227;flex:0 0 auto;margin:0}
+#loginBox .gz-remember .rm-txt{flex:1;min-width:0;text-align:right;line-height:1.5}
+#loginBox .gz-remember b{display:block;font-size:12.5px;color:var(--gz-ink);font-weight:900}
+#loginBox .gz-remember small{font-size:10.5px;color:var(--gz-mut);font-weight:600}
+#loginBox .gz-remember .rm-badge{
+  flex:0 0 auto;font-size:10px;font-weight:900;color:#3a2a00;background:var(--gz-gold2);
+  padding:3px 8px;border-radius:99px;white-space:nowrap;
+}
+
+/* ---------- زرار الدخول ---------- */
+#loginBox .gz-submit{
+  width:100%;height:50px;border:0;border-radius:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-size:15.5px;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#1c4574 0%,#123a63 55%,#0d2b4a 100%);
+  box-shadow:0 10px 22px rgba(13,43,74,.28),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .16s,box-shadow .16s,filter .16s;
+  position:relative;overflow:hidden;
+}
+#loginBox .gz-submit::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.16) 48%,transparent 70%);
+  transform:translateX(-120%);transition:transform .55s ease;
+}
+#loginBox .gz-submit:hover{transform:translateY(-1px);box-shadow:0 14px 26px rgba(13,43,74,.34)}
+#loginBox .gz-submit:hover::after{transform:translateX(120%)}
+#loginBox .gz-submit:active{transform:translateY(0) scale(.995)}
+#loginBox .gz-submit:disabled{filter:saturate(.65) brightness(.95);cursor:progress;transform:none}
+#loginBox .gz-submit .gz-spin-sm{
+  width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);
+  border-top-color:#fff;animation:gzSpin .7s linear infinite;display:inline-block;
+}
+
+/* ---------- صندوق الرسائل ---------- */
+.gz-err{
+  display:none;margin:12px 0 0;padding:0;border-radius:14px;text-align:right;
+  border:1.5px solid transparent;overflow:hidden;
+}
+.gz-err.show{display:block;animation:gzIn .18s ease both}
+.gz-err.tone-bad{background:#fdf1ef;border-color:#ecc7c1}
+.gz-err.tone-warn{background:#fff8e6;border-color:#ead9a4}
+.gz-err.tone-ok{background:#eef8f1;border-color:#bfe3cd}
+html[data-theme="dark"] .gz-err.tone-bad{background:#33191a;border-color:#6d3a38}
+html[data-theme="dark"] .gz-err.tone-warn{background:#302814;border-color:#5f4f26}
+html[data-theme="dark"] .gz-err.tone-ok{background:#16301f;border-color:#2f5c40}
+.gz-err-head{
+  display:flex;align-items:center;gap:8px;padding:10px 13px 0;
+  font-size:13px;font-weight:900;color:var(--gz-ink);line-height:1.5;
+}
+.gz-err.tone-bad .gz-err-head{color:#a11c14}
+.gz-err.tone-warn .gz-err-head{color:#8a6200}
+.gz-err.tone-ok .gz-err-head{color:#17683f}
+html[data-theme="dark"] .gz-err.tone-bad .gz-err-head{color:#ffb3aa}
+html[data-theme="dark"] .gz-err.tone-warn .gz-err-head{color:#f2d78c}
+html[data-theme="dark"] .gz-err.tone-ok .gz-err-head{color:#9fe8c1}
+.gz-err-ic{font-size:15px;line-height:1}
+.gz-err-list{
+  margin:6px 0 0;padding:0 30px 0 13px;list-style:none;
+  font-size:11.8px;line-height:2;color:#5c4a3a;font-weight:600;
+}
+html[data-theme="dark"] .gz-err-list{color:#d8cbb2}
+.gz-err-list li{position:relative;padding-right:11px}
+.gz-err-list li::before{
+  content:"•";position:absolute;right:0;top:0;color:currentColor;opacity:.55;font-weight:900;
+}
+.gz-err-list b{font-weight:900;color:var(--gz-ink)}
+html[data-theme="dark"] .gz-err-list b{color:#fff}
+.gz-reveal{
+  margin:9px 13px 0;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.6);
+  border:1px dashed rgba(0,0,0,.12);display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  font-size:10.5px;font-weight:700;color:#6b5946;
+}
+html[data-theme="dark"] .gz-reveal{background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.14);color:#d8cbb2}
+.gz-reveal code{
+  direction:ltr;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:6px;
+  padding:2px 7px;color:#2b2118;max-width:100%;overflow-wrap:anywhere;
+}
+html[data-theme="dark"] .gz-reveal code{background:#0f0d09;color:#f3ecda;border-color:#4b4029}
+.gz-reveal small{opacity:.8;font-weight:600}
+.gz-err-acts{display:flex;flex-wrap:wrap;gap:6px;padding:9px 13px 11px}
+.gz-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1.5px solid rgba(201,162,39,.5);background:#fffdf6;color:#5d4a17;
+  border-radius:11px;padding:7px 11px;font-family:inherit;font-size:11.5px;font-weight:900;
+  cursor:pointer;transition:.15s;white-space:nowrap;line-height:1.2;
+  box-shadow:0 2px 6px rgba(90,66,10,.07);
+}
+.gz-chip:hover{background:linear-gradient(180deg,#fff8e3,#fdf1cf);border-color:#c9a227;transform:translateY(-1px);box-shadow:0 5px 12px rgba(201,162,39,.22)}
+.gz-chip:active{transform:translateY(0) scale(.985)}
+html[data-theme="dark"] .gz-chip{background:#2a2316;color:#f0d98f;border-color:rgba(224,194,102,.4);box-shadow:none}
+html[data-theme="dark"] .gz-chip:hover{background:#3a301c;border-color:#e0c266}
+
+/* ---------- باقي عناصر الكارت ---------- */
+#loginBox .gz-sep{
+  display:flex;align-items:center;gap:10px;margin:15px 0 12px;color:var(--gz-mut);
+  font-size:10.5px;font-weight:800;
+}
+#loginBox .gz-sep::before,#loginBox .gz-sep::after{content:"";height:1px;flex:1;background:var(--gz-line)}
+
+/* ================= شاشة التحقق ================= */
+.vz-ov{
+  position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(12,8,3,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+}
+.vz-ov.show{display:flex}
+.vz-box{
+  width:100%;max-width:384px;border-radius:20px;overflow:hidden;
+  background:#0b100d;border:1px solid rgba(201,162,39,.32);
+  box-shadow:0 28px 70px rgba(0,0,0,.6);
+  font-family:inherit;animation:vzPop .32s cubic-bezier(.2,.9,.3,1.2) both;
+  direction:rtl;
+}
+.vz-box.fail{background:#120b0b;border-color:rgba(248,113,113,.28)}
+.vz-box.done{border-color:rgba(74,222,128,.3)}
+@keyframes vzPop{from{opacity:0;transform:scale(.93) translateY(8px)}to{opacity:1;transform:none}}
+.vz-head{
+  display:flex;align-items:center;gap:9px;padding:11px 14px;
+  background:linear-gradient(95deg,#1c4574,#123a63 60%,#0d2b4a);color:#fff;
+  transition:background .25s ease;
+}
+.vz-box.fail .vz-head{background:linear-gradient(95deg,#7a1f1f,#b3261e)}
+.vz-box.done .vz-head{background:linear-gradient(95deg,#14603c,#1d7a4c)}
+.vz-dot{
+  width:9px;height:9px;border-radius:50%;background:#8ee6b5;flex:0 0 auto;
+  box-shadow:0 0 0 0 rgba(142,230,181,.55);animation:vzPulse 1.6s ease-out infinite;
+}
+.vz-box.fail .vz-dot{background:#ff9b90;animation:none}
+.vz-box.done .vz-dot{background:#8ee6b5;animation:none}
+@keyframes vzPulse{0%{box-shadow:0 0 0 0 rgba(142,230,181,.5)}70%{box-shadow:0 0 0 9px rgba(142,230,181,0)}100%{box-shadow:0 0 0 0 rgba(142,230,181,0)}}
+.vz-title{flex:1;min-width:0;font-size:12.5px;font-weight:900;letter-spacing:.1px}
+.vz-snd{
+  flex:0 0 auto;width:28px;height:28px;border-radius:8px;border:0;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;font-size:12px;line-height:1;display:grid;place-items:center;
+}
+.vz-snd:hover{background:rgba(255,255,255,.24)}
+.vz-body{padding:15px 15px 14px;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.vz-ring{
+  width:64px;height:64px;margin:0 auto 9px;border-radius:50%;position:relative;
+  display:grid;place-items:center;color:#e6c766;font-size:24px;
+  border:2px solid rgba(230,199,102,.28);
+  box-shadow:0 0 26px rgba(201,162,39,.16) inset;
+}
+.vz-ring::before{
+  content:"";position:absolute;inset:-5px;border-radius:50%;
+  border:2px solid transparent;border-top-color:#e6c766;border-right-color:rgba(230,199,102,.35);
+  animation:vzSpin .95s linear infinite;
+}
+.vz-box.fail .vz-ring{color:#ff9b90;border-color:rgba(248,113,113,.28);box-shadow:none}
+.vz-box.fail .vz-ring::before{border-top-color:#f87171;border-right-color:rgba(248,113,113,.3);animation-play-state:paused;opacity:.4}
+.vz-box.done .vz-ring{color:#8ee6b5;border-color:rgba(74,222,128,.4)}
+.vz-box.done .vz-ring::before{border-top-color:#4ade80;border-right-color:rgba(74,222,128,.45);animation-duration:2.6s}
+@keyframes vzSpin{to{transform:rotate(360deg)}}
+.vz-ring-in{transform:translateY(-1px)}
+.vz-who{
+  text-align:center;font-size:11px;font-weight:800;color:#b9ac90;margin:0 0 11px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:15px;
+}
+.vz-who b{color:#f2e6c8;font-weight:900}
+.vz-log{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11.5px;line-height:1.95;color:#9fd8b4;min-height:70px;
+  direction:rtl;text-align:right;padding:0 2px;
+}
+.vz-log .ln{opacity:0;transform:translateY(3px);animation:vzLine .22s ease forwards;display:flex;gap:6px;align-items:flex-start}
+.vz-log .ln .ic{flex:0 0 14px}
+.vz-log .ln .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.vz-log .ln.ok .ic{color:#4ade80}
+.vz-log .ln.ok .tx{color:#c5e8d2}
+.vz-log .ln.bad .ic{color:#f87171}
+.vz-log .ln.bad .tx{color:#e6a3a3}
+.vz-log .ln.wait .ic{color:#e6c766}
+.vz-log .ln.wait .tx{color:#e8d9a8}
+@keyframes vzLine{to{opacity:1;transform:none}}
+.vz-bar{display:flex;align-items:center;gap:8px;margin-top:11px}
+.vz-bar-track,.vz-bar{position:relative}
+.vz-bar{--p:0%}
+.vz-bar .fill{
+  flex:1;height:10px;border-radius:3px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(74,222,128,.28);overflow:hidden;display:block;
+}
+.vz-bar .fill > i{
+  display:block;height:100%;width:var(--p,0%);
+  background:repeating-linear-gradient(90deg,#4ade80 0,#4ade80 6px,#22c55e 6px,#22c55e 8px);
+  transition:width .35s ease;
+}
+.vz-box.fail .vz-bar .fill{border-color:rgba(248,113,113,.28)}
+.vz-box.fail .vz-bar .fill > i{background:repeating-linear-gradient(90deg,#f87171 0,#f87171 6px,#ef4444 6px,#ef4444 8px)}
+.vz-pct{flex:0 0 38px;text-align:left;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#4ade80;font-weight:700;direction:ltr}
+.vz-box.fail .vz-pct{color:#f87171}
+.vz-res{
+  margin-top:10px;text-align:center;font-weight:900;font-size:13px;color:#9fd8b4;
+  padding:7px 8px;border-radius:8px;border:1px solid transparent;opacity:0;transition:.25s;
+}
+.vz-res.show{opacity:1}
+.vz-res.ok{color:#7fe0a8;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.28)}
+.vz-res.bad{color:#ffa9a2;background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.28);animation:vzShake .4s ease}
+@keyframes vzShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.vz-res-sub{
+  margin-top:5px;text-align:center;font-size:11px;font-weight:700;line-height:1.8;
+  color:#c9b9b9;opacity:0;transition:.25s;min-height:0;
+}
+.vz-res-sub.show{opacity:1}
+.vz-act{display:flex;justify-content:center;gap:8px;margin-top:11px;flex-wrap:wrap}
+.vz-btn{
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#f2e6c8;
+  border-radius:99px;padding:7px 14px;font-family:inherit;font-size:11.5px;font-weight:900;
+  cursor:pointer;transition:.15s;
+}
+.vz-btn:hover{background:rgba(255,255,255,.14)}
+@media (prefers-reduced-motion: reduce){
+  #loginBox .gz-crest::after,.vz-ring::before,.vz-dot{animation:none!important}
+  .vz-box{animation:none}
+}
+</style>
+
 </head>
 <body class="login-page">
 
@@ -65,41 +402,69 @@
       <p class="sub" id="cardSub">سجلّ دارسي إعداد الخدّام عبر ٣ سنوات<br>المواد والتقييمات والأنشطة والتقارير — وكل محاولة قديمة محفوظة</p>
       <div class="orn"><span style="font-size:12px">✦ ✝ ✦</span></div>
 
-      <div class="error" id="liError" role="alert"></div>
 
       <!-- ===== الدخول ===== -->
       <div id="loginBox" style="display:none">
-        <div class="servant-preview" id="servantPreview"></div>
-        <div class="field">
-          <label for="liUser">اسم المستخدم</label>
-          <input id="liUser" autocomplete="username" spellcheck="false" dir="auto" placeholder="عربي أو إنجليزي — مسافات وكابيتال عادي">
+        <div class="gz-head">
+          <h2 class="gz-title"><span class="gz-lock" aria-hidden="true">🔒</span> دخول الخدّام فقط</h2>
+          <p class="gz-sub">دي صفحة الخدّام بس — اكتب بياناتك وهنفتحلك لوحة التحكم.</p>
         </div>
-        <div class="field">
-          <label for="liPass">كلمة السر</label>
-          <div class="pass-row">
-            <input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••">
-            <button class="btn" type="button" id="eyeBtn" aria-label="إظهار كلمة السر">👁️</button>
-          </div>
-        </div>
-        <!-- تشيك بوكس البقاء متصل 7 أيام -->
-        <label class="remember-row" for="remember7d" style="display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;cursor:pointer;user-select:none;transition:.18s">
-          <input type="checkbox" id="remember7d" checked style="width:18px;height:18px;accent-color:#c9a227;flex-shrink:0">
-          <span style="flex:1;text-align:right;line-height:1.5">
-            <b style="display:block;font-size:13.5px;color:var(--head)">☑️ خلّيني مُتّصل لمدة ٧ أيام</b>
-            <small style="font-size:11.5px;color:var(--muted)">مش هتطلب مني تسجيل دخول تاني على الجهاز ده — حتى لو قفلت التطبيق ورجعت. إلغِ العلامة لو الجهاز عام أو مش بتاعك.</small>
+
+        <div class="gz-preview" id="servantPreview" hidden aria-live="polite">
+          <span class="gz-av" id="gzAv"><b id="gzAvLetter">؟</b></span>
+          <span class="gz-pvcopy">
+            <small>الحساب ده يخص</small>
+            <b id="gzPvName">—</b>
+            <span class="gz-pvrole" id="gzPvRole"></span>
           </span>
-          <span class="remember-badge" style="font-size:11px;background:var(--gold);color:#3a2a00;padding:3px 8px;border-radius:99px;white-space:nowrap">٧ أيام</span>
+          <span class="gz-pvcheck" id="gzPvCheck" aria-hidden="true">✓</span>
+        </div>
+
+        <div class="gz-field">
+          <label for="liUser">اسم المستخدم</label>
+          <div class="gz-wrap" id="gzUserWrap">
+            <span class="gz-ic" aria-hidden="true">👤</span>
+            <input id="liUser" autocomplete="username" spellcheck="false" dir="auto" enterkeyhint="next" placeholder="اسم المستخدم">
+            <span class="gz-mark" id="gzUserMark" aria-hidden="true"></span>
+          </div>
+          <div class="gz-hint" id="gzUserHint">مش مهم الكابيتال ولا المسافات في اسم المستخدم</div>
+        </div>
+
+        <div class="gz-field">
+          <label for="liPass">كلمة السر</label>
+          <div class="gz-wrap" id="gzPassWrap">
+            <span class="gz-ic" aria-hidden="true">🔑</span>
+            <input id="liPass" type="password" autocomplete="current-password" spellcheck="false" placeholder="••••••••" enterkeyhint="go">
+            <button class="gz-eye" type="button" id="eyeBtn" aria-label="إظهار كلمة السر" title="إظهار / إخفاء كلمة السر">👁️</button>
+          </div>
+          <div class="gz-hint" id="gzPassHint">بنقبل المسافات الزيادة في الأول والآخر — وكابيتال/سمول حسب إعداد الحساب.</div>
+          <div class="gz-caps" id="capsWarn" hidden>⌨️ Caps Lock شغّال — اللي هتكتبه هيطلع كابيتال</div>
+        </div>
+
+        <label class="gz-remember" for="remember7d">
+          <input type="checkbox" id="remember7d" checked>
+          <span class="rm-txt">
+            <b>خلّيني مُتّصل ٧ أيام</b>
+            <small>مش هتطلب مني دخول تاني على الجهاز ده. الغِ العلامة لو الجهاز مش بتاعك.</small>
+          </span>
+          <span class="rm-badge">٧ أيام</span>
         </label>
-        <button class="btn primary" id="loginBtn" onclick="doLogin()">☦️ دخول الخدّام</button>
-        <button class="install-btn" type="button" onclick="handleInstall()" style="margin-top:11px">
+
+        <button class="btn primary gz-submit" id="loginBtn" type="button" onclick="doLogin()">☦️ دخول الخدّام</button>
+
+        <div class="gz-err" id="liError" role="alert" aria-live="assertive"></div>
+
+        <div class="gz-sep">أو</div>
+
+        <button class="install-btn" type="button" onclick="handleInstall()">
           <span class="install-ic">⬇</span>
           <span><b>تثبيت التطبيق</b><small>على الموبايل أو الكمبيوتر — زي أي أبليكيشن</small></span>
           <span class="go">‹</span>
         </button>
         <div id="installHelp" style="display:none;background:var(--surface-2);border:1.5px solid var(--gold);border-radius:13px;padding:13px 15px;margin-top:11px;font-size:13px;line-height:2"></div>
+
         <div class="roles"><span>👑 أمين إعداد الخدام</span><span>🤝 مساعد الأمين</span><span>📌 أمين سنة</span><span>✝️ خادم</span><span>👁️ متابِع</span></div>
-        <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك حساب جديد من جوه النظام.</span>
-        </div>
+        <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك كلمة سر جديدة من جوه النظام.</span></div>
         <div id="ownerRecoveryWrap" style="text-align:center;margin-top:9px;display:none">
           <button type="button" class="linklike" onclick="askOwnerRecovery()">🔑 نسيت كلمة سر حساب الإدارة؟ استعادة على هذا الجهاز</button>
         </div>
@@ -113,6 +478,30 @@
     </div>
   </section>
 </div>
+
+<!-- ===== شاشة التحقق من بيانات الخادم (على نفس فكرة دخول الشمامسة) ===== -->
+<div class="vz-ov" id="vzOv" role="dialog" aria-modal="true" aria-labelledby="vzTitle" aria-live="polite">
+  <div class="vz-box" id="vzBox">
+    <div class="vz-head">
+      <span class="vz-dot" aria-hidden="true"></span>
+      <span class="vz-title" id="vzTitle">بيتأكد من بيانات الخادم…</span>
+      <button type="button" class="vz-snd" id="vzSnd" title="صوت التحقق" aria-label="تشغيل أو كتم صوت التحقق">🔊</button>
+    </div>
+    <div class="vz-body">
+      <div class="vz-ring"><span class="vz-ring-in" aria-hidden="true">☦</span></div>
+      <div class="vz-who" id="vzWho"></div>
+      <div class="vz-log" id="vzLog"></div>
+      <div class="vz-bar">
+        <span class="fill"><i id="vzBarFill"></i></span>
+        <span class="vz-pct" id="vzPct">0%</span>
+      </div>
+      <div class="vz-res" id="vzRes"></div>
+      <div class="vz-res-sub" id="vzResSub"></div>
+      <div class="vz-act" id="vzAct"></div>
+    </div>
+  </div>
+</div>
+
 
 <script src="cloud-sync.js?v=3.2"></script>
 <script src="assets/js/core.js?v=3.2"></script>
@@ -196,6 +585,242 @@ function touchSession(){
 const ROLE_LABELS = { amin:'👑 أمين إعداد الخدام', assistant:'🤝 مساعد أمين إعداد الخدام', year_supervisor:'📌 أمين سنة (مشرف سنة)', khadem:'✝️ خادم', follower:'👁️ خادم متابِع (عرض فقط)' };
 const ALL_PERMS = ['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
 const $ = (id) => document.getElementById(id);
+
+/* =====================================================================
+   E3A v3 — طبقة توحيد بيانات الدخول
+   • اسم المستخدم: مش بيفرّق بين كابيتال/سمول، ولا مسافات (حتى اللي في
+     النص)، ولا همزات (أ إ آ ← ا)، ولا ة/ه ولا ى/ي، ولا أرقام عربي/إنجليزي،
+     ولا الحروف المخفية (zero-width / RTL marks / tatweel).
+   • كلمة السر: المسافات الزيادة من الأول والآخر بتتشال، والمسافات المتكررة
+     بتتحول لمسافة واحدة — والحالة (كابيتال/سمول) بيفرّق فيها إلا لو الحساب
+     مفعّل عليه «التسامح».
+   • كل حساب ليه مفتاح ثابت (usernameKey) — البصمة بتتعمل بيه على طول،
+     عشان نفس الكلمة تشتغل سواء اتكتبت في نموذج الإضافة أو إعادة التعيين.
+   • التحقق بيجرّب المفاتيح القديمة كلها كمان، فالحسابات القديمة بتدخل زي ما هي.
+   ===================================================================== */
+var E3A = (function () {
+  'use strict';
+
+  var ZW = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g;
+  var TATWEEL = /\u0640/g;
+  var SPACES = /[\s\u2000-\u200A\u202F\u205F\u3000]+/g;
+
+  function str(v) { return v == null ? '' : String(v); }
+  function nfkc(t) { try { return t.normalize('NFKC'); } catch (e) { return t; } }
+  function digits(t) {
+    return t.replace(/[\u0660-\u0669]/g, function (c) { return String(c.charCodeAt(0) - 0x0660); })
+            .replace(/[\u06F0-\u06F9]/g, function (c) { return String(c.charCodeAt(0) - 0x06F0); });
+  }
+  function clean(t) {
+    return digits(nfkc(str(t)).replace(ZW, '').replace(TATWEEL, '').replace(/\u00A0/g, ' '));
+  }
+
+  /* مفتاح اسم المستخدم — كل الاختلافات الشكلية بتختفي هنا */
+  function userKey(v) {
+    return clean(v)
+      .replace(/[\u064B-\u0652\u0670]/g, '')
+      .toLowerCase()
+      .replace(/[أإآٱ]/g, 'ا')
+      .replace(/[ىئ]/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ک/g, 'ك')
+      .replace(/ی/g, 'ي')
+      .replace(/ۀ/g, 'ه')
+      .replace(SPACES, '');
+  }
+
+  /* الشكل اللي بيتخزن ويتشفّر بيه: من غير مسافات زيادة */
+  function passCanon(v) {
+    return clean(v).replace(/^[ \t]+/, '').replace(/[ \t]+$/, '').replace(/[ \t]+/g, ' ');
+  }
+  function passFold(v) { return passCanon(v).toLowerCase(); }
+
+  function sameAsUser(pw, username) {
+    var a = userKey(passCanon(pw)), b = userKey(username);
+    return !!a && !!b && a === b;
+  }
+
+  /* الشكل اللي بيتعرض بيه اسم المستخدم في الجداول */
+  function displayUsername(v) {
+    return clean(v).replace(SPACES, ' ').replace(/^ +| +$/g, '');
+  }
+
+  /* كل المفاتيح المحتملة — للتوافق مع الحسابات القديمة */
+  function salts(u) {
+    var out = [], seen = {};
+    function add(s) {
+      s = str(s);
+      if (!s || seen[s]) return;
+      seen[s] = 1; out.push(s);
+    }
+    if (!u) return out;
+    add(u.usernameKey);
+    add(u.username);
+    add(displayUsername(u.username));
+    add(str(u.username).toLowerCase());
+    add(str(u.username).trim().toLowerCase());
+    add(userKey(u.username));
+    return out;
+  }
+  function passVariants(pw) {
+    var out = [], seen = {};
+    function add(s) { s = str(s); if (!s || seen[s]) return; seen[s] = 1; out.push(s); }
+    add(pw);
+    add(passCanon(pw));
+    return out;
+  }
+
+  function meta(u) {
+    var m = {};
+    try { if (typeof DB !== 'undefined' && DB && DB.authMeta && u && u.id) m = DB.authMeta[u.id] || {}; } catch (e) {}
+    var ci = (u && u.passHashCI) || m.ci || '';
+    var tol;
+    if (u && u.pwTolerant !== undefined && u.pwTolerant !== null) tol = !!u.pwTolerant;
+    else if (m.tol !== undefined && m.tol !== null) tol = !!m.tol;
+    else tol = undefined;
+    return {
+      key: (u && u.usernameKey) || m.key || (u ? userKey(u.username) : ''),
+      ci: ci,
+      tol: tol,
+      v: (u && u.passAlgo) || m.v || 0
+    };
+  }
+
+  function required(name, fn) {
+    if (typeof fn !== 'function') throw new Error(name + ' مش متاحة — اتأكد إن core.js محمّل قبل الصفحة');
+    return fn;
+  }
+
+  /* ============ التحقق ============ */
+  async function verify(u, pw) {
+    if (!u || !u.passHash) return { ok: false, why: 'nohash' };
+    var vp = required('verifyPassword', (typeof verifyPassword !== 'undefined' ? verifyPassword : undefined));
+    var M = meta(u);
+    var keys = salts(u), pws = passVariants(pw);
+    var tried = {};
+    for (var i = 0; i < keys.length; i++) {
+      for (var j = 0; j < pws.length; j++) {
+        var sig = keys[i] + '\u0000' + pws[j];
+        if (tried[sig]) continue;
+        tried[sig] = 1;
+        var ok = false;
+        try { ok = await vp(pws[j], keys[i], u.passHash); } catch (e) {}
+        if (ok) return { ok: true, mode: 'exact', salt: keys[i], pass: pws[j], tolerant: M.tol === true };
+      }
+    }
+    if (M.ci && M.tol !== false) {
+      var folds = [passFold(pw), passCanon(pw)];
+      for (var k = 0; k < keys.length; k++) {
+        for (var f = 0; f < folds.length; f++) {
+          var ok2 = false;
+          try { ok2 = await vp(folds[f], keys[k], M.ci); } catch (e) {}
+          if (ok2) return { ok: true, mode: 'tolerant', salt: keys[k], pass: folds[f], tolerant: true };
+        }
+      }
+    }
+    return { ok: false, why: 'mismatch', tolerant: M.tol === true };
+  }
+
+  /* ============ بناء بصمة جديدة + اختبار فوري ============ */
+  async function setPassword(u, pw, opts) {
+    opts = opts || {};
+    if (!u) throw new Error('setPassword: مفيش حساب');
+    var hp = required('hashPassword', (typeof hashPassword !== 'undefined' ? hashPassword : undefined));
+    var canonical = passCanon(pw);
+    var key = userKey(u.username) || displayUsername(u.username);
+    if (!key) throw new Error('setPassword: اسم المستخدم فاضي');
+    var tolerant = opts.tolerant !== false;
+
+    u.username = displayUsername(u.username);
+    u.usernameKey = key;
+    u.passAlgo = 3;
+    u.passHash = await hp(canonical, key);
+    u.pwTolerant = tolerant;
+    if (tolerant) u.passHashCI = await hp(passFold(canonical), key);
+    else { try { delete u.passHashCI; } catch (e) { u.passHashCI = ''; } u.passHashCI = u.passHashCI || ''; }
+
+    /* مرآة للبيانات في مكان منفصل — لو cleanUsers شالت الحقول الجديدة */
+    try {
+      if (typeof DB !== 'undefined' && DB && u.id) {
+        DB.authMeta = DB.authMeta || {};
+        DB.authMeta[u.id] = { key: key, ci: u.passHashCI || '', tol: tolerant, v: 3, at: Date.now() };
+      }
+    } catch (e) {}
+
+    var check = await verify(u, canonical);
+    return { ok: check.ok, canonical: canonical, key: key, tolerant: tolerant, check: check };
+  }
+
+  /* ============ تحليل كلمة السر المكتوبة (لرسائل الغلط) ============ */
+  function analyze(pw) {
+    var raw = str(pw), canon = passCanon(pw);
+    return {
+      raw: raw,
+      len: raw.length,
+      spaces: (raw.match(/ /g) || []).length,
+      lead: /^[ \t]/.test(raw),
+      trail: /[ \t]$/.test(raw),
+      upper: /[A-Z]/.test(raw) || /[\u0621-\u064A]/.test(raw),
+      lower: /[a-z]/.test(raw),
+      num: /[0-9٠-٩]/.test(raw),
+      sym: /[^A-Za-z0-9\u0621-\u064A0-9٠-٩ ]/.test(raw),
+      hasArabic: /[\u0600-\u06FF]/.test(raw),
+      trimmed: canon !== raw,
+      canon: canon
+    };
+  }
+
+  /* ============ اقتراح أقرب أسماء (لما الاسم يكون غلط) ============ */
+  function lev(a, b) {
+    a = str(a); b = str(b);
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    var prev = [], cur = [], i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      cur[0] = i;
+      for (j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+      }
+      prev = cur.slice();
+    }
+    return prev[b.length];
+  }
+  function suggest(raw, users, max) {
+    var key = userKey(raw);
+    if (!key) return [];
+    var scored = [];
+    (users || []).forEach(function (u) {
+      var k = userKey(u.username);
+      if (!k) return;
+      var d = lev(key, k);
+      if (d > 0 && d <= Math.max(1, Math.min(3, Math.floor(key.length / 3) + 1))) {
+        scored.push({ u: u, d: d });
+      }
+    });
+    scored.sort(function (a, b) { return a.d - b.d; });
+    return scored.slice(0, max || 2).map(function (x) { return x.u; });
+  }
+
+  return {
+    userKey: userKey,
+    passCanon: passCanon,
+    passFold: passFold,
+    sameAsUser: sameAsUser,
+    displayUsername: displayUsername,
+    salts: salts,
+    meta: meta,
+    verify: verify,
+    setPassword: setPassword,
+    analyze: analyze,
+    suggest: suggest,
+    lev: lev
+  };
+})();
+if (typeof window !== 'undefined') window.E3A = E3A;
+
+
 const roleCaption = (u) => u ? (isLucasOwner(u) ? '🛡️ إدارة السيستم' : (ROLE_LABELS[u.role] || u.role || '')) : '';
 
 let DB = loadDB();
@@ -230,8 +855,6 @@ function logAs(u, action) {
   DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: (isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || u.username) + ' (' + u.username + ')'), action });
   DB.activityLog = DB.activityLog.slice(0, 200);
 }
-function showError(msg) { const e = $('liError'); e.textContent = msg; e.classList.add('show'); }
-function clearError() { $('liError').classList.remove('show'); }
 function avatarHTML(u) { return avatarOf(u, esc); }
 
 /* =====================================================================
@@ -257,9 +880,13 @@ async function bootstrapSystemAdmin() {
     displayName: E3.SYSTEM_ADMIN_LABEL, username: SEED_ADMIN.username,
     phone: '', photo: '', role: 'amin', permissions: [...ALL_PERMS], scopeYears: [],
     active: true, createdAt: today(), lastLogin: '',
-    passHash: await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username),
+    passHash: '',
     mustChangePassword: true,
   };
+
+  /* بصمة v3 — مفتاح اسم المستخدم موحّد + اختبار فوري إن الدخول هيشتغل */
+  try { await E3A.setPassword(admin, SEED_ADMIN.password, { tolerant: false }); }
+  catch (e) { console.warn('auth v3 bootstrap:', e); admin.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username); }
 
   /* الخزنة (تشفير كلمات السر) — لو المتصفح مش بيدعمها، الحساب بيتعمل برضه
      والدخول بيشتغل عادي، وبس تتقفل ميزة عرض كلمات السر. */
@@ -325,7 +952,8 @@ async function migrateSeedCredentials() {
   owner.active = true;
   owner.permissions = [...ALL_PERMS];
   owner.mustChangePassword = true;
-  owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username);
+  try { await E3A.setPassword(owner, SEED_ADMIN.password, { tolerant: false }); }
+  catch (e) { owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username); }
   if (vault && vault.pub) {
     owner.passSealed = await E3.vault.sealWithPublic(vault.pub, SEED_ADMIN.password);
     owner.passSealedAt = new Date().toISOString();
@@ -393,105 +1021,747 @@ async function boot() {
   if (window.matchMedia('(min-width: 901px) and (pointer: fine)').matches) setTimeout(() => $('liUser').focus(), 120);
 }
 
-$('eyeBtn').addEventListener('click', () => {
-  const i = $('liPass'); i.type = i.type === 'password' ? 'text' : 'password';
-  $('eyeBtn').textContent = i.type === 'password' ? '👁️' : '🙈';
-});
-function normUser(s){ return String(s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
-function findUserByLogin(raw){
-  const v = normUser(raw);
-  return (DB.users || []).find(x => normUser(x.username) === v);
+/* =====================================================================
+   منطق الدخول v3 — مطابقة متسامحة + رسائل واضحة + شاشة تحقق
+   ===================================================================== */
+function _e(v) {
+  if (typeof esc === 'function') { try { return esc(v); } catch (e) {} }
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
 }
-$('liUser').addEventListener('input', () => {
-  const u = findUserByLogin($('liUser').value);
-  const box = $('servantPreview');
-  if (u) {
-    box.className = 'servant-preview show';
-    const uname = isLucasOwner(u) ? '' : ' <small style="color:var(--muted)">@' + esc(u.username) + '</small>';
-    box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div><div><b>' + esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : u.displayName) + '</b><br><span class="badge">' + esc(roleCaption(u)) + '</span>' + uname + '</div>';
-  } else { box.className = 'servant-preview'; box.innerHTML = ''; }
-});
-$('liPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-$('liUser').addEventListener('keydown', e => { if (e.key === 'Enter') $('liPass').focus(); });
+function _ar(v) {
+  return String(v == null ? '' : v).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[+d]; });
+}
+function _sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 
-let busy = false;
+/* ============================ شاشة التحقق ============================ */
+var VZ = (function () {
+  var root = null, box = null, log = null, who = null, fill = null, pctEl = null,
+      resEl = null, subEl = null, actEl = null, titleEl = null, sndBtn = null;
+  var soundOn = true, ctx = null, lastFocus = null, keyHandler = null;
+
+  try { soundOn = localStorage.getItem('e3dad_vz_sound') !== '0'; } catch (e) {}
+
+  function q(id) { return document.getElementById(id); }
+  function init() {
+    if (root) return;
+    root = q('vzOv'); box = q('vzBox'); log = q('vzLog'); who = q('vzWho');
+    fill = q('vzBarFill'); pctEl = q('vzPct'); resEl = q('vzRes'); subEl = q('vzResSub');
+    actEl = q('vzAct'); titleEl = q('vzTitle'); sndBtn = q('vzSnd');
+    if (sndBtn) {
+      sndBtn.textContent = soundOn ? '🔊' : '🔇';
+      sndBtn.onclick = function (e) { e.stopPropagation(); toggleSound(); };
+    }
+  }
+  function toggleSound() {
+    soundOn = !soundOn;
+    try { localStorage.setItem('e3dad_vz_sound', soundOn ? '1' : '0'); } catch (e) {}
+    if (sndBtn) sndBtn.textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) beep('start');
+  }
+  function audio() {
+    if (!soundOn) return null;
+    try {
+      if (!ctx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ctx = new AC();
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    } catch (e) { return null; }
+  }
+  function note(freq, at, dur, vol) {
+    var c = audio(); if (!c) return;
+    try {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, c.currentTime + at);
+      g.gain.linearRampToValueAtTime(vol, c.currentTime + at + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + at + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(c.currentTime + at); o.stop(c.currentTime + at + dur + 0.02);
+    } catch (e) {}
+  }
+  function beep(kind) {
+    if (kind === 'start') { note(660, 0, .07, .035); }
+    else if (kind === 'ok') { note(523.25, 0, .12, .045); note(783.99, .1, .2, .045); }
+    else if (kind === 'bad') { note(233.08, 0, .16, .05); note(174.61, .12, .24, .05); }
+  }
+
+  function reset() {
+    init(); if (!root) return;
+    box.className = 'vz-box';
+    log.innerHTML = ''; resEl.className = 'vz-res'; resEl.textContent = '';
+    subEl.className = 'vz-res-sub'; subEl.textContent = '';
+    actEl.innerHTML = '';
+    if (titleEl) titleEl.textContent = 'بيتأكد من بيانات الخادم…';
+    if (who) who.innerHTML = '';
+    progress(0);
+    root.classList.add('show');
+  }
+  function open(user) {
+    lastFocus = document.activeElement;
+    reset();
+    if (user && who) {
+      var nm = user.displayName || user.username || '';
+      var un = user.username ? ' <small dir="ltr" style="opacity:.65">@' + _e(user.username) + '</small>' : '';
+      who.innerHTML = nm ? '🕯️ بنطابق حساب <b>' + _e(nm) + '</b>' + un : '';
+    }
+    keyHandler = function (e) { if (e.key === 'Escape' && box && box.classList.contains('fail')) close(); };
+    document.addEventListener('keydown', keyHandler);
+  }
+  function line(kind, text) {
+    init(); if (!log) return;
+    var d = document.createElement('div');
+    d.className = 'ln ' + (kind || 'wait');
+    var ic = kind === 'ok' ? '✓' : kind === 'bad' ? '✕' : '›';
+    d.innerHTML = '<span class="ic">' + ic + '</span><span class="tx">' + text + '</span>';
+    log.appendChild(d);
+    while (log.children.length > 6) log.removeChild(log.firstChild);
+    try { log.scrollTop = log.scrollHeight; } catch (e) {}
+  }
+  function progress(p) {
+    init(); if (!fill) return;
+    p = Math.max(0, Math.min(100, Math.round(p)));
+    fill.style.width = p + '%';
+    if (pctEl) pctEl.textContent = p + '%';
+  }
+  async function seq(steps) {
+    for (var i = 0; i < steps.length; i++) {
+      line(steps[i].k, steps[i].t);
+      var target = Math.round(((i + 1) / (steps.length + 2)) * 60);
+      progress(target);
+      await _sleep(steps[i].d || 240);
+    }
+  }
+  function finish(ok, text, sub) {
+    init(); if (!box) return;
+    box.className = 'vz-box ' + (ok ? 'done' : 'fail');
+    if (titleEl) titleEl.textContent = ok ? 'تم التحقق بنجاح' : 'تعذّر الدخول';
+    resEl.className = 'vz-res show ' + (ok ? 'ok' : 'bad');
+    resEl.textContent = text || (ok ? 'تم التحقق' : 'تعذّر الدخول');
+    if (sub) { subEl.className = 'vz-res-sub show'; subEl.innerHTML = sub; }
+    if (!ok) { progress(Math.min(96, 55)); beep('bad'); } else { progress(100); beep('ok'); }
+  }
+  function actions(list) {
+    init(); if (!actEl) return;
+    actEl.innerHTML = '';
+    (list || []).forEach(function (a) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'vz-btn'; b.textContent = a.label;
+      b.onclick = function (e) { e.stopPropagation(); a.fn && a.fn(); };
+      actEl.appendChild(b);
+    });
+  }
+  function close() {
+    init(); if (!root) return;
+    root.classList.remove('show');
+    if (keyHandler) { document.removeEventListener('keydown', keyHandler); keyHandler = null; }
+    try { lastFocus && lastFocus.focus && lastFocus.focus(); } catch (e) {}
+  }
+  function dismissable() {
+    init(); if (!root) return;
+    actions([{ label: '↩️ رجوع للبيانات', fn: close }]);
+    root.onclick = function (e) { if (e.target === root) close(); };
+  }
+
+  return {
+    open: open, line: line, progress: progress, seq: seq, finish: finish,
+    actions: actions, close: close, dismissable: dismissable, tone: beep
+  };
+})();
+
+/* ============================ رسائل الخطأ ============================ */
+function clearError() {
+  var box = document.getElementById('liError');
+  if (!box) return;
+  box.className = 'gz-err';
+  box.innerHTML = '';
+  var uw = document.getElementById('gzUserWrap'), pw = document.getElementById('gzPassWrap');
+  if (uw) uw.classList.remove('bad', 'good');
+  if (pw) pw.classList.remove('bad', 'good');
+}
+
+function showError(o) {
+  var box = document.getElementById('liError');
+  if (!box) return;
+  clearError();
+  if (typeof o === 'string') {
+    var tone = /^(✅)/.test(o) ? 'ok' : /^(⚠️)/.test(o) ? 'warn' : 'bad';
+    box.className = 'gz-err show tone-' + tone;
+    box.innerHTML = '<div class="gz-err-head"><span class="gz-err-ic">' +
+      (tone === 'ok' ? '✅' : tone === 'warn' ? '⚠️' : '⛔') +
+      '</span><b style="font-weight:800">' + _e(o) + '</b></div>';
+    return;
+  }
+  var t = o.tone || 'bad';
+  var h = '<div class="gz-err-head"><span class="gz-err-ic">' +
+    (t === 'ok' ? '✅' : t === 'warn' ? '⚠️' : '⛔') + '</span><b>' + (o.title || '') + '</b></div>';
+  if (o.lines && o.lines.length) {
+    h += '<ul class="gz-err-list">' + o.lines.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>';
+  }
+  if (o.html) h += o.html;
+  if (o.actions && o.actions.length) {
+    h += '<div class="gz-err-acts">' + o.actions.map(function (a) {
+      return '<button type="button" class="gz-chip" data-act="' + a.id + '">' + a.label + '</button>';
+    }).join('') + '</div>';
+  }
+  box.className = 'gz-err show tone-' + t;
+  box.innerHTML = h;
+  if (o.actions) {
+    o.actions.forEach(function (a) {
+      var b = box.querySelector('[data-act="' + a.id + '"]');
+      if (b && a.fn) b.onclick = a.fn;
+    });
+  }
+  try { box.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+}
+
+/* ============================ معاينة الحساب ============================ */
+function findUsersByLogin(rawValue) {
+  var k = E3A.userKey(rawValue);
+  if (!k) return [];
+  var users = (DB && DB.users) || [];
+  var byKey = users.filter(function (x) { return E3A.meta(x).key === k; });
+  if (byKey.length) return byKey;
+  return users.filter(function (x) { return E3A.userKey(x.username) === k; });
+}
+function findUserByLogin(rawValue) { return findUsersByLogin(rawValue)[0] || null; }
+
+function _avatarInto(el, u) {
+  if (!el) return;
+  var initial = String((u && (u.displayName || u.username)) || '؟').trim().charAt(0) || '؟';
+  var photo = u && u.photo ? String(u.photo) : '';
+  if (photo && /^data:image\//i.test(photo)) {
+    el.innerHTML = '<img src="' + photo + '" alt="">';
+  } else {
+    el.innerHTML = '<b>' + _e(initial) + '</b>';
+  }
+}
+
+function updatePreview() {
+  var input = document.getElementById('liUser');
+  if (!input) return;
+  var typed = E3A.displayUsername(input.value);
+  var pill = document.getElementById('servantPreview');
+  var uWrap = document.getElementById('gzUserWrap');
+  var mark = document.getElementById('gzUserMark');
+  var hint = document.getElementById('gzUserHint');
+  var key = E3A.userKey(typed);
+
+  if (!typed) {
+    if (pill) pill.hidden = true;
+    if (uWrap) uWrap.classList.remove('good', 'bad');
+    if (mark) mark.textContent = '';
+    if (hint) { hint.className = 'gz-hint'; hint.innerHTML = 'مش مهم الكابيتال ولا المسافات في اسم المستخدم'; }
+    return;
+  }
+
+  var users = findUsersByLogin(typed);
+  var u = users[0];
+
+  if (u) {
+    var meta = E3A.meta(u);
+    if (pill) {
+      pill.hidden = false;
+      _avatarInto(document.getElementById('gzAv'), u);
+      var nameEl = document.getElementById('gzPvName');
+      if (nameEl) nameEl.textContent = isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || u.username);
+      var roleEl = document.getElementById('gzPvRole');
+      if (roleEl) {
+        roleEl.textContent = (isLucasOwner(u) ? '🛡️ صلاحية كاملة' : roleCaption(u)) +
+          (u.active === false ? ' · ⏸️ الحساب موقوف' : '');
+      }
+      var chk = document.getElementById('gzPvCheck');
+      if (chk) { chk.textContent = u.active === false ? '!' : '✓'; }
+    }
+    if (uWrap) { uWrap.classList.add('good'); uWrap.classList.remove('bad'); }
+    if (mark) mark.textContent = '✓';
+    if (hint) {
+      hint.className = 'gz-hint good';
+      hint.innerHTML = 'لقينا الحساب — مفتاح المطابقة <b dir="ltr">' + _e(meta.key) + '</b>' +
+        (u.active === false ? ' · <b>بس الحساب موقوف</b>' : '');
+    }
+  } else {
+    if (pill) pill.hidden = true;
+    if (uWrap && typed.length >= 2) { uWrap.classList.add('bad'); uWrap.classList.remove('good'); }
+    if (mark) mark.textContent = typed.length >= 2 ? '✕' : '';
+    if (hint) {
+      hint.className = 'gz-hint' + (typed.length >= 2 ? ' bad' : '');
+      hint.innerHTML = (typed.length >= 2)
+        ? 'مش لاقيين الاسم ده في الحسابات — اتأكد من الأمين، أو اضغط «🔄 تحديث الحسابات» بعد المحاولة.'
+        : ('هيتقارن كـ <b dir="ltr">' + _e(key) + '</b>');
+    }
+  }
+}
+
+/* ============================ أدوات كلمة السر ============================ */
+function revealHTML(rawValue) {
+  var raw = String(rawValue == null ? '' : rawValue);
+  var shown = raw.replace(/ /g, '␣').replace(/\t/g, '⇥');
+  return '<div class="gz-reveal"><span>اللي مكتوب في خانة كلمة السر دلوقتي:</span>' +
+    '<code dir="ltr">' + _e(shown) + '</code>' +
+    '<small>␣ = مسافة · الطول ' + _ar(raw.length) + ' حرف</small></div>';
+}
+
+function pwReport(rawValue, u) {
+  var a = E3A.analyze(rawValue);
+  var meta = E3A.meta(u);
+  var out = [];
+  if (a.lead) out.push('فيه <b>مسافة في أول</b> كلمة السر — هنشيلها وإحنا بنقارن، بس اتأكد إنها مش جزء من الكلمة.');
+  if (a.trail) out.push('فيه <b>مسافة في آخر</b> كلمة السر — بتتشال تلقائيًا عند المقارنة.');
+  if (a.spaces > 1) out.push('كلمة السر فيها <b>' + _ar(a.spaces) + ' مسافات</b> — اتأكد إنها في نفس الأماكن.');
+  out.push('طول اللي كتبته: <b>' + _ar(a.len) + '</b> حرف.');
+  if (meta.tol === true) {
+    out.push('الحساب ده <b>مفعّل عليه التسامح</b> — الكابيتال والسمول والمسافات الزيادة مقبولين، يبقى فيه <b>حرف أو رقم مختلف</b> فعلًا.');
+  } else if (meta.tol === false) {
+    out.push('الحساب ده <b>بيفرّق بين الكابيتال والسمول</b> — جرّب نفس شكل الحروف اللي الأمين عيّنها.');
+  } else {
+    out.push('لو الأمين عيّنها بحروف كابيتال، اكتبها بنفس الشكل — أو خلّيه يفعّل «التسامح» من لوحة التحكم.');
+  }
+  return out;
+}
+
+/* ============================ الدخول ============================ */
+var busy = false;
+var _cloudTriedOnLogin = false;
+
+function setBusy(on, label) {
+  var btn = document.getElementById('loginBtn');
+  if (!btn) return;
+  if (on) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="gz-spin-sm"></span> ' + (label || 'بنتحقق…');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = '☦️ دخول الخدّام';
+  }
+}
+
+function lockCountdown() {
+  var btn = document.getElementById('loginBtn');
+  if (!btn) return;
+  var t = setInterval(function () {
+    var left = Math.ceil(((window._lockUntil || 0) - Date.now()) / 1000);
+    if (left <= 0) {
+      clearInterval(t);
+      window._lockUntil = 0;
+      setBusy(false);
+      return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '🔒 استنى ' + _ar(left) + ' ثانية';
+  }, 300);
+}
+
+async function pullUsersFromCloud() {
+  if (!(window.E3Cloud && typeof E3Cloud.pull === 'function')) return false;
+  try {
+    if (typeof E3Cloud.init === 'function') E3Cloud.init({ dbKey: DB_KEY });
+    await Promise.race([E3Cloud.pull(), _sleep(7000)]);
+    DB = loadDB();
+    DB.settings = Object.assign(defaultSettings(), DB.settings || {});
+    return true;
+  } catch (e) {
+    console.warn('cloud pull:', e);
+    return false;
+  }
+}
+
+async function refreshUsersFromCloud() {
+  clearError();
+  showError({ title: '🔄 بنحدّث الحسابات من السيرفر…', lines: ['استنى ثانية واحدة…'], tone: 'warn' });
+  var ok = await pullUsersFromCloud();
+  if (!ok) {
+    return showError({
+      title: 'مش قادرين نحدّث الحسابات دلوقتي',
+      lines: ['المزامنة مش متاحة على النسخة دي أو النت واقف.', 'لو الحساب جديد، افتح لوحة التحكم على نفس الجهاز أو اتأكد من الاتصال.'],
+      tone: 'warn'
+    });
+  }
+  if (findUsersByLogin(document.getElementById('liUser').value).length) {
+    updatePreview();
+    showError({ title: '✅ الحسابات اتحدّثت', lines: ['لقينا الحساب — اضغط «دخول الخدّام» تاني.'], tone: 'ok' });
+  } else {
+    showError({
+      title: 'الحساب لسه مش موجود',
+      lines: ['اتأكد من الاسم اللي الأمين كتبه بالظبط.', 'الأمين يقدر يشوف اسم المستخدم من «الخدام والصلاحيات» في لوحة التحكم.'],
+      tone: 'bad'
+    });
+  }
+}
+
+function registerFail() {
+  window._fails = (window._fails || 0) + 1;
+  if (window._fails >= 5) {
+    window._lockUntil = Date.now() + 30000;
+    window._fails = 0;
+    lockCountdown();
+    return true;
+  }
+  return false;
+}
+
 async function doLogin() {
   if (busy) return;
+
+  var typedInput = document.getElementById('liUser');
+  var passInput = document.getElementById('liPass');
+  var typed = E3A.displayUsername(typedInput ? typedInput.value : '');
+  var typedRaw = typedInput ? typedInput.value : '';
+  var pwRaw = passInput ? passInput.value : '';
+  var pw = E3A.passCanon(pwRaw);
+
   clearError();
-  const now = Date.now();
-  if (window._lockUntil && now < window._lockUntil) return showError('محاولات كتير غلط — استنى ' + Math.ceil((window._lockUntil - now) / 1000) + ' ثانية وحاول تاني');
-  const typed = $('liUser').value.trim().replace(/\s+/g,' ');
-  const username = typed;
-  const pw = $('liPass').value;
-  if (!username || !pw) return showError('اكتب اسم المستخدم وكلمة السر');
-  if (/^[0-9a-f]{32,64}$/i.test(pw.trim())) return showError('اللي لصقته ده كود مشفّر (hash) مش كلمة السر — اكتب كلمة السر نفسها');
-  const u = findUserByLogin(typed);
-  busy = true; const btn = $('loginBtn'); btn.disabled = true; btn.textContent = '⏳ جاري التحقق...';
-  let ok = false;
-  try {
-    if (u && u.passHash) {
-      ok = await verifyPassword(pw, u.username, u.passHash);
-      if (!ok) ok = await verifyPassword(pw, String(u.username||'').toLowerCase(), u.passHash);
-      if (!ok) ok = await verifyPassword(pw, normUser(u.username), u.passHash);
+  VZ.tone('start');
+
+  if (window._lockUntil && Date.now() < window._lockUntil) {
+    var left = Math.ceil((window._lockUntil - Date.now()) / 1000);
+    return showError({
+      title: '⏳ الدخول مقفول مؤقتًا',
+      lines: ['بعد ٥ محاولات غلط — استنى <b>' + _ar(left) + ' ثانية</b> وحاول تاني.'],
+      tone: 'warn'
+    });
+  }
+
+  if (!typed) {
+    if (typedInput) typedInput.focus();
+    return showError({
+      title: 'اكتب اسم المستخدم',
+      lines: ['اسم المستخدم زي ما الأمين سلّمهولك — الكابيتال والمسافات مش بتفرق.'],
+      tone: 'warn'
+    });
+  }
+  if (!pw) {
+    if (passInput) passInput.focus();
+    return showError({ title: 'اكتب كلمة السر', lines: ['خانة كلمة السر فاضية.'], tone: 'warn' });
+  }
+  if (/^[0-9a-f]{32,64}$/i.test(pw)) {
+    return showError({
+      title: 'اللي لصقته ده كود مشفّر (hash)',
+      lines: ['اكتب كلمة السر نفسها — مش البصمة المشفّرة.'],
+      tone: 'warn'
+    });
+  }
+
+  busy = true;
+  setBusy(true, 'بنطابق البيانات…');
+
+  var users = findUsersByLogin(typed);
+
+  if (!users.length && !_cloudTriedOnLogin) {
+    _cloudTriedOnLogin = true;
+    showError({
+      title: '🔎 بندوّر على الحساب…',
+      lines: ['مش لاقيين <b>«' + _e(typed) + '»</b> في نسخة الجهاز — بنحدّث الحسابات من السيرفر دلوقتي.'],
+      tone: 'warn'
+    });
+    await pullUsersFromCloud();
+    users = findUsersByLogin(typed);
+    clearError();
+  }
+
+  VZ.open(users[0] || { displayName: typed, username: typed });
+
+  /* ---------- الحساب مش موجود ---------- */
+  if (!users.length) {
+    await VZ.seq([
+      { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 240 },
+      { k: 'bad', t: 'البحث عن اسم المستخدم — مفيش نتيجة', d: 380 }
+    ]);
+    VZ.finish(false, 'اسم المستخدم غير موجود', 'مفيش حساب بالاسم ده على السيستم');
+    VZ.dismissable();
+    busy = false; setBusy(false);
+    registerFail();
+
+    var near = E3A.suggest(typed, (DB && DB.users) || []);
+    var lines = ['مفيش حساب باسم <b>«' + _e(typed) + '»</b> على الجهاز/السيستم.'];
+    if (near.length) {
+      lines.push('يمكن تقصد: ' + near.map(function (x) {
+        return '<b dir="auto">' + _e(x.username) + '</b> <small>(' + _e(x.displayName || '') + ')</small>';
+      }).join(' — '));
     }
-  } catch (e) {}
-  if (!ok) {
-    busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام';
-    window._fails = (window._fails || 0) + 1;
-    if (window._fails >= 5) { window._lockUntil = Date.now() + 30000; window._fails = 0; return showError('٥ محاولات غلط — الدخول اتقفل ٣٠ ثانية لحماية بيانات الدارسين'); }
-    const hint = (username === 'lucaskayser' || username === 'admin')
-      ? '<br><small style="opacity:.85">لو دي أول مرة بعد التحديث: اعمل تحديث قوي (Ctrl+Shift+R)، أو استخدم «استعادة على هذا الجهاز» اللي تحت.</small>'
-      : '';
-    return showError('اسم المستخدم أو كلمة السر غير صحيحة — راجع البيانات وحاول تاني (المحاولة ' + window._fails + ' من ٥)' + hint);
-  }
-  if (u.active === false && !isLucasOwner(u)) { busy = false; btn.disabled = false; btn.textContent = '☦️ دخول الخدّام'; return showError('الحساب ده موقوف حالياً — كلّم أمين إعداد الخدام لإعادة تفعيله'); }
+    lines.push('لو الحساب لسه جديد: اضغط «🔄 تحديث الحسابات» تحت، أو افتح لوحة التحكم من نفس الجهاز مرة واحدة.');
 
-  // أول دخول للمدير وخزنة مش موجودة → ننشئها بكلمة سره
-  if (isLucasOwner(u) && !DB.settings.vault) {
-    try {
-      const meta = await E3.vault.createVault(pw);
-      DB.settings.vault = meta;
-      E3.vault.pub = meta.pub;
-      E3.vault.privKey = await E3.vault.unlockVault(meta, pw);
-      u.passSealed = await E3.vault.sealWithPublic(meta.pub, pw);
-      u.passSealedAt = new Date().toISOString();
-    } catch (e) { console.warn('vault create:', e); }
+    return showError({
+      title: 'اسم المستخدم غير موجود ⛔',
+      lines: lines,
+      actions: [
+        { id: 'cloud', label: '🔄 تحديث الحسابات', fn: refreshUsersFromCloud },
+        { id: 'edit', label: '✏️ صحّح الاسم', fn: function () { if (typedInput) { typedInput.focus(); typedInput.select(); } } }
+      ],
+      tone: 'bad'
+    });
   }
 
-  // فتح الخزنة لإدارة السيستم
-  if (isLucasOwner(u) && DB.settings.vault) {
-    try {
+  /* ---------- الحساب موجود — فحص كلمة السر ---------- */
+  var first = users[0];
+
+  var verifyPromise = (async function () {
+    var last = { ok: false };
+    for (var i = 0; i < users.length; i++) {
+      var r;
+      try { r = await E3A.verify(users[i], pwRaw); }
+      catch (err) { r = { ok: false, err: err }; }
+      if (r.ok) return { result: r, user: users[i] };
+      last = r;
+    }
+    return { result: last, user: first };
+  })();
+
+  await VZ.seq([
+    { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 210 },
+    { k: 'ok', t: 'لقينا الحساب: ' + _e(first.displayName || first.username), d: 300 },
+    { k: 'wait', t: 'بنفحص كلمة السر…', d: 120 }
+  ]);
+  VZ.progress(62);
+
+  var outcome;
+  try { outcome = await verifyPromise; }
+  catch (err) {
+    outcome = { result: { ok: false, err: err }, user: first };
+  }
+  var res = outcome.result || { ok: false };
+  var acc = outcome.user || first;
+
+  /* خطأ تقني (مثلاً verifyPassword مش موجودة) */
+  if (res.err) {
+    VZ.line('bad', 'مشكلة في التحقق');
+    VZ.finish(false, 'حصلت مشكلة تقنية', 'بصّ على الكونسول (F12)');
+    VZ.dismissable();
+    busy = false; setBusy(false);
+    return showError({
+      title: 'حصلت مشكلة في التحقق',
+      lines: [_e(res.err && res.err.message ? res.err.message : 'دالة التحقق مش متاحة.'), 'اتأكد إن ملف <code>assets/js/core.js</code> محمّل صح.'],
+      tone: 'bad'
+    });
+  }
+
+  /* ---------- كلمة السر غلط ---------- */
+  if (!res.ok) {
+    VZ.line('bad', 'كلمة السر مش مطابقة');
+    VZ.finish(false, 'كلمة السر غير صحيحة', 'اسم المستخدم صح — الغلط في كلمة السر');
+    VZ.dismissable();
+    busy = false; setBusy(false);
+    var locked = registerFail();
+
+    var pwWrap = document.getElementById('gzPassWrap');
+    if (pwWrap) { pwWrap.classList.add('bad'); pwWrap.classList.remove('good'); }
+
+    var risk = E3A.sameAsUser(pwRaw, acc.username);
+    var list = [
+      'الحساب: <b>' + _e(acc.displayName || acc.username) + '</b> <small dir="ltr">@' + _e(acc.username) + '</small>'
+    ].concat(pwReport(pwRaw, acc));
+    if (risk) list.push('⚠️ كلمة السر دي <b>هي هي اسم المستخدم</b> — لازم تختلف عنه، وده اللي بيلخبط الدخول.');
+
+    if (locked) {
+      list.unshift('🔒 <b>٥ محاولات غلط</b> — الدخول اتقفل ٣٠ ثانية.');
+    }
+
+    return showError({
+      title: 'كلمة السر غير صحيحة 🔑 — اسم المستخدم صح ✅',
+      lines: list,
+      html: revealHTML(pwRaw),
+      actions: [
+        {
+          id: 'reveal', label: '👁️ إظهار', fn: function () {
+            var i = document.getElementById('liPass'); if (!i) return;
+            i.type = i.type === 'password' ? 'text' : 'password';
+            var b = document.getElementById('eyeBtn'); if (b) b.textContent = i.type === 'password' ? '👁️' : '🙈';
+          }
+        },
+        {
+          id: 'clear', label: '🧹 امسح واكتب تاني', fn: function () {
+            var i = document.getElementById('liPass'); if (!i) return;
+            i.value = ''; i.type = 'password';
+            var b = document.getElementById('eyeBtn'); if (b) b.textContent = '👁️';
+            i.focus();
+          }
+        },
+        { id: 'cloud', label: '🔄 تحديث الحسابات', fn: refreshUsersFromCloud }
+      ],
+      tone: 'bad'
+    });
+  }
+
+  /* ---------- الحساب موقوف ---------- */
+  if (acc.active === false && !isLucasOwner(acc)) {
+    VZ.line('bad', 'الحساب موقوف من الإدارة');
+    VZ.finish(false, 'الحساب موقوف', 'كلّم أمين إعداد الخدام لإعادة تفعيله');
+    VZ.dismissable();
+    busy = false; setBusy(false);
+    return showError({
+      title: 'الحساب موقوف ⏸️',
+      lines: ['اسم المستخدم وكلمة السر <b>صح ✅</b> — بس الإدارة وقّفت الحساب ده.', 'كلّم أمين إعداد الخدام لإعادة تفعيله.'],
+      tone: 'warn'
+    });
+  }
+
+  /* ---------- نجاح ---------- */
+  VZ.line('ok', 'كلمة السر مطابقة');
+  VZ.progress(84);
+  VZ.line('ok', 'صلاحيات الحساب اتفعّلت');
+  VZ.progress(100);
+  VZ.finish(true, 'تم التحقق — أهلًا بيك', 'جارٍ فتح لوحة التحكم…');
+
+  /* ترقية بصمة الحساب القديمة — بس لو دخل بنفس شكل الحروف */
+  try {
+    var meta = E3A.meta(acc);
+    var sameShape = String(res.pass) === pw;
+    var needUpgrade = sameShape && (meta.v !== 3 || meta.key !== E3A.userKey(acc.username) || (meta.tol === true && !meta.ci));
+    if (needUpgrade) {
+      var tol = (acc.pwTolerant === true) || (!isLucasOwner(acc) && acc.pwTolerant !== false);
+      await E3A.setPassword(acc, pwRaw, { tolerant: tol });
+    }
+  } catch (e) { console.warn('auth upgrade:', e); }
+
+  var vaultOK = true;
+  try {
+    if (isLucasOwner(acc) && !DB.settings.vault) {
+      var vmeta = await E3.vault.createVault(pw);
+      DB.settings.vault = vmeta;
+      E3.vault.pub = vmeta.pub;
+      E3.vault.privKey = await E3.vault.unlockVault(vmeta, pw);
+      acc.passSealed = await E3.vault.sealWithPublic(vmeta.pub, pw);
+      acc.passSealedAt = new Date().toISOString();
+    }
+    if (isLucasOwner(acc) && DB.settings.vault) {
       E3.vault.pub = DB.settings.vault.pub;
-      E3.vault.privKey = await E3.vault.unlockVault(DB.settings.vault, pw);
-      if (!u.passSealed) { u.passSealed = await E3.vault.seal(pw); }
-    } catch (e) { console.warn('vault:', e); }
+      E3.vault.privKey = await E3.vault.unlockVault(DB.settings.vault, pwRaw);
+      if (!acc.passSealed) acc.passSealed = await E3.vault.seal(pwRaw);
+    }
+  } catch (e) {
+    vaultOK = false;
+    console.warn('vault:', e);
   }
-  u.lastLogin = new Date().toLocaleString('ar-EG');
-  logAs(u, 'تسجيل دخول');
+
+  acc.lastLogin = new Date().toLocaleString('ar-EG');
+  logAs(acc, 'تسجيل دخول');
   saveDB();
-  try { if (window.E3Cloud && E3Cloud.touchLogin) E3Cloud.touchLogin(u.username, u.lastLogin); } catch (e) {}
-  const rememberChecked = (document.getElementById('remember7d') ? document.getElementById('remember7d').checked : true);
-  E3.store.setItem(SESSION_KEY, u.id);
+  try { if (window.E3Cloud && E3Cloud.touchLogin) E3Cloud.touchLogin(acc.username, acc.lastLogin); } catch (e) {}
+
+  window._fails = 0;
+  window._lockUntil = 0;
+
+  var rememberChecked = (document.getElementById('remember7d') ? document.getElementById('remember7d').checked : true);
+  E3.store.setItem(SESSION_KEY, acc.id);
   E3.store.setItem(SESSION_KEY + '_at', String(Date.now()));
   E3.store.setItem(SESSION_KEY + '_remember', rememberChecked ? '1' : '0');
-  try{ localStorage.setItem('e3dad_remember_choice', rememberChecked?'1':'0'); }catch(e){}
-  try{ const dur = rememberChecked ? SEVEN_DAYS_MS : SHORT_SESSION_MS; E3.store.setItem(SESSION_KEY + '_exp', String(Date.now() + dur)); }catch(e){}
+  try { localStorage.setItem('e3dad_remember_choice', rememberChecked ? '1' : '0'); } catch (e) {}
+  try {
+    var dur = rememberChecked ? SEVEN_DAYS_MS : SHORT_SESSION_MS;
+    E3.store.setItem(SESSION_KEY + '_exp', String(Date.now() + dur));
+  } catch (e) {}
+  try { localStorage.setItem('e3dad_last_user', E3A.displayUsername(acc.username)); } catch (e) {}
+
   busy = false;
-  welcome(u);
+  setBusy(false);
+
+  await _sleep(620);
+  VZ.close();
+  welcome(acc, { vaultOK: vaultOK, tolerant: res.mode === 'tolerant' });
 }
 
-function welcome(u) {
+function welcome(u, extra) {
+  extra = extra || {};
   $('loginBox').style.display = 'none';
-  const box = $('successBox');
+  var box = $('successBox');
   box.className = 'success show';
+  var first = isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : String(u.displayName || '').split(' ')[0];
+  var warn = '';
+  if (extra.tolerant) {
+    warn += '<div style="margin-top:10px;padding:9px 11px;border-radius:11px;background:#fff8e6;border:1px solid #ead9a4;color:#7a5c00;font-size:11.5px;line-height:1.8;font-weight:700;text-align:right">' +
+      '⚠️ دخلت بكلمة السر بحروف مختلفة عن المسجّلة (التسامح مفعّل). لو الخزنة/عرض كلمات السر مش شغال، ادخل بكلمة السر بنفس شكل الحروف.' +
+      '</div>';
+  }
+  if (extra.vaultOK === false) {
+    warn += '<div style="margin-top:10px;padding:9px 11px;border-radius:11px;background:#fdf1ef;border:1px solid #ecc7c1;color:#a11c14;font-size:11.5px;line-height:1.8;font-weight:700;text-align:right">' +
+      '🔒 خزنة كلمات السر مقفولة في الجلسة دي — هتقدر تدخل عادي، بس مش هتقدر تعرض كلمات سر الخدام. ادخل بكلمة سر الإدارة بنفس الحروف بالظبط.' +
+      '</div>';
+  }
   box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div>' +
-    '<h2 style="margin:8px 0 2px;color:var(--head)">نورت يا ' + esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || '').split(' ')[0]) + ' ☦</h2>' +
-    '<p class="sub">' + esc(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
+    '<h2 style="margin:8px 0 2px;color:var(--head)">نورت يا ' + _e(first) + ' ☦</h2>' +
+    '<p class="sub">' + _e(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
+    warn +
     '<button class="btn gold" style="margin-top:14px" onclick="location.replace(\'' + ADMIN_URL + '\')">🎓 دخول لوحة التحكم الآن</button>';
-  // نستخدم replace عشان صفحة الدخول متفضلش في history — زرار الرجوع ميرجعش ليها
-  try{ history.replaceState(null, '', location.href); }catch(e){}
-  if (location.protocol.startsWith('http')) setTimeout(() => { location.replace(ADMIN_URL); }, 1200);
+  try { history.replaceState(null, '', location.href); } catch (e) {}
+  if (location.protocol.startsWith('http')) {
+    setTimeout(function () { location.replace(ADMIN_URL); }, (extra.tolerant || extra.vaultOK === false) ? 2600 : 1200);
+  }
 }
+
+/* ============================ تنظيف العناصر القديمة ============================ */
+/* النسخ القديمة من index.html كان فيها <div class="error" id="liError"> فوق كارت الدخول.
+   لو الملف القديم لسه متخزّن أو حصل خلط، العنصر ده بيسرق الرسائل من العنصر الجديد
+   فتظهر رسائل وأزرار من غير تنسيق في مكان غلط — بنشيله هنا نهائيًا. */
+(function purgeLegacyNodes() {
+  try {
+    var all = document.querySelectorAll('[id="liError"]');
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (!el.classList || !el.classList.contains('gz-err')) {
+        el.parentNode && el.parentNode.removeChild(el);
+      }
+    }
+    var legacy = document.querySelectorAll('#loginBox > .error:not(.gz-err), .card > .error:not(.gz-err)');
+    for (var j = 0; j < legacy.length; j++) {
+      legacy[j].parentNode && legacy[j].parentNode.removeChild(legacy[j]);
+    }
+  } catch (e) {}
+})();
+
+/* ============================ أحداث الواجهة ============================ */
+(function wireLoginUI() {
+  var user = document.getElementById('liUser');
+  var pass = document.getElementById('liPass');
+  var eye = document.getElementById('eyeBtn');
+  var caps = document.getElementById('capsWarn');
+
+  if (eye) {
+    eye.addEventListener('click', function () {
+      if (!pass) return;
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+      eye.textContent = pass.type === 'password' ? '👁️' : '🙈';
+      eye.setAttribute('aria-label', pass.type === 'password' ? 'إظهار كلمة السر' : 'إخفاء كلمة السر');
+      try { pass.focus(); } catch (e) {}
+    });
+  }
+
+  if (user) {
+    user.addEventListener('input', function () { updatePreview(); });
+    user.addEventListener('change', function () { updatePreview(); });
+    user.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (pass) pass.focus(); }
+    });
+    try {
+      var last = localStorage.getItem('e3dad_last_user');
+      if (last && !user.value) { user.value = last; }
+    } catch (e) {}
+    setTimeout(updatePreview, 0);
+  }
+
+  if (pass) {
+    pass.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); doLogin(); }
+      updateCaps(e);
+    });
+    pass.addEventListener('keyup', updateCaps);
+    pass.addEventListener('input', function () {
+      var w = document.getElementById('gzPassWrap');
+      if (w) w.classList.remove('bad');
+    });
+  }
+  function updateCaps(e) {
+    if (!caps) return;
+    var on = false;
+    try { on = !!(e && e.getModifierState && e.getModifierState('CapsLock')); } catch (x) {}
+    caps.hidden = !on;
+  }
+})();
+
+
 
 
 /* =====================================================================
@@ -516,7 +1786,8 @@ async function resetOwnerLocal() {
   owner.active = true;
   owner.permissions = [...ALL_PERMS];
   owner.mustChangePassword = true;
-  owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username);
+  try { await E3A.setPassword(owner, SEED_ADMIN.password, { tolerant: false }); }
+  catch (e) { owner.passHash = await hashPassword(SEED_ADMIN.password, SEED_ADMIN.username); }
 
   let vault = DB.settings.vault;
   try {
@@ -684,5 +1955,5 @@ try{
 E3.theme.init();
 boot();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cf9d5cea10ed24',t:'MTc5MjQxMTE0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
