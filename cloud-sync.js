@@ -310,7 +310,7 @@
       });
       const val = {
         students: JSON.stringify(db.students || []),
-        activityLog: JSON.stringify((db.activityLog || []).slice(0, 300)),
+        activityLog: JSON.stringify((db.activityLog || []).slice(0, 1500)),
         attendanceSessions: JSON.stringify(db.attendanceSessions || []),
         tasks: JSON.stringify(db.tasks || []),
         templates: JSON.stringify(db.templates || {}),

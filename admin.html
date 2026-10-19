@@ -639,7 +639,7 @@ function defaultAssessments(){return[
  {id:uid(),title:'الاختبار النهائي',type:'امتحان نهائي',date:'',score:'',max:50}
 ]}
 function loadDB(){
- try{const raw=E3.store.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.deletedUserIds=d.deletedUserIds||[]; d.users=(d.users||[]).filter(u=>isLucasOwner(u)||!(d.deletedUserIds||[]).includes(u.id)); d.activityLog=d.activityLog||[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
+ try{const raw=E3.store.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.deletedUserIds=d.deletedUserIds||[]; d.users=(d.users||[]).filter(u=>isLucasOwner(u)||!(d.deletedUserIds||[]).includes(u.id)); d.activityLog=Array.isArray(d.activityLog)?d.activityLog.slice(0,1500):[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
  return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
 }
 function preserveLucasRecord(users){
@@ -734,7 +734,7 @@ function hasPerm(p){const u=currentUser(); if(!u||u.active===false)return false;
 function canEdit(){return hasPerm('enter_grades')||hasPerm('edit_students')||hasPerm('manage_years')||hasPerm('add_notes')}
 function isAdmin(){const u=currentUser(); return !!u&&(u.role==='amin'||isLucasOwner(u))}
 function userAvatar(u){if(!u)return '<span>؟</span>'; if(u.photo)return `<img src="${u.photo}" alt="">`; if(isLucasOwner(u))return '<span aria-label="إدارة السيستم">🛡️</span>'; return `<span>${esc(initials(u.displayName||'خ'))}</span>`}
-function logActivity(action){const u=currentUser(); DB.activityLog=DB.activityLog||[]; DB.activityLog.unshift({date:new Date().toLocaleString('ar-EG'),user:u?(isLucasOwner(u)?E3.SYSTEM_ADMIN_LABEL:u.displayName+' ('+u.username+')'):'—',action}); DB.activityLog=DB.activityLog.slice(0,120)}
+function logActivity(action){const u=currentUser(); DB.activityLog=DB.activityLog||[]; DB.activityLog.unshift({id:uid(),at:new Date().toISOString(),date:new Date().toLocaleString('ar-EG'),userId:u?.id||null,user:u?(isLucasOwner(u)?E3.SYSTEM_ADMIN_LABEL:u.displayName+' ('+u.username+')'):'—',action:String(action).slice(0,500)}); DB.activityLog=DB.activityLog.slice(0,1500)}
 function canAccessStudent(st){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; if(!sc.length)return true; const en=studentCurrent(st); if(!en)return false; return sc.includes(en.yearLevel)}
 function canAccessEnrollment(en){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; return !sc.length||sc.includes(en.yearLevel)}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
@@ -961,7 +961,7 @@ function viewUsers(){
     <div class="grid c3 roles-grid" style="margin-top:12px">${Object.entries(ROLE_DEFS).map(([k,r])=>`<div class="role-card ${k==='amin'?'top':''}"><div class="role-title"><span style="font-size:22px">${r.icon}</span><span><b>${r.label}</b><br><span class="badge b-gold">${toArabicDigits(rolesCount(k))} حساب</span></span></div><details class="role-details"><summary>الوصف والصلاحيات</summary><p style="font-size:12.5px;color:var(--muted);line-height:1.8;margin:7px 0 0">${r.desc}</p><div style="margin-top:8px">${r.perms.map(pp=>`<span class="badge b-gray" style="margin:2px">${(PERMISSIONS.find(x=>x[0]===pp)||[])[1]||pp}</span>`).join('')}</div></details></div>`).join('')}</div>
   </details>
 
-  <div class="card"><h3>🕘 آخر نشاطات الدخول والإدارة</h3>${(DB.activityLog||[]).length?(DB.activityLog||[]).slice(0,15).map(a=>`<div class="kv"><span>${esc(a.date)} — ${esc(a.user)}</span><b>${esc(a.action)}</b></div>`).join(''):'<p style="color:var(--muted);font-size:13px">لا يوجد نشاط بعد</p>'}</div>`;
+  <div class="card"><p>سجل النشاطات في صفحة منفصلة، متاحة لإدارة السيستم فقط.</p></div>`;
 }
 function permCheckboxes(selected){return PERMISSIONS.map(([k,l])=>`<label><input type="checkbox" class="perm-check" value="${k}" ${selected.includes(k)?'checked':''}> ${l}</label>`).join('')}
 function openUserForm(userId){
@@ -1158,11 +1158,19 @@ async function createDemoUsers(){
     message: added ? ('تم إنشاء '+added+' حسابات — جرّب تدخل بيهم بعد تسجيل الخروج:<br><br>• مساعد أمين: mosaed / Mosaed@123<br>• أمين سنة أولى: sana1 / Sana@123<br>• خادم: khadem / Khadem@123<br>• متابع: motabe3 / Follow@123<br><br>غيّر أو احذف الحسابات دي قبل الاستخدام الحقيقي.') : 'الحسابات التجريبية موجودة بالفعل'})
 }
 
+/* صفحة مستقلة: الحجب على الواجهة فقط، لا يحمي قاعدة Firebase المفتوحة للحسابات المجهولة. */
+function viewActivityLog(){
+ if(!isLucasOwner(currentUser()))return '<div class="card empty">🔒 غير مصرح</div>';
+ const logs=(DB.activityLog||[]).slice(0,1500);
+ return `<div class="card"><h3>🕘 سجل النشاطات</h3><p style="color:var(--muted)">آخر ${toArabicDigits(logs.length)} نشاط من ١٥٠٠ كحد أقصى. أحدث نشاط فوق.</p>
+ <div style="overflow-x:auto"><table class="audit-table"><thead><tr><th>الوقت</th><th>المنفذ</th><th>الإجراء</th></tr></thead><tbody>${logs.map(a=>`<tr><td>${esc(a.at?new Date(a.at).toLocaleString('ar-EG'):a.date||'—')}</td><td>${esc(a.user||'—')}</td><td>${esc(a.action||'—')}</td></tr>`).join('')||'<tr><td colspan="3">لا توجد أحداث بعد</td></tr>'}</tbody></table></div></div>`;
+}
 /* ---------- التنقل ---------- */
-const TITLES={dashboard:['لوحة المتابعة','نظرة شاملة على دارسي إعداد الخدام'],students:['الدارسون','كل ملف ثابت من أول التسجيل — والسجل بيكبر مع كل سنة ومحاولة'],curriculum:['المواد والمناهج','قوالب مواد كل سنة — تتطبق على أي محاولة جديدة'],reports:['مركز التقارير','تقارير فردية وجماعية جاهزة للطباعة أو الحفظ PDF'],backup:['النسخ الاحتياطي والبيانات','صدّر نسخة من كل بياناتك واحتفظ بها في مكان آمن'],settings:['الإعدادات والصلاحيات','درجات النجاح والتنبيه وصلاحيات الاستخدام'],help:['طريقة الاستخدام والتثبيت','ازاي تثبّت التطبيق على الموبايل والكمبيوتر وتستخدمه يوم بيوم'],profile:['ملف الدارس','السجل الكامل من أول يوم لحد التخرج أو الإعادة'],users:['الخدام والصلاحيات','حسابات دخول الخدام فقط — أمين، مساعد أمين، أمين سنة، خادم، متابع'],attendance:['الحضور بالمحاضرات','تسجيل حضور كل محاضرة على حدة — والغياب المتكرر بيتحول لمتابعة وافتقاد'],tasks:['المتابعة والافتقاد','مهام متابعة للمتعثرين والغائبين — مين هيكلم مين وإمتى وتم ولا لسه'],system:['🛡️ لوحة إدارة السيستم','التحكم الكامل: كلمات السر، الحسابات، الجلسات، وسجل عمليات الخزنة']};
+const TITLES={dashboard:['لوحة المتابعة','نظرة شاملة على دارسي إعداد الخدام'],students:['الدارسون','كل ملف ثابت من أول التسجيل — والسجل بيكبر مع كل سنة ومحاولة'],curriculum:['المواد والمناهج','قوالب مواد كل سنة — تتطبق على أي محاولة جديدة'],reports:['مركز التقارير','تقارير فردية وجماعية جاهزة للطباعة أو الحفظ PDF'],backup:['النسخ الاحتياطي والبيانات','صدّر نسخة من كل بياناتك واحتفظ بها في مكان آمن'],settings:['الإعدادات والصلاحيات','درجات النجاح والتنبيه وصلاحيات الاستخدام'],help:['طريقة الاستخدام والتثبيت','ازاي تثبّت التطبيق على الموبايل والكمبيوتر وتستخدمه يوم بيوم'],profile:['ملف الدارس','السجل الكامل من أول يوم لحد التخرج أو الإعادة'],users:['الخدام والصلاحيات','حسابات دخول الخدام فقط — أمين، مساعد أمين، أمين سنة، خادم، متابع'],attendance:['الحضور بالمحاضرات','تسجيل حضور كل محاضرة على حدة — والغياب المتكرر بيتحول لمتابعة وافتقاد'],activity:['سجل النشاطات','آخر ١٥٠٠ نشاط — لإدارة السيستم فقط'],tasks:['المتابعة والافتقاد','مهام متابعة للمتعثرين والغائبين — مين هيكلم مين وإمتى وتم ولا لسه'],system:['🛡️ لوحة إدارة السيستم','التحكم الكامل: كلمات السر، الحسابات، الجلسات، وسجل عمليات الخزنة']};
 function toggleSidebar(force){const sb=document.getElementById('sidebar'),bd=document.getElementById('sidebarBackdrop'); if(!sb)return; const open=typeof force==='boolean'?force:!sb.classList.contains('open'); sb.classList.toggle('open',open); if(bd)bd.classList.toggle('show',open); document.body.classList.toggle('no-scroll',open||document.getElementById('modalBg').classList.contains('open')); const hb=document.querySelector('.hamburger'); if(hb)hb.setAttribute('aria-expanded',String(open))}
 function go(view,studentId){
   const prevView = state.view;
+  if(view==='activity'&&!isLucasOwner(currentUser())){toast('سجل النشاطات لإدارة السيستم فقط');return}
   state.view=view; if(studentId!==undefined)state.studentId=studentId;
   // ادفع للـ history عشان زرار الرجوع والسحب يرجع للصفحة اللي قبلها داخل التطبيق مش للدخول
   try{
@@ -1182,9 +1190,10 @@ function go(view,studentId){
 function render(){
  persistViewState();
  const me=currentUser(); if(!me){location.replace('index.html'); return}
+ if(state.view==='activity'&&!isLucasOwner(me))state.view='dashboard';
  document.getElementById('appRoot').style.display='flex';
  const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
- const navItems=[['dashboard','🏠','لوحة المتابعة',true],['system','🛡️','لوحة إدارة السيستم',isLucasOwner(me)],['students','👥','الدارسون',hasPerm('view_students')],['attendance','✅','الحضور بالمحاضرات',hasPerm('manage_activities')],['tasks','💗','المتابعة والافتقاد',hasPerm('add_notes')],['curriculum','📚','المواد والمناهج',hasPerm('manage_curriculum')],['reports','🖨️','مركز التقارير',hasPerm('print_reports')],['users','🔑','الخدام والصلاحيات',hasPerm('manage_users')],['backup','💾','النسخ الاحتياطي والبيانات',hasPerm('backup')],['settings','⚙️','إعدادات الخدمة',hasPerm('manage_settings')],['help','❓','طريقة الاستخدام والتثبيت',true]];
+ const navItems=[['dashboard','🏠','لوحة المتابعة',true],['system','🛡️','لوحة إدارة السيستم',isLucasOwner(me)],['activity','🕘','سجل النشاطات',isLucasOwner(me)],['students','👥','الدارسون',hasPerm('view_students')],['attendance','✅','الحضور بالمحاضرات',hasPerm('manage_activities')],['tasks','💗','المتابعة والافتقاد',hasPerm('add_notes')],['curriculum','📚','المواد والمناهج',hasPerm('manage_curriculum')],['reports','🖨️','مركز التقارير',hasPerm('print_reports')],['users','🔑','الخدام والصلاحيات',hasPerm('manage_users')],['backup','💾','النسخ الاحتياطي والبيانات',hasPerm('backup')],['settings','⚙️','إعدادات الخدمة',hasPerm('manage_settings')],['help','❓','طريقة الاستخدام والتثبيت',true]];
  $('#mainNav').innerHTML='<div class="nav-label">القائمة الرئيسية</div>'+navItems.filter(n=>n[3]).map(n=>`<button class="nav-item ${state.view===n[0]?'active':''}" data-view="${n[0]}"><span class="ic">${n[1]}</span> ${n[2]}</button>`).join('');
  $('#currentUserCard').innerHTML=`<div class="avatar">${userAvatar(me)}</div><div style="min-width:0"><b style="font-size:13px;color:#fff">${esc(isLucasOwner(me)?E3.SYSTEM_ADMIN_LABEL:me.displayName)}</b><br><small>${isLucasOwner(me)?'🔐 حساب محمي':rd.icon+' '+esc(roleCaption(me))}</small></div>`;
  const chipName=isLucasOwner(me)?E3.SYSTEM_ADMIN_LABEL:me.displayName;
@@ -1220,6 +1229,7 @@ function render(){
  else if(state.view==='tasks') v.innerHTML=viewTasks();
  else if(state.view==='help') v.innerHTML=viewHelp();
  else if(state.view==='system') v.innerHTML=viewSystem();
+ else if(state.view==='activity') v.innerHTML=viewActivityLog();
  if(state.view==='students') renderStudentList();
 }
 document.addEventListener('click',e=>{const b=e.target.closest('.nav-item'); if(b) go(b.dataset.view)});
@@ -1484,7 +1494,7 @@ function openTaskForm(){
 }
 function doneTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='done'; t.doneAt=today(); logActivity('أنهى مهمة متابعة: '+t.title); saveDB(); render(); toast('بركة 💗 اتسجلت المتابعة كم تمت — كملوا افتقاد')}
 function reopenTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='open'; t.doneAt=''; saveDB(); render()}
-async function deleteTask(id){if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف مهمة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف مهمة المتابعة دي؟'}))return; DB.tasks=DB.tasks.filter(x=>x.id!==id); saveDB(); render()}
+async function deleteTask(id){if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف مهمة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف مهمة المتابعة دي؟'}))return; const t=DB.tasks.find(x=>x.id===id); DB.tasks=DB.tasks.filter(x=>x.id!==id); logActivity('حذف مهمة متابعة: '+(t?.title||id)); saveDB(); render()}
 
 /* ---------- استيراد الدارسين CSV + كارت وشهادة ---------- */
 function downloadImportTemplate(){
@@ -1639,7 +1649,7 @@ async function studioSavePdf(){
         offset+=sliceH;
       }
     }
-    pdf.save((_studioMeta.filename||'document')+'.pdf');
+    pdf.save((_studioMeta.filename||'document')+'.pdf'); logActivity('صدّر PDF: '+(_studioMeta.filename||'document')); saveDB();
     toast('تم حفظ PDF ✅');
   }catch(e){ console.error(e); toast('تعذّر إنشاء PDF — جرّب تاني'); }
 }
@@ -1668,6 +1678,7 @@ function studioSaveExcel(){
   }
 }
 function studioDoPrint(){
+  logActivity('طلب طباعة: '+(_studioMeta.filename||'document')); saveDB();
   // طباعة من استوديو السيستم — نفس التصميم، من غير فتح تاب جديد
   window.print();
 }
@@ -1679,7 +1690,7 @@ function exportAoAToXlsx(aoa, name, maybeObjects){
     else if(maybeObjects&&maybeObjects.length&&!Array.isArray(maybeObjects[0])) ws=XLSX.utils.json_to_sheet(maybeObjects);
     else ws=XLSX.utils.aoa_to_sheet(maybeObjects||[['فارغ']]);
     XLSX.utils.book_append_sheet(wb, ws, 'بيانات');
-    XLSX.writeFile(wb, name+(name.endsWith('.xlsx')?'':'.xlsx'));
+    XLSX.writeFile(wb, name+(name.endsWith('.xlsx')?'':'.xlsx')); logActivity('صدّر Excel: '+name); saveDB();
     toast('تم تنزيل Excel ✅');
   }else{
     toast('مكتبة Excel مش جاهزة — هيتنزل CSV');
@@ -1805,8 +1816,8 @@ function exportTasksXlsx(){
  exportAoAToXlsx(null,'مهام-المتابعة', tasks.map(x=>({العنوان:x.title||'',الحالة:x.status||'',موعد:x.due||''})));
 }
 
-function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function exportJSON(){if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك'); rememberAutoBackup(); download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'e3dad-khoddam-backup-'+today()+'.json');toast('تم تصدير النسخة الاحتياطية ✅')}
+function download(blob,name){if(!/e3dad-khoddam-backup-/.test(name)){logActivity('تنزيل ملف: '+name); saveDB()}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function exportJSON(){if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك'); logActivity('صدّر نسخة احتياطية JSON'); saveDB(); rememberAutoBackup(); download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'e3dad-khoddam-backup-'+today()+'.json');toast('تم تصدير النسخة الاحتياطية ✅')}
 function exportStudentsCSV(){const aoa=[['الكود','الاسم','الدفعة','تاريخ الالتحاق','الهاتف','واتساب','الحالة','السنة الحالية','رقم المحاولة','المتوسط العام']].concat(DB.students.map(st=>{const en=studentCurrent(st);return [st.code,st.name,st.batch||'',st.joinDate||'',st.phone||'',st.whatsapp||'',st.status,en?YEAR_NAMES[en.yearLevel]:'',en?en.attemptNo:'',studentOverallAvg(st)??'']})); exportAoAToXlsx(aoa,'قائمة-الدارسين')}
 function exportResultsCSV(){
  const aoa=[['الكود','الاسم','السنة','رقم المحاولة','حالة المحاولة','المادة','النتيجة النهائية %','الحضور %','ساعات الخدمة','قرار نهاية السنة']];
@@ -1816,7 +1827,7 @@ function exportResultsCSV(){
 async function clearAll(){if(!(isAdmin()||isLucasOwner(currentUser())))return toast('مسح كل البيانات لإدارة السيستم أو الأمين فقط');
  if(!await askConfirm({danger:true,icon:'⚠️',title:'مسح كل البيانات',ok:'نعم، امسح',message:'متأكد؟ هيتم مسح كل بيانات الدارسين من هذا الجهاز ومن السحابة نهائياً.'}))return;
  if(!await askConfirm({danger:true,icon:'🛑',title:'تأكيد أخير',ok:'مسح نهائي',message:'المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية. هل أنت متأكد؟'}))return;
- DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}
+ logActivity('مسح شامل لبيانات الدارسين والمهام والحضور'); DB={students:[],users:DB.users||[],activityLog:DB.activityLog||[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}
 
 /* ---------- الإعدادات ---------- */
 function viewSettings(){if(!hasPerm('manage_settings'))return `<div class="card empty"><div class="big">🔒</div>إعدادات الخدمة لأمين إعداد الخدام فقط</div>`; const s=DB.settings;return `<div class="card" style="max-width:760px"><h3>☦ هوية الخدمة وإعدادات التقييم</h3>
@@ -2075,7 +2086,7 @@ $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)
      importStudentsCSV(csv);
    }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
  }
- const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=DB.activityLog||[]; saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
+ const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); const priorLog=(DB.activityLog||[]).slice(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=priorLog; logActivity('استورد نسخة احتياطية كاملة واستبدل البيانات الحالية'); saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
 window.addEventListener('online',()=>$('#offlineBar').classList.remove('show'));
 window.addEventListener('offline',()=>$('#offlineBar').classList.add('show'));
 if(!navigator.onLine)$('#offlineBar').classList.add('show');

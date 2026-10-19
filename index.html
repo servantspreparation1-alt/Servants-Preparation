@@ -859,7 +859,7 @@ function defaultSettings() {
 function logAs(u, action) {
   DB.activityLog = DB.activityLog || [];
   DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: (isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || u.username) + ' (' + u.username + ')'), action });
-  DB.activityLog = DB.activityLog.slice(0, 200);
+  DB.activityLog = DB.activityLog.slice(0, 1500);
 }
 function avatarHTML(u) { return avatarOf(u, esc); }
 
