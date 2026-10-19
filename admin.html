@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>إعداد الخدّام — لوحة التحكم</title>
 <meta name="description" content="نظام متابعة دارسي إعداد الخدام عبر ٣ سنوات — معلم الأجيال للتلمذة، كنيسة رئيس الملائكة ميخائيل بالأندلس">
 <meta name="theme-color" content="#f8f8f3">
@@ -74,9 +74,58 @@
 <!-- ===== Modal root ===== -->
 <div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
 <div class="toast" id="toast"></div>
-<input type="file" id="importFile" accept=".json" style="display:none">
-<input type="file" id="csvFile" accept=".csv" style="display:none">
+<input type="file" id="importFile" accept=".json,.xlsx,.xls,.csv" style="display:none">
+<input type="file" id="csvFile" accept=".csv,.xlsx,.xls" style="display:none">
+<input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" style="display:none">
 
+<!-- استوديو الطباعة / PDF / Excel داخل السيستم — مش نافذة المتصفح -->
+<div id="docStudio" class="doc-studio" hidden>
+  <div class="doc-studio-panel">
+    <header class="doc-studio-bar no-print">
+      <div>
+        <b id="docStudioTitle">معاينة المستند</b>
+        <small id="docStudioSub">طباعة وحفظ PDF وإكسل من داخل النظام</small>
+      </div>
+      <div class="doc-studio-actions">
+        <button class="btn gold" type="button" onclick="studioSavePdf()">📄 حفظ PDF</button>
+        <button class="btn" type="button" onclick="studioSaveExcel()">📊 شيت Excel</button>
+        <button class="btn primary" type="button" onclick="studioDoPrint()">🖨️ طباعة</button>
+        <button class="btn" type="button" onclick="closeDocStudio()">إغلاق</button>
+      </div>
+    </header>
+    <div class="doc-studio-scroll" id="docStudioScroll">
+      <div class="doc-studio-paper" id="docStudioPaper"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.doc-studio{position:fixed;inset:0;z-index:80;background:rgba(18,24,38,.55);backdrop-filter:blur(8px);display:flex;align-items:stretch;justify-content:center;padding:18px}
+.doc-studio[hidden]{display:none!important}
+.doc-studio-panel{background:var(--surface);border:1.5px solid var(--gold);border-radius:18px;width:min(980px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+.doc-studio-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#12325c,#21569c 60%,#c9a227);color:#fff}
+.doc-studio-bar b{display:block;font-size:16px}
+.doc-studio-bar small{display:block;opacity:.9;font-size:12px;margin-top:2px}
+.doc-studio-actions{display:flex;gap:8px;flex-wrap:wrap}
+.doc-studio-scroll{overflow:auto;background:#e8e4d8;padding:22px;flex:1;max-height:calc(100vh - 120px)}
+.doc-studio-paper{background:#fff;color:#1a1a1a;max-width:210mm;margin:0 auto;padding:18mm 16mm;box-shadow:0 8px 28px rgba(0,0,0,.12);min-height:260px}
+.doc-studio-paper table{width:100%;border-collapse:collapse;font-size:12.5px}
+.doc-studio-paper th,.doc-studio-paper td{border:1px solid #d6d0c2;padding:6px 8px;text-align:right}
+.doc-studio-paper th{background:#f4efe3}
+@media print{
+  body *{visibility:hidden!important}
+  #docStudio,.doc-studio-paper,.doc-studio-paper *{visibility:visible!important}
+  #docStudio{position:static;background:#fff;padding:0;inset:auto}
+  .doc-studio-panel{border:0;box-shadow:none;width:auto;border-radius:0}
+  .doc-studio-bar,.doc-studio-actions,.no-print{display:none!important}
+  .doc-studio-scroll{overflow:visible;background:#fff;padding:0;max-height:none}
+  .doc-studio-paper{box-shadow:none;max-width:none;padding:0}
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="cloud-sync.js?v=3.2"></script>
 <script src="assets/js/core.js?v=3.2"></script>
 <script src="assets/js/owner.js?v=3.2"></script>
@@ -89,6 +138,40 @@
    جديدة برقم متزايد، والمحاولة القديمة تفضل محفوظة كما هي.
 ============================================================ */
 const DB_KEY=E3.DB_KEY;
+// ===== إصلاح البقاء ٧ أيام — Override جلسة ٧ أيام =====
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const SHORT_SESSION_MS = 12 * 60 * 60 * 1000;
+(function(){
+  try{
+    if(window.E3){
+      E3.SESSION_MS = SEVEN_DAYS_MS;
+      E3.OWNER_SESSION_MS = SEVEN_DAYS_MS;
+      E3.SESSION_REMEMBER_MS = SEVEN_DAYS_MS;
+      if(!E3.store){
+        E3.store={getItem:k=>localStorage.getItem(k), setItem:(k,v)=>localStorage.setItem(k,v), removeItem:k=>localStorage.removeItem(k)};
+      }
+    }
+  }catch(e){}
+})();
+function touchSessionAdmin(){
+  try{
+    const rem=E3.store.getItem(SESSION_KEY+'_remember');
+    if(rem==='0') return;
+    const id=E3.store.getItem(SESSION_KEY);
+    if(id) E3.store.setItem(SESSION_KEY+'_at', String(Date.now()));
+  }catch(e){}
+}
+// تحديث تلقائي للجلسة مع كل تفاعل ( منزلقة 7 أيام من آخر حركة )
+(function(){
+  let last=0;
+  function keep(){ const n=Date.now(); if(n-last<20000) return; last=n; touchSessionAdmin(); }
+  ['click','keydown','touchstart','mousemove','scroll'].forEach(ev=> window.addEventListener(ev, keep, {passive:true}));
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') keep(); });
+  setInterval(keep, 4*60*1000);
+})();
+// حماية كلمة السر: لا تسمح بالرجوع لصفحة الدخول بالـ Back إذا لسه مسجل
+try{ history.replaceState({view: (typeof state!=='undefined'?state.view:'dashboard')}, '', location.href); }catch(e){}
+
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function showOneTimeCredentials(displayName,username,password){
   openModal('بيانات دخول '+displayName,`<div style="background:var(--surface-2);border:1px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:13px;line-height:1.8;font-size:13px">انسخ كلمة السر وسلّمها لصاحب الحساب بأمان. كلمة السر دي <b>متشفّرة في الخزنة</b> — إدارة السيستم بس هي اللي تقدر تشوفها تاني؛ باقي الإدارة مش هتقدر.</div>
@@ -138,6 +221,7 @@ function saveDB(){
   DB.settings=DB.settings||{}; DB.settings.updatedAt=Date.now();
   E3.store.setItem(DB_KEY, JSON.stringify(DB));
   if(window.E3Cloud)E3Cloud.queuePush();
+  try{rememberAutoBackup()}catch(e){}
 }
 
 /* ============================================================
@@ -178,8 +262,18 @@ function currentUser(){
     const id=E3.store.getItem(SESSION_KEY); if(!id)return null;
     const u=(DB.users||[]).find(x=>x.id===id)||null;
     const at=+E3.store.getItem(SESSION_KEY+'_at')||0;
-    const maxMs=isLucasOwner(u)?E3.OWNER_SESSION_MS:E3.SESSION_MS;
-    if(at&&Date.now()-at>maxMs){E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at'); return null}
+    const rem = E3.store.getItem(SESSION_KEY+'_remember');
+    const maxMs = (rem === '0') ? SHORT_SESSION_MS : ((typeof SEVEN_DAYS_MS!=='undefined'? SEVEN_DAYS_MS : 7*24*60*60*1000));
+    if(at && Date.now()-at>maxMs){
+      // انتهت المهلة — امسح الجلسة
+      E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at');
+      try{ E3.store.removeItem(SESSION_KEY+'_exp'); }catch(e){}
+      return null;
+    }
+    // لو مفيش at أصلًا (حساب قديم) — اعتبره صالح لحد ما يسجل خروج (نحدثه الآن)
+    if(!at && u){
+      try{ E3.store.setItem(SESSION_KEY+'_at', String(Date.now())); }catch(e){}
+    }
     return (u&&(u.active!==false||isLucasOwner(u)))?u:null;
   }catch(e){return null}
 }
@@ -230,7 +324,7 @@ function avatarHTML(st,size){return st.photo?`<img src="${st.photo}" alt="">`:`<
 /* ---------- لا توجد شاشات دخول أو إنشاء حسابات في صفحة الإدارة ----------
    الدخول يتم من index.html فقط، وإنشاء حسابات الخدام يتم من داخل النظام
    من صفحة «الخدام والصلاحيات» بواسطة من لديه صلاحية إدارة المستخدمين. */
-function logout(){const u=currentUser(); if(u){logActivity('تسجيل خروج'); saveDB()} E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at'); E3.vault.privKey=null; toast('تم تسجيل الخروج — مع السلامة ☦'); setTimeout(()=>location.href='index.html',350)}
+function logout(){const u=currentUser(); if(u){logActivity('تسجيل خروج'); saveDB()} E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at'); try{ E3.store.removeItem(SESSION_KEY+'_exp'); }catch(e){} try{ E3.store.removeItem(SESSION_KEY+'_remember'); }catch(e){} E3.vault.privKey=null; toast('تم تسجيل الخروج — مع السلامة ☦'); try{ history.replaceState(null,'', 'index.html'); }catch(e){} setTimeout(()=>location.replace('index.html'),350)}
 function openMyAccount(){
   const me=currentUser(); if(!me)return; const iAmOwner=isLucasOwner(me);
   const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
@@ -493,7 +587,7 @@ function deleteUser(id){
       DB.users=DB.users.filter(x=>x.id!==id);
       logActivity('حذف حساب إدارة السيستم (إجراء نهائي)');
       E3.store.removeItem(SESSION_KEY); E3.store.removeItem(SESSION_KEY+'_at');
-      saveDB(); toast('تم حذف حساب إدارة السيستم'); setTimeout(()=>location.href='index.html',600);
+      saveDB(); toast('تم حذف حساب إدارة السيستم'); setTimeout(()=>location.replace('index.html'),600);
     });
     return;
   }
@@ -535,9 +629,22 @@ async function createDemoUsers(){
 /* ---------- التنقل ---------- */
 const TITLES={dashboard:['لوحة المتابعة','نظرة شاملة على دارسي إعداد الخدام'],students:['الدارسون','كل ملف ثابت من أول التسجيل — والسجل بيكبر مع كل سنة ومحاولة'],curriculum:['المواد والمناهج','قوالب مواد كل سنة — تتطبق على أي محاولة جديدة'],reports:['مركز التقارير','تقارير فردية وجماعية جاهزة للطباعة أو الحفظ PDF'],backup:['النسخ الاحتياطي والبيانات','صدّر نسخة من كل بياناتك واحتفظ بها في مكان آمن'],settings:['الإعدادات والصلاحيات','درجات النجاح والتنبيه وصلاحيات الاستخدام'],help:['طريقة الاستخدام والتثبيت','ازاي تثبّت التطبيق على الموبايل والكمبيوتر وتستخدمه يوم بيوم'],profile:['ملف الدارس','السجل الكامل من أول يوم لحد التخرج أو الإعادة'],users:['الخدام والصلاحيات','حسابات دخول الخدام فقط — أمين، مساعد أمين، أمين سنة، خادم، متابع'],attendance:['الحضور بالمحاضرات','تسجيل حضور كل محاضرة على حدة — والغياب المتكرر بيتحول لمتابعة وافتقاد'],tasks:['المتابعة والافتقاد','مهام متابعة للمتعثرين والغائبين — مين هيكلم مين وإمتى وتم ولا لسه'],system:['🛡️ لوحة إدارة السيستم','التحكم الكامل: كلمات السر، الحسابات، الجلسات، وسجل عمليات الخزنة']};
 function toggleSidebar(force){const sb=document.getElementById('sidebar'),bd=document.getElementById('sidebarBackdrop'); if(!sb)return; const open=typeof force==='boolean'?force:!sb.classList.contains('open'); sb.classList.toggle('open',open); if(bd)bd.classList.toggle('show',open); document.body.classList.toggle('no-scroll',open||document.getElementById('modalBg').classList.contains('open')); const hb=document.querySelector('.hamburger'); if(hb)hb.setAttribute('aria-expanded',String(open))}
-function go(view,studentId){state.view=view; if(studentId!==undefined)state.studentId=studentId; render(); window.scrollTo({top:0}); toggleSidebar(false)}
+function go(view,studentId){
+  const prevView = state.view;
+  state.view=view; if(studentId!==undefined)state.studentId=studentId;
+  // ادفع للـ history عشان زرار الرجوع والسحب يرجع للصفحة اللي قبلها داخل التطبيق مش للدخول
+  try{
+    const url = '#'+view + (studentId? ('-'+studentId):'');
+    // لو نفس الـ view متدفعش مكرر
+    if(prevView!==view || studentId!==undefined){
+      history.pushState({view, studentId}, '', url);
+    }
+  }catch(e){}
+  render(); window.scrollTo({top:0, behavior:'smooth'}); toggleSidebar(false);
+  try{ touchSessionAdmin(); }catch(e){}
+}
 function render(){
- const me=currentUser(); if(!me){location.href='index.html'; return}
+ const me=currentUser(); if(!me){location.replace('index.html'); return}
  document.getElementById('appRoot').style.display='flex';
  const rd=ROLE_DEFS[me.role]||ROLE_DEFS.follower;
  const navItems=[['dashboard','🏠','لوحة المتابعة',true],['system','🛡️','لوحة إدارة السيستم',isLucasOwner(me)],['students','👥','الدارسون',hasPerm('view_students')],['attendance','✅','الحضور بالمحاضرات',hasPerm('manage_activities')],['tasks','💗','المتابعة والافتقاد',hasPerm('add_notes')],['curriculum','📚','المواد والمناهج',hasPerm('manage_curriculum')],['reports','🖨️','مركز التقارير',hasPerm('print_reports')],['users','🔑','الخدام والصلاحيات',hasPerm('manage_users')],['backup','💾','النسخ الاحتياطي والبيانات',hasPerm('backup')],['settings','⚙️','إعدادات الخدمة',hasPerm('manage_settings')],['help','❓','طريقة الاستخدام والتثبيت',true]];
@@ -637,7 +744,7 @@ function viewStudents(){
   <div class="field"><label>الحالة</label><select id="fStatus" onchange="renderStudentList()"><option value="">الكل</option><option value="active">نشط</option><option value="graduated">خريج</option><option value="paused">موقوف</option><option value="withdrawn">منسحب</option><option value="risk">⚠️ يحتاج متابعة</option><option value="repeater">عنده إعادة (محاولة &gt; ١)</option></select></div>
   <div class="field"><label>الدفعة</label><input id="fBatch" placeholder="مثال: 2024" oninput="renderStudentList()"></div>
   <button class="btn primary" onclick="openStudentForm()">➕ دارس جديد</button>
-  ${hasPerm('edit_students')?`<button class="btn" onclick="document.getElementById('csvFile').click()">⬆️ استيراد دارسين من Excel (CSV)</button><button class="btn" onclick="downloadImportTemplate()">⬇️ نموذج الاستيراد</button>`:''}
+  ${hasPerm('edit_students')?`<button class="btn" onclick="document.getElementById('csvFile').click()">⬆️ استيراد دارسين من Excel</button><button class="btn" onclick="downloadImportTemplate()">⬇️ نموذج الاستيراد</button>`:''}
  </div></div><div id="studentList"></div>`;
 }
 function filteredStudents(){
@@ -677,7 +784,7 @@ function viewProfile(){
      <button class="btn" ${hasPerm('edit_students')?'':'disabled'} onclick="openStudentForm('${st.id}')">✏️ تعديل البيانات الثابتة</button>
      <button class="btn gold" ${hasPerm('print_reports')?'':'disabled'} onclick="printStudentCard('${st.id}')">🪪 كارت الدارس</button>
      <button class="btn gold" ${hasPerm('print_reports')?'':'disabled'} onclick="printCertificate('${st.id}')">🎓 شهادة إنهاء / تخرج</button>
-     <button class="btn" onclick="window.open('شهادة-التخرج.html','_blank')">🎓 صفحة الشهادات</button>
+     <button class="btn" onclick="openCertStudio()">🎓 صفحة الشهادات</button>
      ${hasPerm('delete_students')?`<button class="btn danger" onclick="deleteStudent('${st.id}')">🗑️ حذف الدارس نهائياً</button>`:''}
    </div>
    <div class="grid c3" style="margin-top:16px">
@@ -843,7 +950,7 @@ function deleteTask(id){if(!confirm('حذف مهمة المتابعة دي؟'))r
 /* ---------- استيراد الدارسين CSV + كارت وشهادة ---------- */
 function downloadImportTemplate(){
   const csv='الاسم,الكود,الدفعة,تاريخ الالتحاق,الهاتف,واتساب,النوع,تاريخ الميلاد,الكنيسة,أب الاعتراف,المؤهل\nأحمد سمير,D-101,دفعة 2026,2026-10-01,01001234567,01001234567,ذكر,2002-05-10,,أبونا داود,طالب جامعي\n';
-  download(new Blob(['\ufeff'+csv],{type:'text/csv'}),'نموذج-استيراد-الدارسين.csv'); toast('نزل نموذج الاستيراد — عبّيه في Excel واحفظه CSV وارفعه');
+  download(new Blob(['\ufeff'+csv],{type:'text/csv'}),'نموذج-استيراد-الدارسين.csv'); toast('نزل النموذج — عبّيه في Excel وارفعه CSV أو xlsx');
 }
 function importStudentsCSV(text){
   const lines=text.replace(/^\ufeff/,'').split(/\r?\n/).filter(l=>l.trim()); if(lines.length<2)return toast('الملف فاضي أو بدون صفوف');
@@ -920,7 +1027,7 @@ function viewReports(){
    <div class="field"><label>الدفعة</label><input id="gBatch" placeholder="الكل"></div>
    <div class="field"><label>عرض المحاولات</label><select id="gAttempts"><option value="all">كل المحاولات (القديم والجديد)</option><option value="latest">الأخيرة فقط</option><option value="repeat">اللي عندهم إعادة فقط</option></select></div>
    <div class="field"><label>الحالة</label><select id="gStatus"><option value="">الكل</option><option value="active">نشط</option><option value="graduated">خريج</option></select></div></div>
-   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn primary" onclick="printGroupReport()">🖨️ طباعة تقرير المجموعة</button><button class="btn" onclick="exportGroupCSV()">📊 تصدير Excel (CSV)</button></div></div>
+   <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn primary" onclick="printGroupReport()">🖨️ طباعة تقرير المجموعة</button><button class="btn" onclick="exportGroupCSV()">📊 تصدير Excel</button></div></div>
  </div>
  <div class="grid c3" style="margin-top:14px">
   <div class="card"><h3>⚠️ تقرير يحتاجون متابعة</h3><p style="color:var(--muted);font-size:13px">متوسط منخفض أو حضور منخفض أو خدمة متأخرة.</p><button class="btn" onclick="printRiskReport()">🖨️ طباعة</button></div>
@@ -928,9 +1035,9 @@ function viewReports(){
   <div class="card"><h3>🔁 تقرير الإعادات والمحاولات</h3><p style="color:var(--muted);font-size:13px">أهم تقرير عندك: مين عاد إيه، المحاولة رقم كام، وكان جايب كام قبل كده.</p><button class="btn" onclick="printAttemptsReport()">🖨️ طباعة</button></div>
  </div>
  <div style="margin-top:14px">
-  <div class="card"><h3>🎓 شهادات التخرج (صفحة مستقلة)</h3><p style="color:var(--muted);font-size:13px">صفحة «شهادة-التخرج.html» بتختار منها أي خريج وتطبع شهادة رسمية باسمه ومتوسطاته — أو من ملف الدارس مباشرة بزرار «شهادة إنهاء / تخرج».</p><button class="btn gold" onclick="window.open('شهادة-التخرج.html','_blank')">فتح صفحة الشهادات</button></div>
+  <div class="card"><h3>🎓 شهادات التخرج (صفحة مستقلة)</h3><p style="color:var(--muted);font-size:13px">صفحة «شهادة-التخرج.html» بتختار منها أي خريج وتطبع شهادة رسمية باسمه ومتوسطاته — أو من ملف الدارس مباشرة بزرار «شهادة إنهاء / تخرج».</p><button class="btn gold" onclick="openCertStudio()">فتح صفحة الشهادات</button></div>
  </div>
- <div class="card" style="margin-top:14px"><b>📌 إزاي تطبع PDF؟</b> <span style="color:var(--muted);font-size:13px">اضغط أي زرار طباعة، هتفتح نافذة الطباعة — اختر «حفظ كـ PDF / Save as PDF» أو اطبع ورقي مباشرة. التصميم مظبوط للطباعة A4 بالعربي.</span></div>`;
+ <div class="card" style="margin-top:14px"><b>📌 الطباعة وPDF وExcel من داخل النظام</b> <span style="color:var(--muted);font-size:13px">أي زرار تقرير بيفتح استوديو التصميم: حفظ PDF، شيت Excel، أو طباعة — من غير ما يطلع برا الشاشة.</span></div>`;
 }
 function reportHead(title,sub){return `<div class="report-head"><div style="font-size:30px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:58px;width:58px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)">`:'☦'}</div><h2>${esc(DB.settings.orgName)}${DB.settings.church?' — '+esc(DB.settings.church):''}</h2><p>${esc(title)} • ${esc(sub||'')} • تاريخ الإصدار: ${today()}</p></div>`}
 function studentInfoTable(st){return `<table><tr><th>الدارس</th><td><b>${esc(st.name)}</b> (كود ${esc(st.code)})</td><th>تاريخ الالتحاق</th><td>${esc(st.joinDate||'—')}</td><th>الدفعة</th><td>${esc(st.batch||'—')}</td></tr><tr><th>الهاتف / واتساب</th><td dir="ltr" style="text-align:right">${esc(st.phone||'—')} / ${esc(st.whatsapp||'—')}</td><th>أب الاعتراف</th><td>${esc(st.confessionFather||'—')}</td><th>الحالة العامة</th><td>${esc(st.status)}</td></tr></table>`}
@@ -943,19 +1050,130 @@ function enrollmentReportHTML(st,en,includeNotes){
  if((en.activities||[]).length) h+=`<table style="margin-top:8px"><tr><th>النشاط / التدريب</th><th>النوع</th><th>التاريخ</th><th>ساعات</th><th>التقييم</th><th>الحالة</th></tr>${en.activities.map(a=>`<tr><td>${esc(a.title)}</td><td>${esc(a.type)}</td><td>${esc(a.date||'')}</td><td>${a.hours||0}</td><td>${a.score===''||a.score==null?'—':a.score+'/'+a.max}</td><td>${esc(a.status)}</td></tr>`).join('')}</table>`;
  return h;
 }
-function showPrint(html){$('#printArea').innerHTML=`<div class="report-paper">${html}</div>`; setTimeout(()=>window.print(),80)}
+let _studioMeta={title:'مستند',rows:null,filename:'document'};
+function showPrint(html, meta){
+  _studioMeta=Object.assign({title:'مستند',rows:null,filename:'e3dad-doc'}, meta||{});
+  const st=document.getElementById('docStudio');
+  document.getElementById('docStudioTitle').textContent=_studioMeta.title;
+  document.getElementById('docStudioSub').textContent='من داخل النظام: PDF • Excel • طباعة — من غير نوافذ المتصفح';
+  document.getElementById('docStudioPaper').innerHTML=html;
+  st.hidden=false;
+  document.body.style.overflow='hidden';
+}
+function closeDocStudio(){
+  const st=document.getElementById('docStudio');
+  if(st) st.hidden=true;
+  document.body.style.overflow='';
+}
+async function studioSavePdf(){
+  const paper=document.getElementById('docStudioPaper');
+  if(!paper||!paper.innerHTML.trim()) return toast('مفيش مستند');
+  try{
+    toast('جاري تجهيز PDF من التصميم…');
+    if(!window.html2canvas||!(window.jspdf||window.jsPDF)){
+      // fallback: download HTML
+      download(new Blob(['<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>'+_studioMeta.title+'</title></head><body>'+paper.innerHTML+'</body></html>'],{type:'text/html'}),( _studioMeta.filename||'document')+'.html');
+      return toast('اتحفظ كملف HTML — افتحه واحفظ PDF لو المكتبات مش محمّلة');
+    }
+    const canvas=await html2canvas(paper,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+    const { jsPDF } = window.jspdf||window;
+    const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+    const img=canvas.toDataURL('image/jpeg',0.92);
+    const pageW=210, pageH=297, margin=8;
+    const w=pageW-margin*2;
+    const h=canvas.height*(w/canvas.width);
+    let y=margin, remaining=h, srcY=0;
+    const pageCanvasH=canvas.width*((pageH-margin*2)/w);
+    if(h<=pageH-margin*2){
+      pdf.addImage(img,'JPEG',margin,margin,w,h);
+    }else{
+      let offset=0, first=true;
+      while(offset<canvas.height){
+        const sliceH=Math.min(pageCanvasH, canvas.height-offset);
+        const c=document.createElement('canvas');
+        c.width=canvas.width; c.height=sliceH;
+        c.getContext('2d').drawImage(canvas,0,offset,canvas.width,sliceH,0,0,canvas.width,sliceH);
+        if(!first) pdf.addPage();
+        first=false;
+        const sh=sliceH*(w/canvas.width);
+        pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,w,sh);
+        offset+=sliceH;
+      }
+    }
+    pdf.save((_studioMeta.filename||'document')+'.pdf');
+    toast('تم حفظ PDF ✅');
+  }catch(e){ console.error(e); toast('تعذّر إنشاء PDF — جرّب تاني'); }
+}
+function studioSaveExcel(){
+  const rows=_studioMeta.rows;
+  if(rows&&rows.length){
+    exportAoAToXlsx(Array.isArray(rows[0])?rows:null, _studioMeta.filename||'sheet', rows);
+    return;
+  }
+  // extract tables from paper
+  const paper=document.getElementById('docStudioPaper');
+  const tables=[...paper.querySelectorAll('table')];
+  if(!tables.length) return toast('المستند ده مش جدول — استخدم PDF');
+  if(window.XLSX){
+    const wb=XLSX.utils.book_new();
+    tables.forEach((tb,i)=>{
+      const aoa=[...tb.rows].map(tr=>[...tr.cells].map(td=>td.innerText.trim()));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'ورقة'+(i+1));
+    });
+    XLSX.writeFile(wb, (_studioMeta.filename||'sheet')+'.xlsx');
+    toast('تم تنزيل شيت Excel ✅');
+  }else{
+    const aoa=[...tables[0].rows].map(tr=>[...tr.cells].map(td=>td.innerText.trim()));
+    const csv=aoa.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    download(new Blob(['\ufeff'+csv],{type:'text/csv'}),(_studioMeta.filename||'sheet')+'.csv');
+  }
+}
+function studioDoPrint(){
+  // طباعة من استوديو السيستم — نفس التصميم، من غير فتح تاب جديد
+  window.print();
+}
+function exportAoAToXlsx(aoa, name, maybeObjects){
+  if(window.XLSX){
+    const wb=XLSX.utils.book_new();
+    let ws;
+    if(aoa) ws=XLSX.utils.aoa_to_sheet(aoa);
+    else if(maybeObjects&&maybeObjects.length&&!Array.isArray(maybeObjects[0])) ws=XLSX.utils.json_to_sheet(maybeObjects);
+    else ws=XLSX.utils.aoa_to_sheet(maybeObjects||[['فارغ']]);
+    XLSX.utils.book_append_sheet(wb, ws, 'بيانات');
+    XLSX.writeFile(wb, name+(name.endsWith('.xlsx')?'':'.xlsx'));
+    toast('تم تنزيل Excel ✅');
+  }else{
+    toast('مكتبة Excel مش جاهزة — هيتنزل CSV');
+  }
+}
+function rememberAutoBackup(){
+  try{
+    const key='e3dad_auto_backups_v1';
+    const list=JSON.parse(localStorage.getItem(key)||'[]');
+    list.unshift({at:Date.now(), students:(DB.students||[]).length, users:(DB.users||[]).length, json:JSON.stringify(DB)});
+    localStorage.setItem(key, JSON.stringify(list.slice(0,8)));
+  }catch(e){}
+}
+function listAutoBackups(){
+  try{return JSON.parse(localStorage.getItem('e3dad_auto_backups_v1')||'[]')}catch(e){return []}
+}
+function restoreAutoBackup(i){
+  const list=listAutoBackups(); const item=list[i]; if(!item)return;
+  if(!confirm('استعادة النسخة المحفوظة على الجهاز بتاريخ '+new Date(item.at).toLocaleString('ar-EG')+'؟'))return;
+  try{ DB=JSON.parse(item.json); DB.settings={...defaultSettings(),...(DB.settings||{})}; saveDB(); render(); toast('اترجعت النسخة الاحتياطية ✅'); }catch(e){toast('النسخة تالفة')}
+}
 function printStudentReport(studentId,mode){
  const st=getStudent(studentId); if(!st)return toast('اختر دارساً'); if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك'); if(!canAccessStudent(st))return toast('الدارس خارج نطاقك');
  let ens=st.enrollments||[];
  if(mode==='latest') ens=ens.slice(-1);
  if(mode&&mode!=='all'&&mode!=='latest'){const en=ens.find(e=>e.id===mode); ens=en?[en]:[]}
- const includeNotes = confirm('تحب تضمّن الملاحظات والتقارير في التقرير المطبوع؟\n(الملاحظات السرية هتتخفى تلقائياً)');
+ const includeNotes = true;
  let h=reportHead('التقرير الشامل للدارس','سجل كامل بكل المحاولات — القديم محفوظ ولا يُستبدل')+studentInfoTable(st);
  h+=`<p style="font-size:13px">المتوسط العام عبر كل المحاولات: <b>${studentOverallAvg(st)??'—'}%</b> • عدد المحاولات المحفوظة: <b>${(st.enrollments||[]).length}</b></p>`;
  h+= ens.length? ens.map(en=>enrollmentReportHTML(st,en)).join('') : '<p>لم تبدأ أي سنة بعد.</p>';
  if(includeNotes&&(st.notes||[]).length){h+=`<h3 style="margin-top:18px">الملاحظات والتقارير</h3>`+st.notes.filter(n=>!n.confidential).map(n=>`<div style="border:1px solid #ddd;border-radius:8px;padding:10px;margin-bottom:8px"><b>${esc(n.title)}</b> — ${esc(n.category)} (${esc(n.date||'')})<div style="white-space:pre-wrap">${esc(n.body)}</div></div>`).join('')}
  h+=`<p style="font-size:11px;color:#777;margin-top:16px">ملحوظة: هذا التقرير يعرض كل المحاولات كما سُجلت وقتها. إعادة السنة أو المادة لا تحذف النتائج السابقة.</p>`;
- showPrint(h);
+ showPrint(h,{title:'تقرير '+st.name,filename:'تقرير-'+st.code});
 }
 function groupRows(){
  const y=$('#gYear')?.value||'', b=($('#gBatch')?.value||'').trim(), mode=$('#gAttempts')?.value||'all', fs=$('#gStatus')?.value||'';
@@ -970,8 +1188,8 @@ function groupRows(){
 function printGroupReport(){const rows=groupRows(); if(!rows.length)return toast('لا توجد بيانات مطابقة');
  showPrint(reportHead('تقرير مجموعة دارسين','كل المحاولات ظاهرة برقمها — القديم بجانب الجديد')+`<table><tr><th>الكود</th><th>الدارس</th><th>الدفعة</th><th>السنة</th><th>محاولة</th><th>الحالة</th><th>النتيجة</th><th>الحضور</th><th>خدمة</th><th>مواد تحتاج إعادة</th></tr>${rows.map(r=>`<tr><td>${esc(r.code)}</td><td><b>${esc(r.name)}</b></td><td>${esc(r.batch)}</td><td>${r.year}</td><td>${r.attempt}</td><td>${esc(r.status)}</td><td><b>${r.overall!==''?r.overall+'%':'—'}</b></td><td>${r.att!==''?r.att+'%':'—'}</td><td>${r.service} س</td><td>${esc(r.failed||'—')}</td></tr>`).join('')}</table><p style="font-size:12px;color:#666">عدد الصفوف: ${rows.length} (كل صف = محاولة واحدة لدارس في سنة)</p>`)}
 function exportGroupCSV(){const rows=groupRows(); if(!rows.length)return toast('لا توجد بيانات');
- const csv='الكود,الدارس,الدفعة,السنة,رقم المحاولة,الحالة,النتيجة %,الحضور %,ساعات الخدمة,مواد تحتاج إعادة\n'+rows.map(r=>[r.code,r.name,r.batch,r.year,r.attempt,r.status,r.overall,r.att,r.service,'"'+String(r.failed).replace(/"/g,'""')+'"'].join(',')).join('\n');
- download(new Blob(['\ufeff'+csv],{type:'text/csv'}),'group-report.csv')}
+ const aoa=[['الكود','الدارس','الدفعة','السنة','رقم المحاولة','الحالة','النتيجة %','الحضور %','ساعات الخدمة','مواد تحتاج إعادة']].concat(rows.map(r=>[r.code,r.name,r.batch,r.year,r.attempt,r.status,r.overall,r.att,r.service,r.failed]));
+ exportAoAToXlsx(aoa,'تقرير-مجموعة')}
 function printRiskReport(){const list=DB.students.filter(st=>canAccessStudent(st)&&isAtRisk(st)); if(!list.length)return toast('لا يوجد دارسون في قائمة المتابعة');
  showPrint(reportHead('تقرير يحتاجون متابعة','تنبيه مبكر للمتابعة الرعوية والأكاديمية')+`<table><tr><th>الكود</th><th>الدارس</th><th>السنة / محاولة</th><th>النتيجة</th><th>الحضور</th><th>الخدمة</th><th>الهاتف</th></tr>${list.map(st=>{const en=studentCurrent(st),s=enrollStats(en);return `<tr><td>${esc(st.code)}</td><td><b>${esc(st.name)}</b></td><td>${YEAR_NAMES[en.yearLevel]} / ${en.attemptNo}</td><td>${s.overall??'—'}%</td><td>${s.att??'—'}%</td><td>${en.serviceHours||0} س</td><td dir="ltr">${esc(st.phone||'')}</td></tr>`}).join('')}</table>`)}
 function printGraduatesReport(){const list=DB.students.filter(s=>canAccessStudent(s)&&s.status==='graduated'); if(!list.length)return toast('لا يوجد خريجون بعد');
@@ -981,21 +1199,81 @@ function printAttemptsReport(){let rows=[]; DB.students.forEach(st=>{if(!canAcce
  showPrint(reportHead('تقرير الإعادات والمحاولات','مين عاد إيه — والمحاولة رقم كام — وكان جايب كام')+`<table><tr><th>الكود</th><th>الدارس</th><th>السنة</th><th>المحاولة</th><th>النتيجة / القرار</th><th>النتيجة</th><th>ملاحظة القرار</th></tr>${rows.join('')}</table><p style="font-size:12px;color:#666">للتفاصيل الكاملة لكل محاولة على حدة: افتح ملف الدارس واطبع «التقرير الشامل».</p>`)}
 
 /* ---------- النسخ الاحتياطي ---------- */
-function viewBackup(){
- return `<div class="grid c2">
- <div class="card"><h3>💾 نسخة احتياطية كاملة (JSON)</h3><p style="color:var(--muted);font-size:13px">بتحفظ كل حاجة: الدارسين والصور وكل المحاولات والنتائج والأنشطة والملاحظات والإعدادات. احتفظ بها على فلاشة أو Google Drive.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="exportJSON()">⬇️ تصدير النسخة الاحتياطية</button><button class="btn" onclick="$('#importFile').click()">⬆️ استيراد نسخة</button></div></div>
- <div class="card"><h3>📊 تصدير جداول (Excel / CSV)</h3><p style="color:var(--muted);font-size:13px">تصدير قائمة الدارسين أو كل النتائج والمحاولات كجدول يفتح في Excel.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="exportStudentsCSV()">قائمة الدارسين CSV</button><button class="btn" onclick="exportResultsCSV()">كل النتائج والمحاولات CSV</button></div></div>
- <div class="card"><h3>🧪 بيانات تجريبية</h3><p style="color:var(--muted);font-size:13px">٦ دارسين بأمثلة كاملة — منهم دارس عاد السنة الثانية ودارس عاد مادة — عشان تشوف فكرة حفظ القديم شغالة إزاي.</p><button class="btn" onclick="loadDemo()">تحميل البيانات التجريبية</button></div>
- <div class="card" style="border-color:#fecaca"><h3>⚠️ منطقة الخطر</h3><p style="color:var(--muted);font-size:13px">مسح كل البيانات من هذا الجهاز نهائياً. (الحذف الفردي للدارسين والمحاولات متاحة لأمين إعداد الخدام فقط، والتطبيق بينبّهك قبل أي حذف).</p>${isAdmin()?'<button class="btn danger" onclick="clearAll()">🗑️ مسح كل البيانات</button>':'<p class="badge b-gray">متاحة للمدير فقط</p>'}</div>
- </div>
- <div class="card" style="margin-top:14px"><b>أين تُحفظ البيانات؟</b><p style="color:var(--muted);font-size:13px">البيانات بتتحفظ على الجهاز <b>وكمان على السحابة (Firebase)</b> تلقائياً بعد كل تعديل، فبتتشارك بين كل المشرفين وكل الأجهزة. لو النت قطع بيفضل الشغل عادي وبيترفع لوحده لما النت يرجع (شوف الشارة الصغيرة تحت على الشمال). برضه ينفع <b>تصدّر نسخة احتياطية بعد كل جلسة إدخال مهمة</b>.</p></div>`;
+
+function openCertStudio(){
+  if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك');
+  const grads=DB.students.filter(s=>canAccessStudent(s));
+  if(!grads.length) return toast('لا يوجد دارسون');
+  const st=grads.find(s=>s.status==='graduated')||grads[0];
+  printCertificate(st.id);
 }
+function viewBackup(){
+ const autos=listAutoBackups();
+ const autoHtml=autos.length? `<table><tr><th>التاريخ</th><th>دارسون</th><th>خدام</th><th></th></tr>${autos.map((a,i)=>`<tr><td>${new Date(a.at).toLocaleString('ar-EG')}</td><td>${a.students}</td><td>${a.users}</td><td><button class="btn sm" onclick="restoreAutoBackup(${i})">استعادة</button></td></tr>`).join('')}</table>` : '<p style="color:var(--muted);font-size:13px">لسه مفيش نسخ تلقائية — هتتحفظ لوحدها بعد كل حفظ مهم.</p>';
+ return `<div class="grid c2">
+ <div class="card"><h3>💾 نسخة احتياطية كاملة</h3><p style="color:var(--muted);font-size:13px">كل الدارسين والمحاولات والدرجات والحضور والملاحظات والحسابات. نزّلها JSON أو Excel أو PDF من نفس الشاشة.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn primary" onclick="exportJSON()">⬇️ نسخة JSON</button>
+  <button class="btn gold" onclick="exportFullXlsx()">📊 شيت Excel كامل</button>
+  <button class="btn" onclick="previewBackupPdf()">📄 معاينة / PDF / طباعة</button>
+  <button class="btn" onclick="$('#importFile').click()">⬆️ استيراد نسخة (JSON أو Excel)</button>
+ </div></div>
+ <div class="card"><h3>📊 تصدير جداول Excel</h3><p style="color:var(--muted);font-size:13px">ملفات xlsx حقيقية تفتح في Excel وGoogle Sheets — مش CSV بس.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn" onclick="exportStudentsCSV()">قائمة الدارسين</button>
+  <button class="btn" onclick="exportResultsCSV()">كل النتائج والمحاولات</button>
+  <button class="btn" onclick="exportAttendanceXlsx()">سجل الحضور</button>
+  <button class="btn" onclick="exportTasksXlsx()">مهام المتابعة</button>
+ </div></div>
+ <div class="card"><h3>🕘 نسخ تلقائية على الجهاز</h3><p style="color:var(--muted);font-size:13px">آخر ٨ نسخ محفوظة محلياً تقدر ترجع لأي واحدة منهم.</p>${autoHtml}</div>
+ <div class="card"><h3>🧪 بيانات تجريبية</h3><p style="color:var(--muted);font-size:13px">٦ دارسين بأمثلة كاملة.</p><button class="btn" onclick="loadDemo()">تحميل البيانات التجريبية</button></div>
+ <div class="card" style="border-color:#fecaca"><h3>⚠️ منطقة الخطر</h3><p style="color:var(--muted);font-size:13px">مسح كل البيانات. خد نسخة احتياطية الأول.</p>${isAdmin()?'<button class="btn danger" onclick="clearAll()">🗑️ مسح كل البيانات</button>':'<p class="badge b-gray">متاحة للمدير فقط</p>'}</div>
+ </div>
+ <div class="card" style="margin-top:14px"><b>أين تُحفظ البيانات؟</b><p style="color:var(--muted);font-size:13px">على الجهاز وعلى السحابة بعد كل تعديل. الاستوديو الداخلي بيعمل PDF وExcel وطباعة من غير ما يفتح صفحات برا النظام.</p></div>`;
+}
+function exportFullXlsx(){
+ if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك');
+ if(!window.XLSX) return toast('مكتبة Excel بتحمل… جرّب بعد ثواني');
+ const wb=XLSX.utils.book_new();
+ const students=(DB.students||[]).map(st=>{const en=studentCurrent(st);return {الكود:st.code,الاسم:st.name,الدفعة:st.batch||'',الالتحاق:st.joinDate||'',الهاتف:st.phone||'',واتساب:st.whatsapp||'',الحالة:st.status,السنة:en?YEAR_NAMES[en.yearLevel]:'',المحاولة:en?en.attemptNo:'',المتوسط:studentOverallAvg(st)??''};});
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(students.length?students:[{ملاحظة:'لا يوجد دارسون'}]),'الدارسون');
+ const results=[];
+ (DB.students||[]).forEach(st=>{(st.enrollments||[]).forEach(en=>{const s=enrollStats(en);(en.subjects||[]).forEach(sub=>results.push({الكود:st.code,الاسم:st.name,السنة:YEAR_NAMES[en.yearLevel],محاولة:en.attemptNo,حالة:ATTEMPT_STATUS[en.status]||en.status,المادة:sub.name,النتيجة:subjFinal(sub)??'',الحضور:s.att??'',خدمة:en.serviceHours||0,قرار:en.decisionNote||''}))})});
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(results.length?results:[{ملاحظة:'لا نتائج'}]),'النتائج');
+ const att=(DB.attendanceSessions||[]).map(a=>({التاريخ:a.date||'',العنوان:a.title||a.topic||'',السنة:a.yearLevel||'',حضور:(a.present||[]).length,غياب:(a.absent||[]).length}));
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(att.length?att:[{ملاحظة:'لا حضور'}]),'الحضور');
+ const tasks=(DB.tasks||[]).map(x=>({العنوان:x.title||'',المسؤول:x.assignee||'',الحالة:x.status||'',الموعد:x.due||'',الدارس:x.studentName||''}));
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(tasks.length?tasks:[{ملاحظة:'لا مهام'}]),'المتابعة');
+ XLSX.writeFile(wb,'نسخة-كاملة-'+today()+'.xlsx');
+ rememberAutoBackup();
+ toast('اتنزل شيت Excel متعدد الأوراق ✅');
+}
+function previewBackupPdf(){
+ const n=(DB.students||[]).length;
+ const html=reportHead('ملخص النسخة الاحتياطية','جاهز للحفظ PDF أو الطباعة من داخل النظام')+
+  `<p>عدد الدارسين: <b>${n}</b> • الخدام: <b>${(DB.users||[]).length}</b> • جلسات الحضور: <b>${(DB.attendanceSessions||[]).length}</b> • مهام: <b>${(DB.tasks||[]).length}</b></p>`+
+  `<table><tr><th>الكود</th><th>الاسم</th><th>الحالة</th><th>المتوسط</th></tr>${(DB.students||[]).map(st=>`<tr><td>${esc(st.code)}</td><td>${esc(st.name)}</td><td>${esc(st.status)}</td><td>${studentOverallAvg(st)??'—'}</td></tr>`).join('')||'<tr><td colspan="4">لا دارسين</td></tr>'}</table>`;
+ showPrint(html,{title:'ملخص النسخة الاحتياطية',filename:'ملخص-نسخة-'+today()});
+}
+function exportAttendanceXlsx(){
+ const att=DB.attendanceSessions||[];
+ if(!att.length) return toast('لا يوجد حضور');
+ exportAoAToXlsx(null,'سجل-الحضور', att.map(a=>({التاريخ:a.date||'',العنوان:a.title||a.topic||'',السنة:a.yearLevel||''})));
+}
+function exportTasksXlsx(){
+ const tasks=DB.tasks||[];
+ if(!tasks.length) return toast('لا توجد مهام');
+ exportAoAToXlsx(null,'مهام-المتابعة', tasks.map(x=>({العنوان:x.title||'',الحالة:x.status||'',موعد:x.due||''})));
+}
+
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
-function exportJSON(){if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك'); download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'e3dad-khoddam-backup-'+today()+'.json');toast('تم تصدير النسخة الاحتياطية ✅')}
-function exportStudentsCSV(){const csv='الكود,الاسم,الدفعة,تاريخ الالتحاق,الهاتف,واتساب,الحالة,السنة الحالية,رقم المحاولة,المتوسط العام\n'+DB.students.map(st=>{const en=studentCurrent(st);return [st.code,st.name,st.batch||'',st.joinDate||'',st.phone||'',st.whatsapp||'',st.status,en?YEAR_NAMES[en.yearLevel]:'',en?en.attemptNo:'',studentOverallAvg(st)??''].join(',')}).join('\n');download(new Blob(['\ufeff'+csv],{type:'text/csv'}),'students.csv')}
-function exportResultsCSV(){let rows=['الكود,الاسم,السنة,رقم المحاولة,حالة المحاولة,المادة,النتيجة النهائية %,الحضور %,ساعات الخدمة,قرار نهاية السنة'];
- DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{const s=enrollStats(en); (en.subjects||[]).forEach(sub=>rows.push([st.code,st.name,YEAR_NAMES[en.yearLevel],en.attemptNo,ATTEMPT_STATUS[en.status]||en.status,sub.name,subjFinal(sub)??'',s.att??'',en.serviceHours||0,'"'+String(en.decisionNote||'').replace(/"/g,'""')+'"'].join(',')))})});
- download(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}),'all-results-attempts.csv')}
+function exportJSON(){if(!hasPerm('backup'))return toast('النسخ الاحتياطي غير مفعّل لحسابك'); rememberAutoBackup(); download(new Blob([JSON.stringify(DB,null,2)],{type:'application/json'}),'e3dad-khoddam-backup-'+today()+'.json');toast('تم تصدير النسخة الاحتياطية ✅')}
+function exportStudentsCSV(){const aoa=[['الكود','الاسم','الدفعة','تاريخ الالتحاق','الهاتف','واتساب','الحالة','السنة الحالية','رقم المحاولة','المتوسط العام']].concat(DB.students.map(st=>{const en=studentCurrent(st);return [st.code,st.name,st.batch||'',st.joinDate||'',st.phone||'',st.whatsapp||'',st.status,en?YEAR_NAMES[en.yearLevel]:'',en?en.attemptNo:'',studentOverallAvg(st)??'']})); exportAoAToXlsx(aoa,'قائمة-الدارسين')}
+function exportResultsCSV(){
+ const aoa=[['الكود','الاسم','السنة','رقم المحاولة','حالة المحاولة','المادة','النتيجة النهائية %','الحضور %','ساعات الخدمة','قرار نهاية السنة']];
+ DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{const s=enrollStats(en); (en.subjects||[]).forEach(sub=>aoa.push([st.code,st.name,YEAR_NAMES[en.yearLevel],en.attemptNo,ATTEMPT_STATUS[en.status]||en.status,sub.name,subjFinal(sub)??'',s.att??'',en.serviceHours||0,en.decisionNote||'']))})});
+ exportAoAToXlsx(aoa,'كل-النتائج-والمحاولات');
+}
 function clearAll(){if(!isAdmin())return toast('مسح كل البيانات لأمين إعداد الخدام فقط'); if(confirm('متأكد؟ هيتم مسح كل البيانات من هذا الجهاز ومن السحابة (كل الأجهزة) نهائياً.')){if(confirm('تأكيد أخير: المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية.')){DB={students:[],users:DB.users||[],activityLog:[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}}}
 
 /* ---------- الإعدادات ---------- */
@@ -1021,7 +1299,7 @@ function viewHelp(){return `<div class="grid c2">
  <div class="card"><h3>📲 التثبيت على الموبايل والكمبيوتر</h3><ol style="line-height:2;font-size:14px"><li><b>أندرويد / كمبيوتر (Chrome أو Edge):</b> افتح التطبيق، هيظهر زرار «تثبيت التطبيق» في القائمة الجانبية — أو من قائمة المتصفح ⋮ اختر «تثبيت التطبيق / Install app». هيظهر بأيقونة على الشاشة الرئيسية ويشتغل ملء الشاشة.</li><li><b>آيفون (Safari):</b> زرار المشاركة ⤴ ثم «إضافة إلى الشاشة الرئيسية / Add to Home Screen».</li><li>بعد التثبيت، التطبيق بيشتغل <b>بدون إنترنت</b> والبيانات بتتحفظ على الجهاز.</li></ol></div>
  <div class="card"><h3>🔄 سير العمل اليومي</h3><ol style="line-height:2;font-size:14px"><li>ضيف الدارس مرة واحدة بس (بيانات ثابتة + صورة).</li><li>من ملفه: «بدء سنة / محاولة جديدة» وطبّق مواد المنهج.</li><li>طوال السنة: عدّل تقييمات كل مادة، وضيف الأنشطة والحضور وساعات الخدمة والملاحظات.</li><li>آخر السنة: «إنهاء السنة واتخاذ قرار» — نقل للسنة الجاية، أو إعادة سنة، أو إعادة مواد معينة، أو تخرج (سنة ٣). <b>المحاولة القديمة بتفضل محفوظة تلقائياً.</b></li><li>اطبع من «مركز التقارير»: فردي شامل، أو مجموعة، أو إعادات، أو خريجين — واحفظ PDF.</li><li>كل فترة: صدّر نسخة احتياطية من صفحة «النسخ الاحتياطي».</li></ol></div>
  <div class="card"><h3>⭐ مميزات إضافية من البحث في أنظمة مشابهة</h3><ul style="line-height:2;font-size:14px"><li>ساعات خدمة سنوية ولقاءات إرشاد كمطلب للانتقال للسنة التالية (مطبق في برامج إعداد خدام بالخارج).</li><li>تنبيه مبكر للمتعثرين (حضور/درجات/خدمة) للمتابعة قبل نهاية السنة.</li><li>تقارير جماعية وتصدير Excel، وسجل زمني (Timeline) كامل لكل دارس.</li><li>أنشطة مصاحبة منفصلة عن المواد: خلوات، مؤتمرات، تدريب عملي، خدمة ميدانية، مشروع تخرج.</li></ul></div>
- <div class="card" style="border-color:var(--gold)"><h3>🆕 الجديد في التطوير ده</h3><ul style="line-height:2;font-size:14px"><li><b>الحضور بالمحاضرات:</b> كل محاضرة سجل لوحدها، ونسبة حضور الدارس بتتحدث تلقائياً، والغائب مرتين ورا بعض بيظهر في «غياب متكرر» بزرار واتساب افتقاد ومهمة متابعة.</li><li><b>المتابعة والافتقاد:</b> مهام باسم خادم مسؤول ومعاد — للمتعثر والغائب، وتتسجل «تمت» عشان محدش يقع.</li><li><b>استيراد جماعي:</b> ارفع ملف Excel (CSV) بمئات الدارسين مرة واحدة من صفحة الدارسين، وفيه نموذج جاهز.</li><li><b>كارت دارس وشهادة:</b> من ملف أي دارس — وصفحة شهادات مستقلة «شهادة-التخرج.html».</li></ul><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="window.open('شهادة-التخرج.html','_blank')">🎓 فتح صفحة الشهادات</button></div></div>
+ <div class="card" style="border-color:var(--gold)"><h3>🆕 الجديد في التطوير ده</h3><ul style="line-height:2;font-size:14px"><li><b>الحضور بالمحاضرات:</b> كل محاضرة سجل لوحدها، ونسبة حضور الدارس بتتحدث تلقائياً، والغائب مرتين ورا بعض بيظهر في «غياب متكرر» بزرار واتساب افتقاد ومهمة متابعة.</li><li><b>المتابعة والافتقاد:</b> مهام باسم خادم مسؤول ومعاد — للمتعثر والغائب، وتتسجل «تمت» عشان محدش يقع.</li><li><b>استيراد جماعي:</b> ارفع ملف Excel (CSV) بمئات الدارسين مرة واحدة من صفحة الدارسين، وفيه نموذج جاهز.</li><li><b>كارت دارس وشهادة:</b> من ملف أي دارس — وصفحة شهادات مستقلة «شهادة-التخرج.html».</li></ul><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="openCertStudio()">🎓 فتح صفحة الشهادات</button></div></div>
  <div class="card"><h3>🚀 خطوات تطوير مستقبلية مقترحة</h3><ul style="line-height:2;font-size:14px"><li>تأمين قاعدة البيانات بـ Firebase Authentication بدل القواعد المفتوحة.</li><li>تسجيل حضور بالجلسات (محاضرة بمحاضرة) بدل النسبة الإجمالية.</li><li>حسابات دخول للدارسين أنفسهم (دور جديد) للاطلاع على نتائجهم عند نضج الفكرة، وإشعارات واتساب.</li><li>شهادة تخرج قابلة للطباعة بتصميم رسمي.</li></ul></div></div>`}
 
 /* ---------- النوافذ (Modals) ---------- */
@@ -1205,8 +1483,24 @@ function loadDemo(){
 
 /* ---------- أحداث عامة ---------- */
 /* الصلاحيات لم تعد تبديلاً من قائمة — كل خادم يدخل بحسابه ودوره من صفحة «الخدام والصلاحيات» */
-$('#csvFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>importStudentsCSV(String(r.result||'')); r.readAsText(f); e.target.value=''});
-$('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!confirm('استيراد النسخة هيستبدل البيانات الحالية على الجهاز. أكمل؟'))return; DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=DB.activityLog||[]; saveDB(); if(currentUser()){go('dashboard')}else{location.href='index.html'} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
+$('#csvFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return;
+ const name=(f.name||'').toLowerCase();
+ if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+  const r=new FileReader(); r.onload=()=>{try{const wb=XLSX.read(r.result,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}); importStudentsCSV(rows.map(row=>row.join(',')).join('\n'));}catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f);
+ } else { const r=new FileReader(); r.onload=()=>importStudentsCSV(String(r.result||'')); r.readAsText(f);} e.target.value='';});
+$('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return;
+ const name=(f.name||'').toLowerCase();
+ if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+   const r=new FileReader(); r.onload=()=>{try{
+     if(!window.XLSX) throw 0;
+     const wb=XLSX.read(r.result,{type:'array'});
+     const sheet=wb.Sheets[wb.SheetNames[0]];
+     const rows=XLSX.utils.sheet_to_json(sheet,{header:1});
+     const csv=rows.map(row=>row.join(',')).join('\n');
+     importStudentsCSV(csv);
+   }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
+ }
+ const r=new FileReader(); r.onload=()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!confirm('استيراد النسخة هيستبدل البيانات الحالية على الجهاز. أكمل؟'))return; rememberAutoBackup(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=DB.activityLog||[]; saveDB(); if(currentUser()){go('dashboard')}else{location.replace('index.html')} toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
 window.addEventListener('online',()=>$('#offlineBar').classList.remove('show'));
 window.addEventListener('offline',()=>$('#offlineBar').classList.add('show'));
 if(!navigator.onLine)$('#offlineBar').classList.add('show');
@@ -1215,14 +1509,151 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null; toast('تم ت�
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
   DB=loadDB();
-  if(!currentUser()){location.href='index.html';return}
+  if(!currentUser()){location.replace('index.html');return}
   const a=document.activeElement, modal=$('#modalBg');
   if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open')))return;
   render();
 }})}
+
+// ===== معالجة زرار الرجوع والسحب من الشمال (iPhone) =====
+window.addEventListener('popstate', (e)=>{
+  try{
+    // لو الجلسة انتهت — اطلع للدخول
+    if(!currentUser()){ location.replace('index.html'); return; }
+    if(e.state && e.state.view){
+      state.view = e.state.view;
+      if(e.state.studentId!==undefined) state.studentId = e.state.studentId;
+      render();
+      return;
+    }
+    // لو مفيش state (مثلاً رجوع من صفحة دخول قديمة) — نمنع الخروج للدخول ونفضل في التطبيق
+    if(currentUser()){
+      // لو history فاضي، ارجع للداشبورد بدل الخروج
+      if(state.view!=='dashboard'){
+        history.pushState({view: state.view}, '', '#'+state.view);
+      }else{
+        // في الداشبورد والـ back اتضغط — امنع الخروج للدخول
+        history.pushState({view:'dashboard'}, '', '#dashboard');
+      }
+    }
+  }catch(err){}
+});
+
+// سحب من الحافة الشمال لليمين — يعمل زي زرار الرجوع (iPhone/Android)
+(function enableSwipeBack(){
+  let startX=0, startY=0, tracking=false, hintEl=null;
+  const EDGE=36, THRESH=70;
+  try{
+    // عنصر بصري يظهر أثناء السحب
+    const s=document.createElement('style');
+    s.textContent=`html{ overscroll-behavior-x: contain; } body{ overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+    .swipe-glow{ position:fixed; top:0; bottom:0; right:0; width:5px; background: linear-gradient(180deg, #c9a227, #8a6410); opacity:0; transition: opacity .2s; z-index:9998; pointer-events:none; }
+    .swipe-glow.on{ opacity:.85; }
+    .swipe-hint-bubble{ position:fixed; top:50%; right:12px; transform:translateY(-50%) scale(.8); background: rgba(18,50,92,.92); color:#fff8e8; font-size:22px; padding:10px 12px; border-radius:24px; box-shadow:0 6px 18px rgba(0,0,0,.28); opacity:0; transition: all .2s; z-index:9999; pointer-events:none; }
+    .swipe-hint-bubble.on{ opacity:1; transform:translateY(-50%) scale(1); }
+    @media (pointer:fine){ .swipe-glow, .swipe-hint-bubble{ display:none; } }`;
+    document.head.appendChild(s);
+    const glow=document.createElement('div'); glow.className='swipe-glow'; document.body.appendChild(glow); hintEl=glow;
+    const bubble=document.createElement('div'); bubble.className='swipe-hint-bubble'; bubble.textContent='‹ رجوع'; document.body.appendChild(bubble);
+
+    function onStart(e){
+      const t=e.touches[0]; if(!t) return;
+      // فقط من الحافة اليمين في RTL (الشمال بصرياً في LTR لكن الصفحة RTL — الحافة اليمنى هي الشمال المنطقي للمستخدم؟)
+      // المستخدم قال: "من ناحية الشمال وأجيبها يمين" — في RTL الشمال بصرياً هو اليسار الفعلي.
+      // ندعم الحافتين للتسهيل: لو RTL نستقبل من اليمين أيضاً
+      const isRTL = document.documentElement.dir==='rtl';
+      const fromEdge = isRTL ? (window.innerWidth - t.clientX <= EDGE) : (t.clientX <= EDGE);
+      // ندعم الحافتين معاً لتجربة أفضل على الآيفون
+      const anyEdge = (t.clientX <= EDGE) || (window.innerWidth - t.clientX <= EDGE);
+      if(anyEdge){
+        startX=t.clientX; startY=t.clientY; tracking=true;
+        glow.classList.add('on'); bubble.classList.add('on');
+      } else tracking=false;
+    }
+    function onMove(e){
+      if(!tracking) return;
+      const t=e.touches[0]; if(!t) return;
+      const dx = t.clientX - startX;
+      const adx = Math.abs(dx);
+      const dy = Math.abs(t.clientY - startY);
+      // في RTL السحب من اليمين لليسار هو الرجوع، نحولها لقيمة موجبة
+      const isRTL = document.documentElement.dir==='rtl';
+      let effectiveDx = dx;
+      if(isRTL && startX > window.innerWidth/2) effectiveDx = -(dx); // من اليمين: الحركة لليسار تعتبر رجوع
+      if(adx>12 && dy<90){
+        const prog = Math.min(.85, adx/110);
+        glow.style.opacity = prog;
+        bubble.style.opacity = prog;
+      }
+    }
+    function onEnd(e){
+      if(!tracking) return; tracking=false; glow.classList.remove('on'); bubble.classList.remove('on'); glow.style.opacity=''; bubble.style.opacity='';
+      const t=e.changedTouches[0]; if(!t) return;
+      const dx = t.clientX - startX;
+      const dy = Math.abs(t.clientY - startY);
+      const isRTL = document.documentElement.dir==='rtl';
+      // تحديد اتجاه الرجوع حسب الحافة
+      let shouldBack=false;
+      if(startX <= EDGE){
+        // من اليسار لليمين
+        shouldBack = (dx > THRESH && dy < 110);
+      }else{
+        // من اليمين لليسار (في RTL)
+        shouldBack = (dx < -THRESH && dy < 110);
+      }
+      if(shouldBack){
+        if(navigator.vibrate) navigator.vibrate(18);
+        // لو في history داخل التطبيق — استخدم history.back، وإلا ارجع للداشبورد
+        if(history.state && history.state.view){
+          history.back();
+        }else if(state.view!=='dashboard'){
+          go('dashboard');
+        }else{
+          // في الداشبورد — اهتزاز خفيف فقط
+          if(navigator.vibrate) navigator.vibrate([30,40,30]);
+        }
+      }
+    }
+    document.addEventListener('touchstart', onStart, {passive:true});
+    document.addEventListener('touchmove', onMove, {passive:true});
+    document.addEventListener('touchend', onEnd, {passive:true});
+  }catch(e){}
+})();
+
+// تحسينات راحة إضافية للموبايل والويب
+(function mobileUX(){
+  try{
+    // تحسين الـ viewport للآيفون مع النوتش
+    const vv = document.querySelector('meta[name="viewport"]');
+    if(vv && !vv.content.includes('viewport-fit')){
+      vv.content += ', viewport-fit=cover';
+    }
+    // منع التحديد المزعج أثناء السحب
+    document.documentElement.style.webkitTouchCallout='none';
+    // تحسين التمرير السلس
+    document.documentElement.style.scrollBehavior='smooth';
+    // إصلاح اهتزاز الـ overscroll على iOS
+    document.body.style.overscrollBehavior='contain';
+  }catch(e){}
+
+  // اختصار لوحة المفاتيح للويب: ESC يقفل المودال
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){
+      const bg=document.getElementById('modalBg');
+      if(bg && bg.classList.contains('open')){ closeModal(); }
+      else if(typeof toggleSidebar==='function'){ toggleSidebar(false); }
+    }
+  });
+
+  // مؤشر أونلاين/أوفلاين أوضح
+  let offToastTimer=null;
+  window.addEventListener('online', ()=>{ if(offToastTimer) clearTimeout(offToastTimer); toast('رجع الإنترنت ☁️✅ — هتتم المزامنة تلقائياً'); });
+  window.addEventListener('offline', ()=>{ toast('⚠️ بدون إنترنت — شغال محلي وكل حاجة هتتحفظ'); });
+})();
+
 E3.theme.init();
 E3.vault.loadMeta(DB.settings||{});
-if(currentUser()){render()}else{location.href='index.html'}
+if(currentUser()){render()}else{location.replace('index.html')}
 
 </script>
 </body>

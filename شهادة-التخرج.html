@@ -14,6 +14,8 @@
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
 <link rel="stylesheet" href="assets/css/app.css?v=3.2">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 header.cert-head{background:linear-gradient(135deg,#12325c,#21569c 56%,#c9a227);color:#f4f9ff;padding:24px 18px;border-bottom:4px solid var(--gold);position:relative;overflow:hidden}
 header.cert-head .grain{position:absolute;inset:0;background:url("assets/img/church-hero.jpg") center/cover;opacity:.18}
@@ -83,7 +85,8 @@ main{max-width:880px;margin:0 auto;padding:20px 14px 48px}
       <div class="field"><label>&nbsp;</label>
         <div style="display:flex;gap:8px">
           <button class="btn gold" style="flex:1" onclick="renderCert()">🎓 عرض الشهادة</button>
-          <button class="btn primary" style="flex:1" onclick="window.print()">🖨️ طباعة / PDF</button>
+          <button class="btn primary" style="flex:1" onclick="saveCertPdf()">📄 حفظ PDF</button>
+          <button class="btn" style="flex:1" onclick="printCertInApp()">🖨️ طباعة</button>
         </div>
       </div>
     </div>
@@ -170,6 +173,24 @@ function renderCert() {
   </div>`;
 }
 if (eligible.length && me) renderCert();
+async function saveCertPdf(){
+  const box=document.querySelector('#certBox .cert');
+  if(!box) return alert('اعرض الشهادة أولاً');
+  try{
+    const canvas=await html2canvas(box,{scale:2,backgroundColor:'#ffffff'});
+    const {jsPDF}=window.jspdf||window;
+    const pdf=new jsPDF({orientation:'l',unit:'mm',format:'a4'});
+    const w=297-16, img=canvas.toDataURL('image/jpeg',0.93);
+    const h=canvas.height*(w/canvas.width);
+    pdf.addImage(img,'JPEG',8,8,w,Math.min(h,210-16));
+    pdf.save('شهادة.pdf');
+  }catch(e){ alert('تعذّر حفظ PDF'); }
+}
+function printCertInApp(){
+  const box=document.querySelector('#certBox .cert');
+  if(!box) return alert('اعرض الشهادة أولاً');
+  window.print();
+}
 E3.theme.init();
 </script>
 </body>

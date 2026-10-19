@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>اعداد خدام ادمن | تسجيل الدخول</title>
 <meta name="description" content="اعداد خدام ادمن — نظام متابعة دارسي إعداد الخدّام بكنيسة رئيس الملائكة ميخائيل بالأندلس">
 <meta name="theme-color" content="#f8f8f3">
@@ -81,6 +81,15 @@
             <button class="btn" type="button" id="eyeBtn" aria-label="إظهار كلمة السر">👁️</button>
           </div>
         </div>
+        <!-- تشيك بوكس البقاء متصل 7 أيام -->
+        <label class="remember-row" for="remember7d" style="display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;cursor:pointer;user-select:none;transition:.18s">
+          <input type="checkbox" id="remember7d" checked style="width:18px;height:18px;accent-color:#c9a227;flex-shrink:0">
+          <span style="flex:1;text-align:right;line-height:1.5">
+            <b style="display:block;font-size:13.5px;color:var(--head)">☑️ خلّيني مُتّصل لمدة ٧ أيام</b>
+            <small style="font-size:11.5px;color:var(--muted)">مش هتطلب مني تسجيل دخول تاني على الجهاز ده — حتى لو قفلت التطبيق ورجعت. إلغِ العلامة لو الجهاز عام أو مش بتاعك.</small>
+          </span>
+          <span class="remember-badge" style="font-size:11px;background:var(--gold);color:#3a2a00;padding:3px 8px;border-radius:99px;white-space:nowrap">٧ أيام</span>
+        </label>
         <button class="btn primary" id="loginBtn" onclick="doLogin()">☦️ دخول الخدّام</button>
         <button class="install-btn" type="button" onclick="handleInstall()" style="margin-top:11px">
           <span class="install-ic">⬇</span>
@@ -109,6 +118,81 @@
 <script src="assets/js/core.js?v=3.2"></script>
 <script>
 const DB_KEY = E3.DB_KEY, SESSION_KEY = E3.SESSION_KEY, ADMIN_URL = 'admin.html';
+// ===== إصلاح البقاء ٧ أيام — Override جلسة ٧ أيام =====
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+(function fixSessionDuration(){
+  try{
+    if(window.E3){
+      E3.SESSION_MS = SEVEN_DAYS_MS;
+      E3.OWNER_SESSION_MS = SEVEN_DAYS_MS;
+      E3.SESSION_REMEMBER_MS = SEVEN_DAYS_MS;
+      // ضمان أن الـ store موجود — fallback لو core.js لسه محملش
+      if(!E3.store){
+        E3.store = {
+          getItem: (k)=> localStorage.getItem(k),
+          setItem: (k,v)=> localStorage.setItem(k,v),
+          removeItem: (k)=> localStorage.removeItem(k)
+        };
+      }
+    }
+  }catch(e){}
+})();
+const SHORT_SESSION_MS = 12 * 60 * 60 * 1000; // 12 ساعة لو مش متعلم على التشيك بوكس
+
+// دالة للتحقق هل الجلسة لسه صالحة — تحترم التشيك بوكس (7 أيام أو 12 ساعة)
+function isSessionValid(){
+  try{
+    const store = (window.E3 && E3.store) ? E3.store : { getItem:(k)=>localStorage.getItem(k) };
+    const id = store.getItem(SESSION_KEY);
+    if(!id) return false;
+    const atRaw = store.getItem(SESSION_KEY+'_at');
+    const at = +(atRaw||0);
+    if(!at) return false;
+    const remember = store.getItem(SESSION_KEY+'_remember');
+    const maxMs = (remember === '0') ? SHORT_SESSION_MS : SEVEN_DAYS_MS;
+    return (Date.now() - at) <= maxMs;
+  }catch(e){ return false; }
+}
+function getRememberChoice(){
+  try{
+    const el=document.getElementById('remember7d');
+    if(el) return !!el.checked;
+    const store=(window.E3&&E3.store)?E3.store:{getItem:(k)=>localStorage.getItem(k)};
+    const v=store.getItem(SESSION_KEY+'_remember');
+    return v!=='0';
+  }catch(e){ return true; }
+}
+function touchSession(){
+  try{
+    const store=(window.E3&&E3.store)?E3.store:{getItem:(k)=>localStorage.getItem(k), setItem:(k,v)=>localStorage.setItem(k,v)};
+    const remember = store.getItem(SESSION_KEY+'_remember');
+    if(remember === '0') return;
+    const id = store.getItem(SESSION_KEY);
+    if(id){
+      const now = String(Date.now());
+      store.setItem(SESSION_KEY+'_at', now);
+    }
+  }catch(e){}
+}
+// حفظ اختيار التشيك بوكس عند تغييره (عشان يفتكر اختيارك المرة الجاية)
+(function initRememberCheckbox(){
+  try{
+    const cb=document.getElementById('remember7d');
+    if(!cb) return;
+    const prev = localStorage.getItem('e3dad_remember_choice');
+    if(prev==='0') cb.checked=false;
+    else if(prev==='1') cb.checked=true;
+    cb.addEventListener('change', ()=>{
+      localStorage.setItem('e3dad_remember_choice', cb.checked?'1':'0');
+      const row=cb.closest('.remember-row');
+      if(row) row.style.borderColor = cb.checked ? 'var(--gold)' : 'var(--line)';
+      if(row) row.style.background = cb.checked ? 'var(--surface-2)' : 'transparent';
+    });
+    cb.dispatchEvent(new Event('change'));
+  }catch(e){}
+})();
+
+
 const ROLE_LABELS = { amin:'👑 أمين إعداد الخدام', assistant:'🤝 مساعد أمين إعداد الخدام', year_supervisor:'📌 أمين سنة (مشرف سنة)', khadem:'✝️ خادم', follower:'👁️ خادم متابِع (عرض فقط)' };
 const ALL_PERMS = ['view_students','edit_students','delete_students','manage_years','enter_grades','manage_activities','add_notes','view_confidential','make_decisions','manage_curriculum','print_reports','manage_users','manage_settings','backup'];
 const $ = (id) => document.getElementById(id);
@@ -254,6 +338,15 @@ async function migrateSeedCredentials() {
 }
 
 async function boot() {
+  // ↩️ لو داخل قبل كده ولسه في الـ 7 أيام — ادخل مباشرة بدون صفحة دخول
+  try{
+    if(isSessionValid()){
+      // لو فيه يوزر فعلاً في الـ DB (أو حتى لو لسه هنسحبه من السحابة) — روح للإدارة
+      // نعمل replace عشان زرار الرجوع ميرجعش للدخول
+      location.replace(ADMIN_URL);
+      return;
+    }
+  }catch(e){}
   DB.settings = Object.assign(defaultSettings(), DB.settings || {});
   refreshRecoveryButton();
   if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
@@ -282,6 +375,19 @@ async function boot() {
   await bootstrapSystemAdmin();
   try { await migrateSeedCredentials(); } catch (e) { console.warn('migrate:', e); }
   try { E3.vault.loadMeta(DB.settings); } catch (_) {}
+
+  // فحص نهائي بعد ما السحابة حمّلت الحسابات — لو الجلسة لسه صالحة، ادخل
+  try{
+    if(isSessionValid()){
+      // نتأكد إن الـ id ده لسه موجود في DB.users (ميكونش اتحذف)
+      try{
+        const sid = E3.store.getItem(SESSION_KEY);
+        const u = (DB.users||[]).find(x=> x.id===sid);
+        if(u && u.active!==false){ location.replace(ADMIN_URL); return; }
+        // لو الـ id مش موجود (مثلاً حساب اتحذف) — نسيب المستخدم يسجل تاني
+      }catch(_){}
+    }
+  }catch(e){}
 
   $('loginBox').style.display = 'block';
   if (window.matchMedia('(min-width: 901px) and (pointer: fine)').matches) setTimeout(() => $('liUser').focus(), 120);
@@ -353,8 +459,12 @@ async function doLogin() {
   logAs(u, 'تسجيل دخول');
   saveDB();
   try { if (window.E3Cloud && E3Cloud.touchLogin) E3Cloud.touchLogin(u.username, u.lastLogin); } catch (e) {}
+  const rememberChecked = (document.getElementById('remember7d') ? document.getElementById('remember7d').checked : true);
   E3.store.setItem(SESSION_KEY, u.id);
   E3.store.setItem(SESSION_KEY + '_at', String(Date.now()));
+  E3.store.setItem(SESSION_KEY + '_remember', rememberChecked ? '1' : '0');
+  try{ localStorage.setItem('e3dad_remember_choice', rememberChecked?'1':'0'); }catch(e){}
+  try{ const dur = rememberChecked ? SEVEN_DAYS_MS : SHORT_SESSION_MS; E3.store.setItem(SESSION_KEY + '_exp', String(Date.now() + dur)); }catch(e){}
   busy = false;
   welcome(u);
 }
@@ -366,8 +476,10 @@ function welcome(u) {
   box.innerHTML = '<div class="ph">' + avatarHTML(u) + '</div>' +
     '<h2 style="margin:8px 0 2px;color:var(--head)">نورت يا ' + esc(isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || '').split(' ')[0]) + ' ☦</h2>' +
     '<p class="sub">' + esc(roleCaption(u)) + '<br>جارٍ فتح لوحة تحكم إعداد الخدام...</p>' +
-    '<button class="btn gold" style="margin-top:14px" onclick="location.href=\'' + ADMIN_URL + '\'">🎓 دخول لوحة التحكم الآن</button>';
-  if (location.protocol.startsWith('http')) setTimeout(() => { location.href = ADMIN_URL; }, 1400);
+    '<button class="btn gold" style="margin-top:14px" onclick="location.replace(\'' + ADMIN_URL + '\')">🎓 دخول لوحة التحكم الآن</button>';
+  // نستخدم replace عشان صفحة الدخول متفضلش في history — زرار الرجوع ميرجعش ليها
+  try{ history.replaceState(null, '', location.href); }catch(e){}
+  if (location.protocol.startsWith('http')) setTimeout(() => { location.replace(ADMIN_URL); }, 1200);
 }
 
 
@@ -472,6 +584,91 @@ async function handleInstall() {
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
+
+/* ================== تحسينات الموبايل والويب — ٧ أيام + منع الرجوع + سحب الآيفون ================== */
+// منع الرجوع بالـ swipe/الزرار لصفحة الدخول بعد ما دخلت — عبر history API
+try{
+  if(isSessionValid()){
+    history.replaceState({page:'login', authed:true}, '', location.href);
+  }
+}catch(e){}
+
+// تحديث الجلسة كلما المستخدم نشط (يحافظ على الـ 7 أيام منزلقة من آخر حركة)
+(function setupKeepAlive(){
+  let lastTouch = 0;
+  function keepAlive(){
+    const now = Date.now();
+    if(now - lastTouch < 25000) return; // throttling 25s
+    lastTouch = now;
+    try{
+      const rem = (window.E3&&E3.store?E3.store.getItem(SESSION_KEY+'_remember'):localStorage.getItem(SESSION_KEY+'_remember'));
+      if(rem==='0') return;
+      touchSession();
+    }catch(e){}
+  }
+  ['click','keydown','touchstart','mousemove','scroll'].forEach(ev=>{
+    window.addEventListener(ev, keepAlive, {passive:true});
+  });
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') keepAlive(); });
+  // كل 5 دقايق نحدّث لو الصفحة مفتوحة
+  setInterval(keepAlive, 5*60*1000);
+})();
+
+// سحب من الشمال لليمين على الموبايل (iPhone/Android) — رجوع سلس
+(function enableSwipeBackLogin(){
+  let startX=0, startY=0, tracking=false;
+  const EDGE=40, THRESH=75;
+  // نضيف خط بصري رفيع يظهر أثناء السحب
+  try{
+    const style=document.createElement('style');
+    style.textContent=`html{ overscroll-behavior-x: contain; } body{ overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+    .swipe-hint{ position:fixed; top:0; bottom:0; right:0; width:4px; background: linear-gradient(180deg, #c9a227, #8a6410); opacity:0; transition: opacity .18s; z-index:9999; pointer-events:none; }
+    .swipe-hint.show{ opacity:.9; }
+    @media (pointer:fine){ .swipe-hint{ display:none; } }`;
+    document.head.appendChild(style);
+    const hint=document.createElement('div'); hint.className='swipe-hint'; document.body.appendChild(hint);
+    document.addEventListener('touchstart', e=>{
+      const t=e.touches[0]; if(!t) return;
+      if(t.clientX <= EDGE){ startX=t.clientX; startY=t.clientY; tracking=true; hint.classList.add('show'); }
+      else tracking=false;
+    }, {passive:true});
+    document.addEventListener('touchmove', e=>{
+      if(!tracking) return;
+      const t=e.touches[0]; if(!t) return;
+      const dx=t.clientX-startX; const dy=Math.abs(t.clientY-startY);
+      if(dx>10 && dy<90){ hint.style.opacity = Math.min(.85, dx/120); }
+    }, {passive:true});
+    document.addEventListener('touchend', e=>{
+      if(!tracking) return; tracking=false; hint.classList.remove('show'); hint.style.opacity='';
+      const t=e.changedTouches[0]; if(!t) return;
+      const dx=t.clientX-startX; const dy=Math.abs(t.clientY-startY);
+      if(dx>THRESH && dy<110){
+        // لو في صفحة الدخول ولسه مش داخل — مفيش رجوع، نهز الجهاز فقط
+        if(navigator.vibrate) navigator.vibrate(18);
+        // لو كان في تاريخ سابق، ارجع
+        if(history.length>1){ history.back(); }
+      }
+    }, {passive:true});
+  }catch(e){}
+})();
+
+// تحسينات راحة للموبايل والويب
+(function mobileComfort(){
+  try{
+    // منع تكبير مزدوج مزعج على الآيفون للحفاظ على التكبير الطبيعي للـ inputs
+    document.addEventListener('touchend', function(e){
+      const now=Date.now(); const last=window._lastTouchEnd||0;
+      if(now-last<=300) e.preventDefault();
+      window._lastTouchEnd=now;
+    }, {passive:false});
+  }catch(e){}
+  // تحسين التركيز: اضغط Enter في الباسورد يدخل مباشرة
+  try{
+    const u=$('liUser'), p=$('liPass');
+    if(p){ p.setAttribute('enterkeyhint','done'); p.setAttribute('inputmode','text'); }
+    if(u){ u.setAttribute('enterkeyhint','next'); }
+  }catch(e){}
+})();
 
 E3.theme.init();
 boot();
