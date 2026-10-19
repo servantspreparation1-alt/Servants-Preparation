@@ -960,8 +960,7 @@ function viewUsers(){
     <div class="roles-hint" style="margin-top:10px">اسحب أفقيًا لاستعراض أدوار الخدمة</div>
     <div class="grid c3 roles-grid" style="margin-top:12px">${Object.entries(ROLE_DEFS).map(([k,r])=>`<div class="role-card ${k==='amin'?'top':''}"><div class="role-title"><span style="font-size:22px">${r.icon}</span><span><b>${r.label}</b><br><span class="badge b-gold">${toArabicDigits(rolesCount(k))} حساب</span></span></div><details class="role-details"><summary>الوصف والصلاحيات</summary><p style="font-size:12.5px;color:var(--muted);line-height:1.8;margin:7px 0 0">${r.desc}</p><div style="margin-top:8px">${r.perms.map(pp=>`<span class="badge b-gray" style="margin:2px">${(PERMISSIONS.find(x=>x[0]===pp)||[])[1]||pp}</span>`).join('')}</div></details></div>`).join('')}</div>
   </details>
-
-  <div class="card"><p>سجل النشاطات في صفحة منفصلة، متاحة لإدارة السيستم فقط.</p></div>`;
+`;
 }
 function permCheckboxes(selected){return PERMISSIONS.map(([k,l])=>`<label><input type="checkbox" class="perm-check" value="${k}" ${selected.includes(k)?'checked':''}> ${l}</label>`).join('')}
 function openUserForm(userId){
