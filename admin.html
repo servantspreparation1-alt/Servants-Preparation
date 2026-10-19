@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <title>إعداد الخدّام — لوحة التحكم</title>
 <meta name="description" content="نظام متابعة دارسي إعداد الخدام عبر ٣ سنوات — معلم الأجيال للتلمذة، كنيسة رئيس الملائكة ميخائيل بالأندلس">
-<meta name="theme-color" content="#7a1257">
+<meta name="theme-color" content="#123a63">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="icons/favicon-32.png">
@@ -39,25 +39,25 @@
 /* ───────────────────────── 1) التوكِنات ───────────────────────── */
 :root{
   /* الهوية الأصلية (نفس أسماء شمامسة) */
-  --cx-brand:#6b0f45;          /* بنفسجي بيزنطي غامق */
-  --cx-brand-2:#a41a63;        /* أرجواني الأيقونات */
-  --cx-brand-3:#c93a86;        /* أرجواني فاتح للتدرّجات */
-  --cx-brand-rgb:107,15,69;
-  --cx-brand-2-rgb:164,26,99;
-  --cx-brand-3-rgb:201,58,134;
-  --cx-gold:#c3922b;           /* ذهب الأيقونات */
-  --cx-gold-2:#e9c877;
-  --cx-gold-3:#f6e3ae;
-  --cx-gold-soft:#faf1d8;
-  --cx-bg:#f7f1e5;             /* رقّ البردي */
-  --cx-paper:#fffdf9;
-  --cx-paper-2:#fff8ec;
-  --cx-ink:#251a21;
-  --cx-muted:#7d6b73;
-  --cx-line:#ecdcc0;
-  --cx-line-2:#f0e6d2;
-  --cx-success:#177a58;
-  --cx-danger:#b23b55;
+  --cx-brand:#0d2b4a;          /* بنفسجي بيزنطي غامق */
+  --cx-brand-2:#1e5b96;        /* أرجواني الأيقونات */
+  --cx-brand-3:#3d8fd6;        /* أرجواني فاتح للتدرّجات */
+  --cx-brand-rgb:13,43,74;
+  --cx-brand-2-rgb:30,91,150;
+  --cx-brand-3-rgb:61,143,214;
+  --cx-gold:#c9a227;           /* ذهب الأيقونات */
+  --cx-gold-2:#e6c766;
+  --cx-gold-3:#f4e0ae;
+  --cx-gold-soft:#f7f0da;
+  --cx-bg:#f3f2ec;             /* رقّ البردي */
+  --cx-paper:#fffefa;
+  --cx-paper-2:#f8f6ee;
+  --cx-ink:#152232;
+  --cx-muted:#5d6d7d;
+  --cx-line:#dfe3e6;
+  --cx-line-2:#e8ebee;
+  --cx-success:#0f7a5a;
+  --cx-danger:#b3403f;
   --cx-radius:22px;
   --cx-radius-sm:14px;
   --cx-nav-h:68px;
@@ -67,12 +67,12 @@
   --cx-display:"Markazi Text","Amiri","Tajawal","Cairo",serif;
   --cx-coptic:"Noto Sans Coptic","Tajawal",sans-serif;
   --cx-grad:linear-gradient(150deg,var(--cx-brand-2),var(--cx-brand));
-  --cx-grad-hero:linear-gradient(158deg,#26071c 0%,#470d36 34%,#7c1250 66%,#b0246c 100%);
+  --cx-grad-hero:linear-gradient(158deg,#071626 0%,#0f2b46 34%,#174a7d 66%,#2a6bb0 100%);
 
   /* شريط الجديلة الذهبية (الفواصل) */
-  --cx-braid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='14' viewBox='0 0 48 14'%3E%3Cg fill='none' stroke='%23c3922b' stroke-width='1.7' stroke-linecap='round'%3E%3Cpath d='M0 7C6 1 18 1 24 7s18 6 24 0'/%3E%3Cpath d='M0 7c6 6 18 6 24 0s18-6 24 0'/%3E%3C/g%3E%3Ccircle cx='24' cy='7' r='1.5' fill='%23c3922b'/%3E%3Ccircle cx='0' cy='7' r='1.2' fill='%23c3922b'/%3E%3Ccircle cx='48' cy='7' r='1.2' fill='%23c3922b'/%3E%3C/svg%3E");
+  --cx-braid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='14' viewBox='0 0 48 14'%3E%3Cg fill='none' stroke='%23c9a227' stroke-width='1.7' stroke-linecap='round'%3E%3Cpath d='M0 7C6 1 18 1 24 7s18 6 24 0'/%3E%3Cpath d='M0 7c6 6 18 6 24 0s18-6 24 0'/%3E%3C/g%3E%3Ccircle cx='24' cy='7' r='1.5' fill='%23c9a227'/%3E%3Ccircle cx='0' cy='7' r='1.2' fill='%23c9a227'/%3E%3Ccircle cx='48' cy='7' r='1.2' fill='%23c9a227'/%3E%3C/svg%3E");
   /* الصليب القبطي (الخلفية والزخارف) */
-  --cx-cross:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%236b0f45'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3Ccircle cx='7' cy='7' r='1.4'/%3E%3Ccircle cx='21' cy='7' r='1.4'/%3E%3Ccircle cx='7' cy='21' r='1.4'/%3E%3Ccircle cx='21' cy='21' r='1.4'/%3E%3C/g%3E%3C/svg%3E");
+  --cx-cross:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%230d2b4a'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3Ccircle cx='7' cy='7' r='1.4'/%3E%3Ccircle cx='21' cy='7' r='1.4'/%3E%3Ccircle cx='7' cy='21' r='1.4'/%3E%3Ccircle cx='21' cy='21' r='1.4'/%3E%3C/g%3E%3C/svg%3E");
   --cx-cross-light:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3Ccircle cx='7' cy='7' r='1.4'/%3E%3Ccircle cx='21' cy='7' r='1.4'/%3E%3Ccircle cx='7' cy='21' r='1.4'/%3E%3Ccircle cx='21' cy='21' r='1.4'/%3E%3C/g%3E%3C/svg%3E");
 
   color-scheme:light;
@@ -130,28 +130,28 @@
 }
 
 html[data-theme="dark"],html.dark{
-  --cx-brand:#e0559f;
-  --cx-brand-2:#c93a86;
-  --cx-brand-3:#f07ab4;
-  --cx-brand-rgb:224,85,159;
-  --cx-brand-2-rgb:201,58,134;
-  --cx-brand-3-rgb:240,122,180;
+  --cx-brand:#7cc0f5;
+  --cx-brand-2:#3d8fd6;
+  --cx-brand-3:#a6d4fb;
+  --cx-brand-rgb:124,192,245;
+  --cx-brand-2-rgb:61,143,214;
+  --cx-brand-3-rgb:166,212,251;
   --cx-gold:#d9b054;
   --cx-gold-2:#f0d694;
   --cx-gold-3:#f8e7b8;
-  --cx-gold-soft:#33291a;
-  --cx-bg:#120c14;
-  --cx-paper:#1d151d;
-  --cx-paper-2:#261a24;
-  --cx-ink:#fdf7fb;
-  --cx-muted:#c9b7c2;
-  --cx-line:#463240;
-  --cx-line-2:#3a2a36;
-  --cx-success:#3ecf9a;
-  --cx-danger:#f0798f;
+  --cx-gold-soft:#2a2416;
+  --cx-bg:#0a1017;
+  --cx-paper:#111a24;
+  --cx-paper-2:#16202b;
+  --cx-ink:#eef4fa;
+  --cx-muted:#a9bac9;
+  --cx-line:#2a3542;
+  --cx-line-2:#232d38;
+  --cx-success:#37cfa0;
+  --cx-danger:#f0857a;
   --cx-shadow:0 20px 55px rgba(0,0,0,.42);
   --cx-shadow-sm:0 8px 26px rgba(0,0,0,.32);
-  --cx-grad-hero:linear-gradient(158deg,#0d0510 0%,#2a0820 36%,#4b0e39 70%,#7c1250 100%);
+  --cx-grad-hero:linear-gradient(158deg,#050b12 0%,#0a1a2b 36%,#123a63 70%,#174a7d 100%);
   --bg-body:var(--cx-bg);
   --bg-card:var(--cx-paper);
   --card-border:rgba(217,176,84,.24);
@@ -393,7 +393,7 @@ html[data-theme="dark"] .cx-links a:hover,html[data-theme="dark"] .cx-links butt
 .hero-header .hero-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px;position:relative;z-index:2}
 .hero-header .hero-actions .btn{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(233,200,119,.45)}
 .hero-header .hero-actions .btn:hover{background:rgba(255,255,255,.24)}
-.hero-header .hero-actions .btn.primary{background:linear-gradient(90deg,var(--cx-gold),#a8761c);color:#2b0a22;border-color:transparent}
+.hero-header .hero-actions .btn.primary{background:linear-gradient(90deg,var(--cx-gold),#a8761c);color:#071626;border-color:transparent}
 .hero-header.compact{padding:20px 18px 24px}
 .hero-header.compact .hero-logo{width:64px;height:64px;border-radius:18px}
 .hero-header.compact h1{font-size:1.25rem}
@@ -531,15 +531,15 @@ html[data-theme="dark"] .stat b{color:var(--cx-gold-2)}
 .badge.b-red{background:rgba(178,59,85,.12);color:#96293f;border-color:rgba(178,59,85,.35)}
 .badge.b-blue{background:rgba(var(--cx-brand-2-rgb),.10);color:var(--cx-brand);border-color:rgba(var(--cx-brand-2-rgb),.3)}
 .badge.b-amber{background:rgba(201,138,26,.14);color:#8a5a00;border-color:rgba(201,138,26,.38)}
-.badge.b-purple{background:rgba(124,18,80,.10);color:#7c1250;border-color:rgba(124,18,80,.28)}
+.badge.b-purple{background:rgba(124,18,80,.10);color:#174a7d;border-color:rgba(124,18,80,.28)}
 .badge.b-gray{background:rgba(125,107,115,.12);color:#6b5a62;border-color:rgba(125,107,115,.3)}
 html[data-theme="dark"] .badge.b-gold{background:rgba(217,176,84,.16);color:var(--cx-gold-2);border-color:rgba(217,176,84,.4)}
 html[data-theme="dark"] .badge.b-green{background:rgba(62,207,154,.14);color:#7fe0ae;border-color:rgba(62,207,154,.35)}
 html[data-theme="dark"] .badge.b-red{background:rgba(240,121,143,.14);color:#ffb3c1;border-color:rgba(240,121,143,.35)}
 html[data-theme="dark"] .badge.b-blue{background:rgba(var(--cx-brand-3-rgb),.16);color:var(--cx-brand-3);border-color:rgba(var(--cx-brand-3-rgb),.35)}
 html[data-theme="dark"] .badge.b-amber{background:rgba(230,190,110,.14);color:#f2d78c;border-color:rgba(230,190,110,.35)}
-html[data-theme="dark"] .badge.b-purple{background:rgba(224,85,159,.14);color:#f0abfc;border-color:rgba(224,85,159,.35)}
-html[data-theme="dark"] .badge.b-gray{background:rgba(255,255,255,.07);color:#c9b7c2;border-color:rgba(255,255,255,.14)}
+html[data-theme="dark"] .badge.b-purple{background:rgba(124,192,245,.14);color:#f0abfc;border-color:rgba(124,192,245,.35)}
+html[data-theme="dark"] .badge.b-gray{background:rgba(255,255,255,.07);color:#a9bac9;border-color:rgba(255,255,255,.14)}
 .grade{
   display:inline-grid;place-items:center;min-width:44px;height:32px;padding:0 9px;border-radius:12px;
   font-weight:900;font-size:.88rem;background:var(--cx-paper-2);border:1px solid var(--cx-line);color:var(--cx-brand);
@@ -576,7 +576,7 @@ input:focus,select:focus,textarea:focus{
   outline:none;border-color:var(--cx-gold);
   box-shadow:0 0 0 3.5px rgba(195,146,43,.18);background:var(--cx-paper);
 }
-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a41a63' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-inline-start:34px}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231e5b96' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-inline-start:34px}
 input[type="checkbox"],input[type="radio"]{width:18px;height:18px;accent-color:var(--cx-brand-2);cursor:pointer}
 input[type="file"]{padding:9px;font-size:.8rem;background:var(--cx-paper-2)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px}
@@ -1525,6 +1525,282 @@ input,select,textarea{font-family:var(--cx-font)!important}
 h1,h2,h3,h4{font-family:var(--cx-font)!important}
 html[data-theme="dark"] body,html.dark body{color:var(--cx-ink)!important}
 
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v3 — شريط تابات (بدل القائمة الجانبية) + الهيدر العلوي + الهيرو
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* الهيكل بقى عمودي: هيدر → هيرو → تابات → المحتوى */
+#appRoot.app{display:flex!important;flex-direction:column!important;align-items:stretch}
+#appRoot>.main{width:100%;max-width:none;padding-bottom:26px}
+#appRoot #view{max-width:1220px}
+
+/* ── الهيدر: لينكات التنقل ── */
+.cx-nav .cx-links{max-width:100%;overflow:visible}
+.cx-nav .cx-links .nav-item{
+  display:inline-flex;align-items:center;gap:5px;width:auto;margin:0;
+  padding:8px 13px;border-radius:999px;border:1px solid transparent;
+  background:transparent;color:var(--cx-muted);
+  font-family:var(--cx-font);font-size:.78rem;font-weight:800;line-height:1.4;
+  text-decoration:none;white-space:nowrap;box-shadow:none;transform:none;cursor:pointer;
+  transition:background .18s,color .18s,border-color .18s;
+}
+.cx-nav .cx-links .nav-item .ic{display:none}
+.cx-nav .cx-links .nav-item:hover{
+  background:var(--cx-gold-soft);color:var(--cx-brand);
+  border-color:color-mix(in srgb,var(--cx-gold) 35%,transparent);transform:none;
+}
+.cx-nav .cx-links .nav-item.active{
+  background:var(--cx-gold-soft);color:var(--cx-brand);font-weight:900;
+  border-color:color-mix(in srgb,var(--cx-gold) 50%,transparent);
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--cx-gold) 65%,transparent);
+}
+html[data-theme="dark"] .cx-nav .cx-links .nav-item:hover,
+html[data-theme="dark"] .cx-nav .cx-links .nav-item.active,
+html.dark .cx-nav .cx-links .nav-item:hover,
+html.dark .cx-nav .cx-links .nav-item.active{color:var(--cx-gold-2)}
+
+/* ── شريط التابات (اللي جاي من #mainNav) ── */
+.tab-bar{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;
+  max-width:1220px;margin:22px auto 4px;padding:0 clamp(14px,3vw,26px);
+  position:relative;z-index:5;
+}
+.tab-bar .nav-label{display:none!important}
+.tab-bar .nav-item{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;margin:0;
+  padding:11px 20px;border-radius:999px;cursor:pointer;
+  border:1.5px solid var(--card-border);
+  background:var(--cx-paper);color:var(--cx-muted);
+  font-family:var(--cx-font);font-size:.85rem;font-weight:800;line-height:1.4;
+  box-shadow:0 6px 18px rgba(90,55,20,.06);
+  transition:transform .18s,box-shadow .18s,background .18s,color .18s,border-color .18s;
+}
+.tab-bar .nav-item .ic{font-size:1rem;line-height:1;width:auto}
+.tab-bar .nav-item:hover{
+  transform:translateY(-2px);color:var(--cx-brand);background:var(--cx-paper-2);
+  border-color:color-mix(in srgb,var(--cx-gold) 55%,var(--card-border));
+  box-shadow:0 10px 24px rgba(90,55,20,.12);
+}
+.tab-bar .nav-item.active{
+  background:linear-gradient(90deg,var(--cx-brand-2),var(--cx-brand));
+  color:#fff;border-color:transparent;
+  box-shadow:0 12px 28px rgba(var(--cx-brand-rgb),.32);
+  transform:translateY(-1px);
+}
+.tab-bar .nav-item.active .ic{filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+
+/* ── الهيرو في لوحة التحكم ── */
+.hero-header.dash{padding:30px 20px 34px}
+.hero-header.dash .hero-logo{width:86px;height:86px;border-radius:24px;margin-bottom:12px}
+.hero-header.dash h1{font-size:clamp(1.35rem,3.6vw,1.95rem);margin-bottom:4px}
+.hero-header.dash .subtitle{font-size:.86rem;max-width:720px}
+.hero-header.dash .verse-line{font-size:.9rem;margin-top:12px}
+
+/* ── الدرج الجانبي (الحساب) ── */
+.cx-drawer .d-sec{display:grid;gap:8px;margin-top:10px}
+.cx-drawer .side-user{background:var(--cx-paper-2);border:1px solid var(--cx-line)}
+.cx-drawer .side-user b{color:var(--cx-brand)!important}
+.cx-drawer .side-user small{color:var(--cx-muted)}
+.cx-drawer .d-verse{font-size:.72rem;color:var(--cx-muted);text-align:center;margin-top:auto;line-height:1.9}
+
+@media(max-width:900px){
+  .cx-nav .cx-links{display:none}
+  /* التابات: سطر واحد بيتزحلق بدل ما تتقص */
+  .tab-bar{
+    flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;
+    scroll-snap-type:x proximity;padding:0 14px 8px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .tab-bar::-webkit-scrollbar{height:5px}
+  .tab-bar::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--cx-gold) 45%,transparent);border-radius:99px}
+  .tab-bar .nav-item{flex:0 0 auto;scroll-snap-align:center;padding:10px 16px;font-size:.8rem}
+  .hero-header.dash{padding:22px 16px 26px}
+  .hero-header.dash .hero-logo{width:70px;height:70px;border-radius:20px}
+  .hero-header.dash .verse-line{display:none}
+}
+@media(max-width:620px){
+  .cx-brand-copy{display:none}
+  .cx-brand{max-width:none}
+  .cx-nav-inner{min-height:60px;gap:6px}
+  .cx-actions{gap:6px}
+  .cx-icon,.cx-btn-round{width:36px;height:36px}
+  #topNewStudent{padding:9px 13px;font-size:.78rem}
+  .cx-nav .cx-actions .user-chip{display:flex;padding:3px 8px 3px 4px}
+}
+@media(max-width:520px){
+  .hero-header.dash .subtitle{font-size:.76rem}
+  .tab-bar .nav-item{font-size:.76rem;padding:9px 14px}
+}
+
+
+/* ── ضبط صف الهيدر: مفيش تراكب ومفيش قص ── */
+.cx-nav-inner{gap:8px;flex-wrap:nowrap;width:min(1440px,calc(100% - 20px))}
+.cx-brand{flex:0 1 auto;max-width:230px}
+.cx-brand-copy b{font-size:.9rem}
+.cx-links{flex:1 1 auto;justify-content:center;min-width:0;overflow:hidden}
+.cx-actions{flex:0 0 auto}
+.cx-nav .cx-links .nav-item{padding:7px 9px;font-size:.72rem;gap:4px}
+.cx-nav .cx-actions .user-chip small{font-size:10px}
+@media(max-width:1330px){ .cx-nav .cx-actions .user-chip{display:none} }
+.cx-nav .cx-links .nav-item .ic{display:none}
+@media(max-width:1400px){ .cx-brand{max-width:190px} .cx-nav .cx-links .nav-item{font-size:.71rem;padding:6px 8px} }
+@media(max-width:1240px){ .cx-links .nav-item[data-view="help"],.cx-links .nav-item[data-view="curriculum"]{display:none!important} }
+@media(max-width:1080px){ .cx-links .nav-item[data-view="users"],.cx-links .nav-item[data-view="reports"]{display:none!important} .cx-clock{display:none} }
+@media(max-width:900px){ .cx-links{display:none!important} }
+
+/* تحسينات عامة (v3 fixes) */
+html{scroll-behavior:smooth}
+#view{min-height:40vh}
+.card,.student-card,.table-scroll{scroll-margin-top:90px}
+.cx-nav,.tab-bar,.hero-header{isolation:isolate}
+button{font-family:var(--cx-font)}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v4 — إصلاحات (فوتر / كروت / موبايل / زر التثبيت)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1) مفيش فراغ بعد الفوتر: الفوتر آخر عنصر وملزوق في آخر الشاشة ── */
+html,body{min-height:100%}
+#appRoot.app{min-height:100dvh;display:flex;flex-direction:column}
+#appRoot .main{flex:1 0 auto;display:flex;flex-direction:column;padding-bottom:0}
+#view{min-height:0!important}
+.site-foot{
+  margin-top:auto!important;flex:0 0 auto;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+}
+body.cert-page,body.login-page{display:flex;flex-direction:column;min-height:100dvh}
+body.cert-page main,body.login-page main{flex:1 0 auto}
+@media(max-width:900px){
+  #appRoot.app{padding-bottom:70px}   /* مساحة شريط التنقل السفلي — مش فوق الفوتر */
+  .site-foot{padding-bottom:14px}
+}
+
+/* ── 2) كروت الدارسين: واخدة راحتها ── */
+.student-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.student-card{
+  display:flex;flex-direction:column;gap:0;
+  padding:16px 17px 8px;border-radius:20px;
+}
+.student-card::before{width:5px;opacity:.9}
+.student-head{gap:12px;align-items:center;min-height:46px}
+.student-card .avatar{width:46px;height:46px;flex:0 0 46px;font-size:1.05rem}
+.student-head b{font-size:.95rem;line-height:1.35;margin-bottom:2px}
+.student-head small{font-size:.69rem;line-height:1.6}
+.student-card .grade{min-width:48px;height:36px;border-radius:13px;font-size:.95rem;padding:0 10px}
+.student-card>div:nth-child(2){
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  margin:12px 0 6px!important;padding-bottom:12px;
+  border-bottom:1px dashed color-mix(in srgb,var(--cx-line) 85%,transparent);
+}
+.student-card .kv{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 0;font-size:.8rem;border-bottom:1px dashed color-mix(in srgb,var(--cx-line) 70%,transparent);
+}
+.student-card .kv span{color:var(--cx-muted);font-weight:700;letter-spacing:.1px}
+.student-card .kv b{color:var(--cx-ink);font-weight:900;font-size:.82rem}
+.student-card .kv:last-child{border-bottom:0;padding-bottom:10px}
+html[data-theme="dark"] .student-card .kv b,html.dark .student-card .kv b{color:var(--cx-gold-2)}
+.student-card:hover .grade{transform:scale(1.04)}
+.student-card .grade{transition:transform .18s}
+
+/* ── 3) زر التثبيت في الشريط العلوي ── */
+.cx-install{
+  display:inline-flex;align-items:center;gap:6px;width:auto;padding:0 13px;height:38px;
+  border-radius:999px;cursor:pointer;font-family:var(--cx-font);font-size:.76rem;font-weight:800;
+  border:1px solid color-mix(in srgb,var(--cx-gold) 45%,var(--cx-line));
+  background:var(--cx-gold-soft);color:var(--cx-gold);
+  transition:.18s;white-space:nowrap;
+}
+.cx-install:hover{background:linear-gradient(90deg,var(--cx-gold-2),var(--cx-gold));color:#2b1d02;border-color:transparent}
+.cx-install .i{font-size:.9rem}
+html[data-theme="dark"] .cx-install,html.dark .cx-install{color:var(--cx-gold-2)}
+.cx-install[hidden]{display:none!important}
+@media(max-width:900px){
+  .cx-install{padding:0;width:36px;height:36px;justify-content:center}
+  .cx-install .lbl{display:none}
+}
+@media(max-width:620px){
+  /* على الموبايل: زر التثبيت أيقونة صغيرة في نفس الشريط */
+  .cx-install{width:36px;height:36px;padding:0;justify-content:center}
+  .cx-install .lbl{display:none}
+}
+
+/* ── 3.5) منع أي سكرول أفقي: التابات تفضل بعرض الشاشة ── */
+#appRoot.app{max-width:100%;overflow-x:clip}
+.tab-bar{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+@media(max-width:900px){
+  .tab-bar{flex-wrap:nowrap!important;overflow-x:auto!important}
+}
+
+/* ── 4) تظبيطات موبايل ── */
+@media(max-width:900px){
+  .tab-bar{margin-top:16px}
+  .hero-header.dash{padding:20px 15px 24px;border-end-start-radius:24px;border-end-end-radius:24px}
+  #view{padding:14px 13px 8px}
+  .card{padding:16px 14px}
+  .grid.c2,.grid.c3,.grid.c4{grid-template-columns:1fr}
+  .grid.c4{gap:10px}
+  .stat{padding:14px 12px;display:flex;align-items:center;gap:12px;text-align:start}
+  .stat>div:not(.icbox){flex:1;min-width:0}
+  .stat .icbox{margin:0;width:44px;height:44px;flex:0 0 44px}
+  .stat span{margin:0;font-size:.72rem}
+  .stat b{font-size:1.25rem;margin-top:1px}
+  .stat .trend{margin-top:3px;font-size:.66rem}
+  .student-grid{grid-template-columns:1fr}
+  .mobile-nav{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  .mobile-nav button{font-size:.6rem}
+}
+@media(max-width:760px){
+  /* إحصائيات ٢×٢ على الموبايل بدل كارت ورا كارت */
+  .grid.c4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat{flex-direction:row;align-items:center;gap:9px;padding:11px 10px}
+  .stat .icbox{width:34px;height:34px;border-radius:11px;font-size:.95rem;flex:0 0 34px}
+  .stat span{font-size:.63rem;line-height:1.35}
+  .stat b{font-size:1rem;line-height:1.2}
+  .stat .trend{display:none}
+  /* التابات: هامش داخلي + تلاشي على الحرف */
+  .tab-bar{padding-inline:14px;mask-image:linear-gradient(to left,transparent 0,black 14px,black calc(100% - 14px),transparent 100%)}
+}
+@media(max-width:360px){
+  .grid.c4{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .cx-actions{gap:5px}
+  #topNewStudent{padding:8px 11px;font-size:.75rem}
+  .hero-header.dash h1{font-size:1.25rem}
+  .hero-header.dash .hero-logo{width:64px;height:64px;border-radius:18px}
+  .style-sec,.sec{font-size:.95rem}
+}
+
+/* ── 4.5) تهدية ظل الهيرو (كان بيعمل خط غامق تحت الهيرو) ── */
+.hero-header{box-shadow:0 10px 26px rgba(var(--cx-brand-rgb),.14)!important}
+.hero-header::after{opacity:.55}
+
+/* ── 4.6) الوضع الليلي: أزرار/تابات بلون أغمق (تباين أفضل) ── */
+html[data-theme="dark"] .btn.primary,html.dark .btn.primary,
+html[data-theme="dark"] .tab-bar .nav-item.active,html.dark .tab-bar .nav-item.active,
+html[data-theme="dark"] .gz-submit,html.dark .gz-submit,
+html[data-theme="dark"] .nav-item.active,html.dark .nav-item.active{
+  background:linear-gradient(90deg,#1b5390,#2f7fc4)!important;
+  color:#fff!important;border-color:transparent!important;
+}
+html[data-theme="dark"] .btn.gold,html.dark .btn.gold{
+  background:linear-gradient(90deg,#e6c766,#c9a227)!important;color:#241a02!important;
+}
+html[data-theme="dark"] .cx-clock,html.dark .cx-clock{background:rgba(201,162,39,.14)}
+html[data-theme="dark"] .stat .icbox,html.dark .stat .icbox{background:rgba(201,162,39,.12)}
+
+/* ── 5) لمسات جمالية إضافية ── */
+.card{transition:box-shadow .22s,border-color .22s}
+.card:hover{box-shadow:var(--cx-shadow)}
+.kv{padding:9px 2px}
+.table-scroll{box-shadow:var(--cx-shadow-sm)}
+.site-foot .verse{letter-spacing:.2px}
+#view>*:last-child{margin-bottom:18px}
 </style>
 </head>
 
@@ -1532,41 +1808,79 @@ html[data-theme="dark"] body,html.dark body{color:var(--cx-ink)!important}
 <div class="offline-bar" id="offlineBar">⚠️ أنت الآن بدون إنترنت — التطبيق يعمل والبيانات محفوظة على هذا الجهاز</div>
 
 <div class="app" id="appRoot" style="display:none">
-  <!-- ===== Sidebar ===== -->
-  <aside class="sidebar" id="sidebar">
-    <button class="sidebar-close" type="button" onclick="toggleSidebar(false)" aria-label="إغلاق القائمة">×</button>
-    <div class="logo">
-      <div class="logo-icon" id="sideLogo"><img src="assets/img/logo-192.png" alt=""></div>
-      <div><b id="orgNameSide">معلم الأجيال للتلمذة</b><span>إعداد الخدّام • ٣ سنوات</span></div>
-    </div>
-    <div id="mainNav"></div>
-    <div class="side-user" id="currentUserCard" onclick="toggleSidebar(false);openMyAccount()" style="cursor:pointer" title="اضغط لفتح حسابك"></div>
-    <div style="display:grid;gap:7px;margin-top:11px">
-      <button class="btn gold" style="width:100%" onclick="toggleSidebar(false);openMyAccount()">👤 حسابي</button>
-      <button class="theme-btn" data-theme-toggle style="justify-content:center"><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button>
-      <button class="btn" style="width:100%;background:rgba(255,248,230,.10);color:#f3e7cf;border-color:rgba(201,162,39,.45)" onclick="logout()">🚪 تسجيل الخروج</button>
-      <button class="install-btn" id="installBtn" onclick="handleInstall()"><span class="install-ic">⬇</span><span><b>تثبيت التطبيق</b><small>على الموبايل أو الكمبيوتر — زي أي أبليكيشن</small></span><span class="go">‹</span></button>
-    </div>
-    <p style="font-size:11.5px;color:#d8c69a;text-align:center;margin-top:14px;line-height:1.9">«اِخْدِمُوا الرَّبَّ بِفَرَحٍ»<br><span style="font-size:10.5px">(مزمور ١٠٠ : ٢)</span></p>
-  </aside>
-  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)" aria-hidden="true"></div>
-
-  <!-- ===== Main ===== -->
-  <main class="main">
-        <div class="topbar no-print">
-      <div style="display:flex;gap:10px;align-items:center;min-width:0">
-        <button class="btn hamburger" type="button" onclick="toggleSidebar()" aria-label="فتح القائمة" aria-expanded="false">☰</button>
-        <div style="min-width:0"><h1 id="pageTitle">لوحة المتابعة</h1><p id="pageSub">نظرة شاملة على دارسي إعداد الخدام</p></div>
+  <!-- ===== الهيدر الموحّد (زي شمامسة) ===== -->
+  <nav class="cx-nav no-print" id="cxNav">
+    <div class="cx-nav-inner">
+      <a class="cx-brand" href="admin.html" aria-label="لوحة إدارة إعداد الخدّام">
+        <span class="logo-icon cx-logo" id="sideLogo" style="display:grid;place-items:center;overflow:hidden"><img src="assets/img/logo-192.png" alt="" style="width:100%;height:100%;object-fit:contain"></span>
+        <span class="cx-brand-copy">
+          <b id="orgNameSide">معلم الأجيال للتلمذة</b>
+          <span>إعداد الخدّام • ٣ سنوات</span>
+        </span>
+      </a>
+      <div class="cx-links" id="topLinks">
+        <a class="nav-item" data-view="dashboard" href="#dashboard"><span class="ic">🏠</span> الرئيسية</a>
+        <a class="nav-item" data-view="students" href="#students"><span class="ic">👥</span> الدارسون</a>
+        <a class="nav-item" data-view="attendance" href="#attendance"><span class="ic">✅</span> الحضور</a>
+        <a class="nav-item" data-view="tasks" href="#tasks"><span class="ic">💗</span> المتابعة</a>
+        <a class="nav-item" data-view="curriculum" href="#curriculum"><span class="ic">📚</span> المواد</a>
+        <a class="nav-item" data-view="reports" href="#reports"><span class="ic">🖨️</span> التقارير</a>
+        <a class="nav-item" data-view="users" href="#users"><span class="ic">🔑</span> الخدام</a>
+        <a class="nav-item" data-view="settings" href="#settings"><span class="ic">⚙️</span> الإعدادات</a>
+        <a class="nav-item" data-view="help" href="#help"><span class="ic">❓</span> المساعدة</a>
       </div>
-      <div class="searchbox">
+      <div class="cx-actions">
+        <button class="cx-install" type="button" id="cxInstallTop" onclick="handleInstall()" title="تثبيت التطبيق على الجهاز" aria-label="تثبيت التطبيق">
+          <span class="i">⬇</span><span class="lbl">تثبيت التطبيق</span>
+        </button>
         <span class="cx-clock" title="توقيت القاهرة"><i></i><b data-cx-clock>--:--</b><span>القاهرة</span></span>
-        <button class="theme-btn round" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي"><span class="tico">🌙</span></button>
+        <button class="cx-icon" type="button" data-theme-toggle aria-label="تبديل الوضع الليلي" title="الوضع الليلي"><span class="tico">🌙</span></button>
         <div class="user-chip" id="topUserChip"></div>
         <button class="btn primary" id="topNewStudent" onclick="openStudentForm()">➕ دارس جديد</button>
+        <button class="cx-icon cx-burger" type="button" id="cxBurger" aria-label="فتح القائمة" aria-expanded="false">☰</button>
       </div>
     </div>
+  </nav>
+
+  <div class="cx-scrim" id="cxScrim" aria-hidden="true"></div>
+  <aside class="cx-drawer" id="cxDrawer" aria-label="حسابي وإعدادات سريعة">
+    <div class="cx-dhead">
+      <span class="logo-icon" style="width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:var(--cx-paper-2);border:1px solid var(--cx-line)"><img src="assets/img/logo-192.png" alt="" style="width:100%;height:100%;object-fit:contain"></span>
+      <div>
+        <b>إعداد الخدّام</b>
+        <span>القائمة السريعة</span>
+      </div>
+    </div>
+    <div class="side-user" id="currentUserCard" onclick="openMyAccount()" style="cursor:pointer" title="اضغط لفتح حسابك"></div>
+    <div class="d-sec">
+      <button class="btn gold" style="width:100%" onclick="openMyAccount()">👤 حسابي</button>
+      <button class="theme-btn" data-theme-toggle style="justify-content:center"><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button>
+      <button class="btn" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button>
+      <button class="install-btn" id="installBtn" onclick="handleInstall()"><span class="install-ic">⬇</span><span><b>تثبيت التطبيق</b><small>على الموبايل أو الكمبيوتر — زي أي أبليكيشن</small></span><span class="go">‹</span></button>
+    </div>
+    <p class="d-verse">«اِخْدِمُوا الرَّبَّ بِفَرَحٍ»<br><span style="font-size:.66rem">(مزمور ١٠٠ : ٢)</span></p>
+  </aside>
+
+  <!-- ===== الهيرو (زي شمامسة) ===== -->
+  <header class="hero-header dash no-print">
+    <div class="blessing-badge">☦ لوحة إدارة خدمة إعداد الخدّام</div>
+    <img class="hero-logo" src="assets/img/logo-512.png" alt="شعار معلم الأجيال للتلمذة">
+    <h1 id="pageTitle">لوحة المتابعة</h1>
+    <div class="hero-braid"></div>
+    <p class="subtitle" id="pageSub">نظرة شاملة على دارسي إعداد الخدام</p>
+    <div class="verse-line">«مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣ : ٥)</div>
+  </header>
+
+  <!-- ===== التابات (القائمة الرئيسية) ===== -->
+  <div class="tab-bar no-print" id="mainNav" role="tablist" aria-label="أقسام لوحة التحكم"></div>
+
+  <main class="main">
     <div id="view"></div>
     <div id="printArea"></div>
+
+  </main>
+
+
 
     <footer class="site-foot no-print" style="margin-top:26px">
       <div class="braid"></div>
@@ -1574,7 +1888,6 @@ html[data-theme="dark"] body,html.dark body{color:var(--cx-ink)!important}
       <div><b>معلم الأجيال للتلمذة</b> — كنيسة رئيس الملائكة ميخائيل بالأندلس<br>
       إعداد الخدّام • ٣ سنوات — لوحة التحكم</div>
     </footer>
-  </main>
 
   <nav class="mobile-nav no-print" aria-label="تنقل سريع للموبايل">
     <button type="button" data-mobile-view="dashboard" onclick="go('dashboard')"><span>🏠</span><small>الرئيسية</small></button>
@@ -1582,7 +1895,7 @@ html[data-theme="dark"] body,html.dark body{color:var(--cx-ink)!important}
     <button type="button" data-mobile-view="attendance" onclick="go('attendance')"><span>✅</span><small>الحضور</small></button>
     <button type="button" data-mobile-view="tasks" onclick="go('tasks')"><span>💗</span><small>المتابعة</small></button>
     <button type="button" data-mobile-view="system" onclick="go('system')"><span>🛡️</span><small>الإدارة</small></button>
-    <button type="button" onclick="toggleSidebar(true)"><span>☰</span><small>القوائم</small></button>
+    <button type="button" onclick="document.getElementById('cxDrawer').classList.add('open');document.getElementById('cxScrim').classList.add('on')"><span>☰</span><small>القوائم</small></button>
   </nav>
 </div>
 
@@ -1630,7 +1943,7 @@ html[data-theme="dark"] body,html.dark body{color:var(--cx-ink)!important}
 .doc-studio{position:fixed;inset:0;z-index:80;background:rgba(18,24,38,.55);backdrop-filter:blur(8px);display:flex;align-items:stretch;justify-content:center;padding:18px}
 .doc-studio[hidden]{display:none!important}
 .doc-studio-panel{background:var(--surface);border:1.5px solid var(--gold);border-radius:18px;width:min(980px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.28)}
-.doc-studio-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#7a1257,#a41a63 60%,#c3922b);color:#fff}
+.doc-studio-bar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 16px;background:linear-gradient(135deg,#123a63,#1e5b96 60%,#c9a227);color:#fff}
 .doc-studio-bar b{display:block;font-size:16px}
 .doc-studio-bar small{display:block;opacity:.9;font-size:12px;margin-top:2px}
 .doc-studio-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -2388,7 +2701,7 @@ function viewUsers(){
       <button class="btn gold sm" onclick="openVaultPanel()">🔎 فتح خزنة البيانات</button>
     </div>` : `
     <div class="vault-banner" style="border-color:var(--line);background:var(--surface-2)">
-      <div class="vic" style="background:linear-gradient(135deg,#a41a63,#123a6b)">🔒</div>
+      <div class="vic" style="background:linear-gradient(135deg,#1e5b96,#123a6b)">🔒</div>
       <div style="flex:1;min-width:200px">
         <b>كلمات السر مشفّرة — عرضها لإدارة السيستم فقط</b>
         <small>انت تقدر تضيف وتوقف وتعيد تعيين كلمة سر أي حساب، لكن <b>مش هتقدر تشوف كلمة السر نفسها</b> غير لو انت إدارة السيستم.</small>
@@ -2765,7 +3078,7 @@ function viewDashboard(){
  const openTasks=(DB.tasks||[]).filter(t=>t.status!=='done').length;
  const recent=[...sts].sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||'')).slice(0,6);
  return `
- <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#7a1257,#a41a63 56%,#c3922b);color:#f4f9ff;border:1px solid #e9c877"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'إدارة السيستم':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
+ <div class="card" style="margin-bottom:14px;background:linear-gradient(120deg,#123a63,#1e5b96 56%,#c9a227);color:#f4f9ff;border:1px solid #e6c766"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div class="avatar" style="width:58px;height:58px;font-size:24px">${me?userAvatar(me):'☦'}</div><div style="flex:1;min-width:220px"><b style="font-size:18px">أهلاً بيك يا ${esc(me?(isLucasOwner(me)?'إدارة السيستم':me.displayName.split(' ')[0]):'خادم')} ☦</b><div style="font-size:13px;opacity:.88;margin-top:3px">${esc(me?roleCaption(me):'')}${me&&(me.scopeYears||[]).length?' • نطاقك: '+me.scopeYears.map(y=>YEAR_NAMES[y]).join('، '):''} — «مَنْ هُوَ بُولُسُ؟ وَمَنْ هُوَ أَبُلُّوسُ؟ بَلْ خَادِمَانِ آمَنْتُمْ بِوَاسِطَتِهِمَا» (١كو ٣: ٥)</div></div><span class="badge b-gold">${sts.length} دارس في نطاقك</span></div></div>
  <div class="grid c4">
   <div class="card stat"><div class="icbox">👥</div><span>إجمالي الدارسين</span><b>${sts.length}</b><div class="trend">في ${new Set(sts.map(s=>s.batch).filter(Boolean)).size||0} دفعة</div></div>
   <div class="card stat"><div class="icbox">📈</div><span>متوسط الأداء العام</span><b>${avgAll}${avgAll!=='—'?'%':''}</b><div class="trend">من ${avgs.length} دارس له نتائج</div></div>
@@ -3035,7 +3348,7 @@ function printStudentCard(studentId){
   if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك');
   const st=getStudent(studentId); if(!st)return; const en=studentCurrent(st);
   showPrint(`<div style="max-width:520px;margin:0 auto;border:2.5px solid var(--gold);border-radius:18px;overflow:hidden">
-   <div style="background:linear-gradient(120deg,#7a1257,#a41a63);color:#f4f9ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:30px;width:30px;border-radius:50%;vertical-align:middle"> `:''}${esc(DB.settings.orgName)}</b><div style="font-size:11.5px;opacity:.85">كارت دارس — إعداد الخدام${DB.settings.church?' • '+esc(DB.settings.church):''}</div></div><div style="font-size:26px">☦</div></div>
+   <div style="background:linear-gradient(120deg,#123a63,#1e5b96);color:#f4f9ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:30px;width:30px;border-radius:50%;vertical-align:middle"> `:''}${esc(DB.settings.orgName)}</b><div style="font-size:11.5px;opacity:.85">كارت دارس — إعداد الخدام${DB.settings.church?' • '+esc(DB.settings.church):''}</div></div><div style="font-size:26px">☦</div></div>
    <div style="display:flex;gap:16px;padding:18px;align-items:center"><div class="avatar" style="width:104px;height:104px;font-size:36px;border-radius:16px">${avatarHTML(st)}</div>
    <div style="flex:1"><div style="font-size:20px;font-weight:900">${esc(st.name)}</div>
    <table style="margin-top:8px"><tr><th>الكود</th><td><b>${esc(st.code)}</b></td><th>الدفعة</th><td>${esc(st.batch||'—')}</td></tr>
@@ -3053,14 +3366,14 @@ function printCertificate(studentId){
   const avg=studentOverallAvg(st);
   const title=isGrad?'شهادة تخرّج من خدمة إعداد الخدّام':'شهادة إنهاء '+YEAR_NAMES[lastPassed.yearLevel]+' — إعداد الخدّام';
   const sub=isGrad?'أنهى بنجاح سنوات إعداد الخدام الثلاث (٣ سنوات) بكل موادها وتدريبها العملي وأنشطتها':'أنهى بنجاح متطلبات '+YEAR_NAMES[lastPassed.yearLevel]+' من برنامج إعداد الخدام — مواد وتقييمات وأنشطة وتدريب عملي';
-  showPrint(`<div style="border:4px double #c3922b;border-radius:10px;padding:38px 30px;text-align:center;background:#fffef9">
+  showPrint(`<div style="border:4px double #c9a227;border-radius:10px;padding:38px 30px;text-align:center;background:#fffef9">
    <div style="font-size:44px;color:#70162b">☦</div>
-   ${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:74px;width:74px;object-fit:cover;border-radius:50%;border:2px solid #c3922b">`:''}
+   ${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:74px;width:74px;object-fit:cover;border-radius:50%;border:2px solid #c9a227">`:''}
    <div style="font-size:15px;color:#8a6410;margin-top:8px">${esc(DB.settings.orgName)}${DB.settings.church?' — '+esc(DB.settings.church):''}</div>
    <h1 style="font-size:32px;color:#40182c;margin:10px 0 4px">${title}</h1>
    <div style="color:#8a7663">«حَسَناً أَيُّهَا الْعَبْدُ الصَّالِحُ وَالأَمِينُ» (متى ٢٥ : ٢١)</div>
    <p style="font-size:16px;margin-top:24px">تشهد خدمة إعداد الخدام بأن الدارس</p>
-   <div style="font-size:30px;font-weight:900;color:#70162b;border-bottom:2px solid #c3922b;display:inline-block;padding:0 26px 8px">${esc(st.name)}</div>
+   <div style="font-size:30px;font-weight:900;color:#70162b;border-bottom:2px solid #c9a227;display:inline-block;padding:0 26px 8px">${esc(st.name)}</div>
    <div style="color:#8a7663;margin-top:7px">كود ${esc(st.code)} — ${esc(st.batch||'')}</div>
    <p style="font-size:15.5px;line-height:2;max-width:640px;margin:18px auto 4px">${sub}، بمتوسط عام <b>${avg??'—'}%</b> عبر ${(st.enrollments||[]).length} محاولة محفوظة في سجله الكامل من ${esc(st.joinDate||'—')}.</p>
    <div style="display:flex;justify-content:space-between;gap:20px;margin-top:46px;text-align:center;font-size:13.5px">
@@ -3649,7 +3962,7 @@ window.addEventListener('popstate', (e)=>{
     // عنصر بصري يظهر أثناء السحب
     const s=document.createElement('style');
     s.textContent=`html{ overscroll-behavior-x: contain; } body{ overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-    .swipe-glow{ position:fixed; top:0; bottom:0; right:0; width:5px; background: linear-gradient(180deg, #c3922b, #8a6410); opacity:0; transition: opacity .2s; z-index:9998; pointer-events:none; }
+    .swipe-glow{ position:fixed; top:0; bottom:0; right:0; width:5px; background: linear-gradient(180deg, #c9a227, #8a6410); opacity:0; transition: opacity .2s; z-index:9998; pointer-events:none; }
     .swipe-glow.on{ opacity:.85; }
     .swipe-hint-bubble{ position:fixed; top:50%; right:12px; transform:translateY(-50%) scale(.8); background: rgba(18,50,92,.92); color:#fff8e8; font-size:22px; padding:10px 12px; border-radius:24px; box-shadow:0 6px 18px rgba(0,0,0,.28); opacity:0; transition: all .2s; z-index:9999; pointer-events:none; }
     .swipe-hint-bubble.on{ opacity:1; transform:translateY(-50%) scale(1); }
@@ -3772,7 +4085,7 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 </script>
 <script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4cfd0a16e0fed4b',t:'MTc5MjQxMzI0NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script id="shamamsa-skin-js">
-window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","color:#a41a63;font-weight:bold")}catch(e){}
+window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","color:#1e5b96;font-weight:bold")}catch(e){}
 
 (function(){
   /* ── ساعة القاهرة 12 ساعة (زي شمامسة) ── */
@@ -3816,5 +4129,50 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
 })();
 </script>
 
+
+
+<script id="cx-install-visibility">
+(function(){
+  try{
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    if(standalone){ var b=document.getElementById('cxInstallTop'); if(b) b.hidden = true;
+      var d=document.getElementById('installBtn'); if(d) d.hidden = true; }
+  }catch(e){}
+})();
+</script>
+<script id="shamamsa-nav-sync">
+/* ── مزامنة لينكات الهيدر مع التابات المسموح بها للمستخدم (صلاحيات) ── */
+(function(){
+  var nav=document.getElementById('mainNav'), links=document.getElementById('topLinks');
+  if(!nav||!links) return;
+  function sync(){
+    var ok={};
+    nav.querySelectorAll('.nav-item').forEach(function(b){ ok[b.dataset.view]=1; });
+    links.querySelectorAll('.nav-item').forEach(function(a){
+      a.style.display = ok[a.dataset.view] ? '' : 'none';
+    });
+  }
+  sync();
+  new MutationObserver(sync).observe(nav,{childList:true,subtree:true});
+})();
+
+/* ── لينكات الهيدر العلوي بتشتغل بنفس دالة التنقل بتاعة النظام ── */
+document.addEventListener('click',function(e){
+  var a=e.target.closest?e.target.closest('#topLinks .nav-item'):null;
+  if(!a) return;
+  e.preventDefault();
+  var v=a.getAttribute('data-view');
+  if(v && typeof go==='function'){ go(v); }
+  else { location.hash='#'+v; }
+});
+
+/* ── إغلاق الدرج عند اختيار أي تاب ── */
+document.addEventListener('click',function(e){
+  if(e.target.closest('#mainNav .nav-item')){
+    var d=document.getElementById('cxDrawer'), s=document.getElementById('cxScrim');
+    if(d) d.classList.remove('open'); if(s) s.classList.remove('on');
+  }
+});
+</script>
 </body>
 </html>
