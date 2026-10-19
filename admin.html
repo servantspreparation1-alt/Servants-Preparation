@@ -80,7 +80,6 @@
 <script src="cloud-sync.js?v=3.2"></script>
 <script src="assets/js/core.js?v=3.2"></script>
 <script src="assets/js/owner.js?v=3.2"></script>
-<script src="imagekit-upload.js?v=1.0"></script>
 <script>
 
 /* ============================================================
@@ -193,23 +192,12 @@ function logActivity(action){const u=currentUser(); DB.activityLog=DB.activityLo
 function canAccessStudent(st){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; if(!sc.length)return true; const en=studentCurrent(st); if(!en)return false; return sc.includes(en.yearLevel)}
 function canAccessEnrollment(en){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; return !sc.length||sc.includes(en.yearLevel)}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
-function readPhotoFile(file,cb,maxSize=760,ikOpts){ if(!file)return; if(!/^image\//.test(file.type||''))return toast('اختر ملف صورة صحيح'); if(file.size>10*1024*1024)return toast('الصورة كبيرة جداً — اختر صورة أقل من ١٠ ميجا');
+function readPhotoFile(file,cb,maxSize=760){ if(!file)return; if(!/^image\//.test(file.type||''))return toast('اختر ملف صورة صحيح'); if(file.size>10*1024*1024)return toast('الصورة كبيرة جداً — اختر صورة أقل من ١٠ ميجا');
   const url=URL.createObjectURL(file), img=new Image();
-  img.onload=()=>{URL.revokeObjectURL(url); const scale=Math.min(1,maxSize/Math.max(img.naturalWidth||1,img.naturalHeight||1)); const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale)); const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle='#fff8e8'; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h); const localData=c.toDataURL('image/jpeg',.84);
-    try{cb(localData,{phase:'local'})}catch(e){}
-    /* ☁️ رفع سحابي إلى ImageKit في الخلفية — لو نجح، الرابط بيحل محل النسخة المحلية تلقائياً */
-    try{
-      if(window.E3ImageKit && navigator.onLine!==false){
-        const kind=(ikOpts&&ikOpts.kind)||'students';
-        E3ImageKit.uploadDataURL(localData,{kind}).then(r=>{
-          if(r&&r.url){ try{cb(r.url,{phase:'cloud'})}catch(e){} }
-        }).catch(err=>{console.warn('[ImageKit] سيتم الاحتفاظ بالنسخة المحلية:',(err&&err.message)||err)});
-      }
-    }catch(err){console.warn('[ImageKit]',err)}
-  };
+  img.onload=()=>{URL.revokeObjectURL(url); const scale=Math.min(1,maxSize/Math.max(img.naturalWidth||1,img.naturalHeight||1)); const w=Math.max(1,Math.round(img.naturalWidth*scale)), h=Math.max(1,Math.round(img.naturalHeight*scale)); const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle='#fff8e8'; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h); cb(c.toDataURL('image/jpeg',.84))};
   img.onerror=()=>{URL.revokeObjectURL(url); toast('تعذر قراءة الصورة — جرّب صورة تانية')}; img.src=url;
 }
-function handleOrgLogo(input){const f=input.files&&input.files[0]; if(!f)return; readPhotoFile(f,(data,info)=>{DB.settings.orgLogo=data;saveDB();render(); if(info&&info.phase==='cloud')toast('تم حفظ شعار/صورة الخدمة ☁️✅'); else toast('⏳ تم الحفظ محلياً — جاري الرفع سحابياً...')},640,{kind:'logo'}); input.value=''}
+function handleOrgLogo(input){const f=input.files&&input.files[0]; if(!f)return; readPhotoFile(f,data=>{DB.settings.orgLogo=data;saveDB();render();toast('تم حفظ شعار/صورة الخدمة — بتظهر في صفحة الدخول والتقارير ✅')},640); input.value=''}
 
 
 /* ---------- الحسابات ---------- */
@@ -267,6 +255,7 @@ function openMyAccount(){
     <div class="field"><label>كلمة سر جديدة (سيبها فاضية لو مش هتغيّرها)</label><div class="pw-wrap"><input id="myNew" type="password" placeholder="٨ حروف على الأقل" oninput="window._pwStrength(this.value)"><button class="btn" type="button" onclick="window._togglePw('myNew',this)">👁️</button></div>
     <div class="pw-meter"><i id="pwBar"></i></div><div id="pwTxt" style="font-size:11px;color:var(--muted)"></div></div>
   </div>
+  ${iAmOwner?`<div class="acct-sec"><h4>🆘 كود الاستعادة السرّي</h4><div class="form-grid"><div class="field"><label>كود استعادة جديد (سيبه فاضي لو مش هتغيّره)</label><div class="pw-wrap"><input id="myRecCode" type="password" placeholder="اكتب كود تحفظه في مكان آمن"><button class="btn" type="button" onclick="window._togglePw('myRecCode',this)">👁️</button></div><div class="file-name">${DB.settings.ownerRecoveryHash?'✅ الكود معيّن دلوقتي — وزرار «استعادة الدخول» باين في صفحة الدخول':'⚠️ لسه ما فيش كود — زرار «استعادة الدخول» مش هيظهر في صفحة الدخول لحد ما تعيّنه'}</div></div></div><p style="font-size:12px;color:var(--muted);margin:0">الكود ده هو <b>الطريق الوحيد</b> لاستعادة حساب إدارة السيستم لو نسيت كلمة السر. احفظه في مكان آمن <b>برّه الموقع</b> (موبايلك أو ورقة مقفولة) — ومفيش حد تاني يعرفه.</p></div>`:''}
   <p style="font-size:12px;color:var(--muted);margin:0">${iAmOwner?'🛡️ انت إدارة السيستم: كلمة سرك هي مفتاح خزنة كلمات السر — لما تغيّرها النظام بيعيد تأمين الخزنة تلقائيًا، وكل الكلمات المشفّرة القديمة تفضل شغالة.':'💡 صورتك واسمك بيظهروا جنب اسمك في القائمة وصفحة الخدام. تغيير الدور أو الصلاحيات أو اسم المستخدم مسؤولية الأمين من «الخدام والصلاحيات».'}</p></div>`,
   async()=>{
     const newPw=document.getElementById('myNew').value;
@@ -289,6 +278,7 @@ function openMyAccount(){
     }
     me.displayName=document.getElementById('myName').value.trim()||me.displayName; me.phone=document.getElementById('myPhone').value.trim();
     if(window._myPhoto!==undefined){me.photo=window._myPhoto; window._myPhoto=undefined}
+    if(iAmOwner){ const rec=document.getElementById('myRecCode'); if(rec&&rec.value.trim()){ DB.settings=DB.settings||{}; DB.settings.ownerRecoveryHash=await hashPassword(rec.value.trim(),'owner-recovery'); logActivity('عيّن كود استعادة لحساب إدارة السيستم'); toast('تم تعيين كود الاستعادة ✅ احفظه في مكان آمن برّه الموقع') } }
     logActivity('حدّث بيانات حسابه'); saveDB(); closeModal(); render();
   },'💾 حفظ التعديلات');
   const subEl=document.querySelector('#modalBox .sub'); if(subEl)subEl.textContent='بروفايلك الشخصي في الخدمة — صورتك وبياناتك وكلمة سرك';
@@ -296,7 +286,7 @@ function openMyAccount(){
   window._removeMyPhoto=()=>{window._myPhoto=''; const pv=document.getElementById('myPhotoPrev'); if(pv)pv.innerHTML='<span>'+esc(initials(me.displayName))+'</span>'; toast('هتتشال الصورة عند الحفظ')};
   window._pwStrength=(v)=>{const bar=document.getElementById('pwBar'),txt=document.getElementById('pwTxt'); if(!bar)return; let sc=0; if(v.length>=8)sc++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))sc++; if(/[0-9]/.test(v))sc++; if(/[^A-Za-z0-9]/.test(v))sc++;
     const conf=[['','#d84a41',''],['ضعيفة — زوّدها شوية','#d84a41','25%'],['مقبولة','#e39a13','50%'],['كويسة','#7fb069','75%'],['ممتازة 💪','#2e7d4f','100%']][sc]; bar.style.width=conf[2]; bar.style.background=conf[1]; txt.textContent=v?('قوة كلمة السر: '+conf[0]):''};
-  setTimeout(()=>{const ph=document.getElementById('myPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,(data,info)=>{window._myPhoto=data; document.getElementById('myPhotoPrev').innerHTML=`<img src="${data}">`; if(info&&info.phase==='cloud')toast('تم رفع الصورة ☁️✅')},760,{kind:'servants'})}},0);
+  setTimeout(()=>{const ph=document.getElementById('myPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._myPhoto=data; document.getElementById('myPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
 function openInstallHelp(){
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent), android=/android/i.test(navigator.userAgent);
@@ -378,7 +368,7 @@ function viewUsers(){
     let actions='';
     if(lockedLucas){
       actions = owner
-        ? `<button class="btn sm" onclick="openUserForm('${u.id}')">✏️ تعديل حسابي</button><button class="btn sm" onclick="openMyAccount()">🔑 كلمة سري</button><button class="btn sm danger" onclick="deleteUser('${u.id}')">🗑️ حذف نهائي</button>`
+        ? `<button class="btn sm" onclick="openUserForm('${u.id}')">✏️ تعديل حسابي</button><button class="btn sm" onclick="openMyAccount()">🔑 كلمة سري</button>`
         : `<span class="badge b-gold">🛡️ إدارة السيستم — محمي</span>`;
     } else if(owner){
       actions = `<button class="btn sm" onclick="openUserForm('${u.id}')">✏️ تعديل</button>
@@ -466,7 +456,7 @@ function openUserForm(userId){
   window._rolePreset=(role)=>{const perms=rolePerms(role); $$('#permGrid .perm-check').forEach(c=>c.checked=perms.includes(c.value))};
   window._eyePw=(btn)=>{const i=document.getElementById('uPass'); i.type=i.type==='password'?'text':'password'; btn.textContent=i.type==='password'?'👁️':'🙈'};
   window._genPw=()=>{const sets='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';let s='';const a=new Uint32Array(12);(crypto.getRandomValues?crypto.getRandomValues(a):a.map(()=>Math.random()*1e9)).forEach(v=>{s+=sets[v%sets.length]});const i=document.getElementById('uPass');i.type='text';i.value=s;toast('اتولدت كلمة سر قوية — انسخها وسلّمها لصاحب الحساب')};
-  setTimeout(()=>{const ph=document.getElementById('uPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,(data,info)=>{window._userPhoto=data; const n=document.getElementById('uPhotoName'); if(n)n.textContent=(info&&info.phase==='cloud')?('تم رفع: '+f.name+' ☁️✅'):('تم اختيار: '+f.name+' (⏳ جاري الرفع...)'); document.getElementById('uPhotoPrev').innerHTML=`<img src="${data}">`},760,{kind:'servants'})}},0);
+  setTimeout(()=>{const ph=document.getElementById('uPhoto'); if(ph)ph.onchange=()=>{const f=ph.files[0]; if(!f)return; readPhotoFile(f,data=>{window._userPhoto=data; const n=document.getElementById('uPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; document.getElementById('uPhotoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
 async function cloudPushNow(){
   if(!window.E3Cloud || !E3Cloud.syncNow) return toast('المزامنة غير مفعّلة');
@@ -1063,7 +1053,7 @@ function openStudentForm(id){
   if(st){Object.assign(st,data)} else {DB.students.push({id:uid(),createdAt:today(),enrollments:[],notes:[],...data}); toast('تمت إضافة الدارس ✅ — دلوقتي ابدأ له السنة الأولى من ملفه')}
   window._tmpPhoto=undefined; saveDB(); closeModal(); if(st||state.view==='profile'){if(!st){const ns=DB.students[DB.students.length-1]; go('profile',ns.id)}else render()} else render();
  });
- setTimeout(()=>{const p=$('#sPhoto'); if(p)p.onchange=()=>{const f=p.files[0]; if(!f)return; readPhotoFile(f,(data,info)=>{window._tmpPhoto=data; const n=$('#sPhotoName'); if(n)n.textContent=(info&&info.phase==='cloud')?('تم رفع: '+f.name+' ☁️✅'):('تم اختيار: '+f.name+' (⏳ جاري الرفع...)'); $('#photoPrev').innerHTML=`<img src="${data}">`},760,{kind:'students'})}},0);
+ setTimeout(()=>{const p=$('#sPhoto'); if(p)p.onchange=()=>{const f=p.files[0]; if(!f)return; readPhotoFile(f,data=>{window._tmpPhoto=data; const n=$('#sPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; $('#photoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
 function deleteStudent(id){if(!hasPerm('delete_students'))return toast('الحذف النهائي للأمين فقط'); const st=getStudent(id); if(!confirm(`حذف نهائي للدارس ${st.name} وكل سجله؟ هذا الإجراء للمدير فقط ولا يمكن التراجع عنه — الأفضل تصدير نسخة احتياطية أولاً.`))return; DB.students=DB.students.filter(s=>s.id!==id); saveDB(); go('students'); toast('تم حذف الدارس')}
 

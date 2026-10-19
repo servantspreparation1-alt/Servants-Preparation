@@ -15,6 +15,91 @@
   const DEFAULT_BASE = "https://servants-preparation-108f3-default-rtdb.europe-west1.firebasedatabase.app/ekhdam";
   const KEY_URL = "e3dad-cloud-url";
 
+  /* =====================================================================
+     🔐 إعداد المصادقة — Firebase Auth (دخول مجهول Anonymous)
+     ---------------------------------------------------------------------
+     ليه؟ لأن القاعدة دلوقتي مكشوفة: أي حد يعرف اللينك يقدر يقرأ ويعدّل
+     ويمسح كل حاجة (الدارسين، أرقام التليفونات، وكلمات السر).
+     الحل: التطبيق بيعمل «دخول مجهول» على Firebase، والقاعدة ترفض أي
+     طلب من غير توكن (rules: auth != null).
+     • الـ Web API Key مش سري — ده بيبان عادي في أي موقع Firebase.
+     • تجيبه من: Firebase Console ⚙️ إعدادات المشروع → Your apps
+       → SDK setup and configuration → apiKey
+     • لو سايبه فاضي: المزامنة هتشتغل زي الأول (من غير مصادقة) — بس
+       القاعدة هتفضل مكشوفة وهنطبع تحذير في الـ Console.
+     ===================================================================== */
+  const DEFAULT_WEB_API_KEY = "AIzaSyBv2WM1ukqyY9VcfDKjb-5a4RlTXimeEss";   /* Web API Key — مش سري، بيبان في أي موقع Firebase */
+  const KEY_FB_API = "e3dad-fb-apikey";
+  const KEY_FB_SESSION = "e3dad-fb-session";
+
+  const getApiKey = () => {
+    try { return localStorage.getItem(KEY_FB_API) || DEFAULT_WEB_API_KEY || ""; }
+    catch (e) { return DEFAULT_WEB_API_KEY || ""; }
+  };
+  const readSession = () => { try { return JSON.parse(localStorage.getItem(KEY_FB_SESSION) || "null"); } catch (e) { return null; } };
+  const saveSession = (s) => { try { if (s) localStorage.setItem(KEY_FB_SESSION, JSON.stringify(s)); else localStorage.removeItem(KEY_FB_SESSION); } catch (e) {} };
+
+  let fbToken = null, fbExp = 0, fbRefresh = null, fbSigning = null;
+
+  async function fbSignIn() {
+    const key = getApiKey();
+    if (!key) return null;
+    if (fbSigning) return fbSigning;
+    fbSigning = (async () => {
+      const res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + encodeURIComponent(key), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ returnSecureToken: true }),
+      });
+      if (!res.ok) throw new Error("signIn HTTP " + res.status);
+      const d = await res.json();
+      return { idToken: d.idToken, refreshToken: d.refreshToken, exp: Date.now() + Number(d.expiresIn || 3600) * 1000 };
+    })();
+    try { return await fbSigning; } finally { fbSigning = null; }
+  }
+
+  async function fbRefreshToken(refresh) {
+    const key = getApiKey();
+    if (!key || !refresh) return null;
+    const res = await fetch("https://securetoken.googleapis.com/v1/token?key=" + encodeURIComponent(key), {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "grant_type=refresh_token&refresh_token=" + encodeURIComponent(refresh),
+    });
+    if (!res.ok) throw new Error("refresh HTTP " + res.status);
+    const d = await res.json();
+    return { idToken: d.id_token, refreshToken: d.refresh_token, exp: Date.now() + Number(d.expires_in || 3600) * 1000 };
+  }
+
+  /* توكن ساري — أو null لو المصادقة مش مفعّلة (وقتها بنكمل زي ما كنا) */
+  async function fbAuthToken(force) {
+    const key = getApiKey();
+    if (!key) return null;
+    const s = (fbToken && fbExp) ? { idToken: fbToken, refreshToken: fbRefresh, exp: fbExp } : readSession();
+    if (s && s.idToken && s.exp && s.exp > Date.now() + 60000 && !force) {
+      fbToken = s.idToken; fbRefresh = s.refreshToken; fbExp = s.exp;
+      return s.idToken;
+    }
+    try {
+      let fresh = null;
+      if (s && s.refreshToken) { try { fresh = await fbRefreshToken(s.refreshToken); } catch (e) { fresh = null; } }
+      if (!fresh) fresh = await fbSignIn();
+      if (fresh && fresh.idToken) {
+        fbToken = fresh.idToken; fbRefresh = fresh.refreshToken; fbExp = fresh.exp;
+        saveSession(fresh);
+        return fresh.idToken;
+      }
+    } catch (e) { console.warn("[E3Cloud] فشل المصادقة:", e && e.message); }
+    return null;
+  }
+
+  /* بيحط ?auth= على أي لينك قاعدة */
+  async function authUrl(url) {
+    try {
+      const t = await fbAuthToken();
+      if (!t) return url;
+      return url + (url.indexOf("?") >= 0 ? "&" : "?") + "auth=" + encodeURIComponent(t);
+    } catch (e) { return url; }
+  }
+
   /* مفتاح إيقاف المزامنة (للاختبار أو لو حبيت تشتغل أوفلاين) */
   const isOff = () => {
     try {
@@ -36,8 +121,17 @@
   const knownRemote = new Set();      /* أسماء المستخدمين اللي شفناها على السحابة */
 
   /* ------------------------------ أدوات ------------------------------ */
+  /* كل الطلبات بتمن هنا — التوكن بيتضاف أوتوماتيك، ولو انتهي بيتجدّد ويتعاد */
+  const doFetch = async (url, opts) => {
+    let res = await fetch(await authUrl(url), opts);
+    if (res.status === 401 && getApiKey()) {
+      await fbAuthToken(true);                       /* جدّد التوكن وجرّب مرة */
+      res = await fetch(await authUrl(url), opts);
+    }
+    return res;
+  };
   const j = async (url, opts) => {
-    const res = await fetch(url, Object.assign({ cache: "no-store" }, opts || {}));
+    const res = await doFetch(url, Object.assign({ cache: "no-store" }, opts || {}));
     if (!res.ok) throw new Error("HTTP " + res.status);
     const txt = await res.text();
     return txt ? JSON.parse(txt) : null;
@@ -200,7 +294,7 @@
         if (!u.username) return Promise.resolve();
         const payload = localUserToRemote(u);
         const key = u.remoteKey || String(u.username).toLowerCase();
-        return fetch(base + "/users/" + encodeURIComponent(key) + ".json", {
+        return doFetch(base + "/users/" + encodeURIComponent(key) + ".json", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -210,7 +304,7 @@
       const now = new Set(users.map((u) => String(u.remoteKey || u.username || "").toLowerCase()));
       knownRemote.forEach((name) => {
         if (!now.has(name)) {
-          writes.push(fetch(base + "/users/" + encodeURIComponent(name) + ".json", { method: "DELETE" }));
+          writes.push(doFetch(base + "/users/" + encodeURIComponent(name) + ".json", { method: "DELETE" }));
           knownRemote.delete(name);
         }
       });
@@ -222,7 +316,7 @@
         templates: JSON.stringify(db.templates || {}),
         settings: JSON.stringify(db.settings || {}),
       };
-      writes.push(fetch(base + "/val.json", {
+      writes.push(doFetch(base + "/val.json", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(val),
@@ -286,7 +380,7 @@
       /* بنحدّث وقت الدخول للحسابات الموجودة على القاعدة بس — مش بنكريت حساب جديد بالغلط */
       if (!u || !u.remoteKey) return false;
       const key = u.remoteKey;
-      const res = await fetch(getBase() + "/users/" + encodeURIComponent(key) + "/lastLogin.json", {
+      const res = await doFetch(getBase() + "/users/" + encodeURIComponent(key) + "/lastLogin.json", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(String(lastLogin || "")),
@@ -304,6 +398,12 @@
       if (isOff()) { console.info("[E3Cloud] المزامنة متوقفة على الجهاز ده"); return; }
       if (opts && opts.onRemote) onRemote = opts.onRemote;
       if (opts && opts.url) E3Cloud.url = opts.url;
+      if (!getApiKey()) {
+        console.warn("⚠️ [E3Cloud] مفيش Web API Key — القاعدة لسه مكشوفة لأي حد يعرف اللينك. " +
+          "افتح console واكتب: E3Cloud.auth.setKey(\"AIza...\") — أو حطّه في DEFAULT_WEB_API_KEY جوه cloud-sync.js");
+      } else {
+        fbAuthToken().catch(() => {});
+      }
       sync().catch(() => {});
       clearInterval(timer);
       timer = setInterval(() => { if (navigator.onLine) sync().catch(() => {}); }, 25000);
@@ -313,6 +413,13 @@
     },
     sync, pull, push, queuePush, syncNow, touchLogin,
     pendingLocalUsers,
+    /* ---- المصادقة (Firebase Auth) ---- */
+    auth: {
+      enabled: () => !!getApiKey(),
+      setKey(k) { try { localStorage.setItem(KEY_FB_API, String(k || "").trim()); fbToken = null; fbExp = 0; fbRefresh = null; saveSession(null); } catch (e) {} },
+      clearKey() { try { localStorage.removeItem(KEY_FB_API); fbToken = null; fbExp = 0; fbRefresh = null; saveSession(null); } catch (e) {} },
+      token: () => fbAuthToken(),
+    },
     status() {
       const db = readLocal() || {};
       const users = db.users || [];
@@ -327,7 +434,7 @@
     /* أدوات للحساب من خارج الواجهة */
     async setUserPassword(username, passHash) {
       const base = getBase();
-      const res = await fetch(base + "/users/" + encodeURIComponent(String(username).toLowerCase()) + "/passHash.json", {
+      const res = await doFetch(base + "/users/" + encodeURIComponent(String(username).toLowerCase()) + "/passHash.json", {
         method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(passHash),
       });
       return res.ok;

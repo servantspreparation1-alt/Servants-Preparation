@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "ekhdam": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

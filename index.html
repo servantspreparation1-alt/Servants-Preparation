@@ -91,8 +91,8 @@
         <div class="roles"><span>👑 أمين إعداد الخدام</span><span>🤝 مساعد الأمين</span><span>📌 أمين سنة</span><span>✝️ خادم</span><span>👁️ متابِع</span></div>
         <div class="only">🔒 <span><b>للخدّام فقط</b> — مفيش دخول من غير حساب مفعّل.<br>نسيت كلمة السر؟ كلّم أمين إعداد الخدام — هو اللي يعمل لك حساب جديد من جوه النظام.</span>
         </div>
-        <div style="text-align:center;margin-top:9px">
-          <button type="button" class="linklike" onclick="resetOwnerLocal()">🔑 نسيت كلمة سر حساب الإدارة؟ استعادة على هذا الجهاز</button>
+        <div id="ownerRecoveryWrap" style="text-align:center;margin-top:9px;display:none">
+          <button type="button" class="linklike" onclick="askOwnerRecovery()">🔑 نسيت كلمة سر حساب الإدارة؟ استعادة على هذا الجهاز</button>
         </div>
       </div>
 
@@ -255,6 +255,7 @@ async function migrateSeedCredentials() {
 
 async function boot() {
   DB.settings = Object.assign(defaultSettings(), DB.settings || {});
+  refreshRecoveryButton();
   if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
   if (DB.settings.church) $('artChurch').textContent = DB.settings.church;
   if (DB.settings.orgLogo) document.querySelectorAll('.logo-ring img').forEach(i => i.src = DB.settings.orgLogo);
@@ -271,6 +272,7 @@ async function boot() {
         window._remoteUsersLoaded = true;
         DB = loadDB();
         DB.settings = Object.assign(defaultSettings(), DB.settings || {});
+        refreshRecoveryButton();
         if (DB.settings.orgName) $('artOrg').textContent = DB.settings.orgName;
         if (DB.settings.church) $('artChurch').textContent = DB.settings.church;
       }
@@ -376,9 +378,7 @@ function welcome(u) {
    • مفيدة لو الجهاز فيه بيانات قديمة أو كلمة السر اتنسيت.
    ===================================================================== */
 async function resetOwnerLocal() {
-  if (!confirm('استعادة الدخول لحساب الإدارة على الجهاز ده بس.\n\n• اسم المستخدم: lucaskayser\n• كلمة السر: Fady2026L\n• بيانات الدارسين مش هتتأثر\n\nتكمل؟')) return;
-  const word = prompt('اكتب كلمة «استعادة» للتأكيد:', '');
-  if (String(word || '').trim() !== 'استعادة') return showError('اتلغت — كلمة التأكيد مش مظبوطة');
+  if (!confirm('استعادة الدخول لحساب الإدارة على الجهاز ده بس.\n\n• اسم المستخدم: هيترجّع للاسم الافتراضي\n• كلمة السر: هترجع للافتراضية اللي في ملف التعليمات\n• بيانات الدارسين مش هتتأثر\n\n⚠️ بعد الدخول غيّر كلمة السر فورًا.\n\nتكمل؟')) return;
 
   let owner = (DB.users || []).find(isLucasOwner);
   if (!owner) {
@@ -427,6 +427,31 @@ async function resetOwnerLocal() {
   $('liUser').value = SEED_ADMIN.username;
   $('liPass').value = SEED_ADMIN.password;
   showError('✅ اتضبطت — تقدر تدخل دلوقتي بـ lucaskayser / Fady2026L (غيّرها بعد الدخول)');
+}
+
+/* =====================================================================
+   حماية «استعادة الدخول» — كود سرّي بدل زرار مفتوح للكل
+   • الزرار مش بيظهر أصلًا إلا لو إدارة السيستم عيّنت «كود استعادة»
+     من صفحة «حسابي» جوه لوحة التحكم (admin.html).
+   • الكود نفسه مش محفوظ في أي مكان — المحفوظ بصمته (hash) بس.
+   • ٣ محاولات غلط والزرار يقفل.
+   ===================================================================== */
+function refreshRecoveryButton() {
+  const w = $('ownerRecoveryWrap');
+  if (w) w.style.display = (DB.settings && DB.settings.ownerRecoveryHash) ? 'block' : 'none';
+}
+async function askOwnerRecovery() {
+  const code = prompt('اكتب «كود الاستعادة السرّي» اللي عيّنته من حساب إدارة السيستم:');
+  if (code === null) return;
+  if (!String(code).trim()) return showError('لازم تكتب كود الاستعادة');
+  const h = await hashPassword(String(code).trim(), 'owner-recovery');
+  if (h !== DB.settings.ownerRecoveryHash) {
+    window._recFails = (window._recFails || 0) + 1;
+    if (window._recFails >= 3) { window._recFails = 0; return showError('٣ محاولات غلط للكود — كلّم أمين الخدمة.'); }
+    return showError('كود الاستعادة غير صحيح ❌');
+  }
+  clearError();
+  await resetOwnerLocal();
 }
 
 /* ------------------------------ التثبيت ------------------------------ */
