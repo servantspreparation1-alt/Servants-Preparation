@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- ================= E3DAD-COMPLETE v3.0 (v1+v2+v3) | بناء 2026-10-19 | شهادة-التخرج.html ================= -->
+<!-- ================= E3DAD-COMPLETE v3.1 (v1+v2+v3) | بناء 2026-10-19 | شهادة-التخرج.html ================= -->
 <html lang="ar" dir="rtl" data-skin="shamamsa-v2" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -35,6 +35,53 @@
   }
 })();
 </script>
+<script>
+/* ★★★ v3.1 — منظّف الكاش الذكي ★★★
+   المشكلة: الـ Service Worker القديم كان بيقدّم النسخة القديمة من الملفات من الكاش
+   حتى بعد التحديث على السيرفر (الشريط الذهبي بيختفي على السيرفر وبيظهر في اللوكال).
+   الحل: أول مرة النسخة دي بتشتغل على أي جهاز → بنمسح كل الكاشات القديمة،
+   وبنشيل تسجيل الـ SW القديم، وبنعيد التحميل مرة واحدة بالنسخة الجديدة.
+   بعدها العلامة بتتحفظ ومفيش تكرار (ولا أي لوب). */
+(function(){
+  'use strict';
+  try{
+    var VER='E3DAD-COMPLETE-v3.1';
+    if(!/^https?:$/.test(location.protocol)) return;              /* ملفات اللوكال مش محتاجة */
+    if(!('caches' in window) && !('serviceWorker' in navigator)) return;
+    if(localStorage.getItem('e3dad_build')===VER) return;          /* اتنضّف قبل كده للنسخة دي */
+    localStorage.setItem('e3dad_build', VER);
+    var alreadyReloaded=false;
+    try{ alreadyReloaded = sessionStorage.getItem('e3dad_flush_reload')==='1'; }catch(e){}
+    Promise.resolve().then(async function(){
+      var cleaned=false;
+      try{
+        if('caches' in window){
+          var keys=await caches.keys();
+          if(keys.length){
+            await Promise.all(keys.map(function(k){ return caches.delete(k); }));
+            cleaned=true;
+          }
+        }
+      }catch(e){}
+      try{
+        if('serviceWorker' in navigator){
+          var regs=await navigator.serviceWorker.getRegistrations();
+          if(regs.length){
+            await Promise.all(regs.map(function(r){ return r.unregister(); }));
+            cleaned=true;
+          }
+        }
+      }catch(e){}
+      if(cleaned && !alreadyReloaded){
+        try{ sessionStorage.setItem('e3dad_flush_reload','1'); }catch(e){}
+        try{ console.info('🧹 اتصلح كاش النسخة القديمة — جاري إعادة التحميل بالنسخة الجديدة…'); }catch(e){}
+        location.reload();
+      }
+    });
+  }catch(e){}
+})();
+</script>
+
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>إعداد خدام للتلمذة</title>
@@ -55,7 +102,7 @@
 <script>
 (function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
 </script>
-<link rel="stylesheet" href="assets/css/app.css?v=3.2">
+<link rel="stylesheet" href="assets/css/app.css?v=3.3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700&family=Markazi+Text:wght@500;600;700&family=Noto+Sans+Coptic:wght@400&display=swap" rel="stylesheet">
@@ -362,6 +409,15 @@ html[data-theme="dark"] .cx-links a:hover,html[data-theme="dark"] .cx-links butt
 [dir="rtl"] .cx-drawer{transform:translateX(105%)}
 .cx-drawer.open{transform:translateX(0)!important}
 .cx-dhead{display:flex;align-items:center;gap:10px;padding-bottom:22px;margin-bottom:10px;border-bottom:1px solid var(--cx-line);background:var(--cx-braid) repeat-x bottom center/48px 14px}
+/* ═══ v3.1 — تثبيت الشريط الذهبي ضد أي كاش/ستايل خارجي (app.css وغيره) ═══
+   القواعد دي بالأولوية القصوى (!important) عشان الشريط الذهبي يظهر
+   مضمون حتى لو فيه نسخة قديمة من ستايل خارجي بتتحمّل على السيرفر. */
+.hero-header::after,.page-hero::after{content:""!important;position:absolute!important;inset:auto 0 0!important;height:14px!important;background:var(--cx-braid) repeat-x center/48px 14px!important;opacity:.9!important;pointer-events:none!important}
+.cx-nav::before{content:""!important;background:var(--cx-braid) repeat-x center/48px 14px!important;opacity:.85!important}
+.hero-header .hero-braid{background:var(--cx-braid) repeat-x center/48px 14px!important;height:14px!important;opacity:.95!important}
+.login-card::before,.modal::before{background:var(--cx-braid) repeat-x center/48px 14px!important}
+.cx-dhead{background:var(--cx-braid) repeat-x bottom center/48px 14px!important}
+
 .cx-dhead b{display:block;font-size:.92rem;color:var(--cx-brand)}
 .cx-dhead span{display:block;font-size:.68rem;color:var(--cx-muted)}
 .cx-dactions{display:grid;gap:8px;margin-top:auto}
@@ -2190,9 +2246,9 @@ html.dark .content,html.dark .page,html.dark .shell{background:transparent!impor
   <div class="card" id="certBox"><div class="empty">اختر دارساً ودوس «عرض الشهادة» 🎓</div></div>
 </main>
 
-<script src="assets/js/core.js?v=3.2"></script>
+<script src="assets/js/core.js?v=3.3"></script>
 <script>
-try{console.info('%c☦ إعداد خدام للتلمذة — E3DAD COMPLETE v3.0 ☦ كل التصليحات مجمعه','color:#7a1257;font-weight:bold')}catch(e){}
+try{console.info('%c☦ إعداد خدام للتلمذة — E3DAD COMPLETE v3.1 ☦ كل التصليحات + علاج كاش السيرفر','color:#7a1257;font-weight:bold')}catch(e){}
 const SESSION_KEY = 'e3dad_auth_v2'; /* ★ نفس مفتاح الجلسة الموحّد بتاع الدخول ولوحة التحكم */
 
 let DB = { students: [], users: [], settings: {} };
@@ -2586,7 +2642,7 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
     }).catch(function(){});
   }
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    navigator.serviceWorker.register("sw.js?v=5.0", { updateViaCache: "none" }).then(function(reg) {
+    navigator.serviceWorker.register("sw.js?v=6.0", { updateViaCache: "none" }).then(function(reg) {
       try { reg.update(); } catch (e) {}
     }).catch(function(){});
   }
