@@ -2018,6 +2018,225 @@ html[data-theme="dark"] body::before,html.dark body::before{
 .cx-actions{gap:8px}
 .cx-nav .cx-actions .cx-icon.cx-logout{margin-inline-end:2px}
 .cx-nav .cx-actions .user-chip{border-radius:999px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   (٤) الخلفية الليلية الموحّدة — تتفرد على كل السطوح الكبيرة
+   (كان أي عنصر غلاف جاي من app.css بيلوّن مساحة كاملة ويعمل «بقعة» وحدود)
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --cx-cross-svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%23ffffff' fill-opacity='.045'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3C/g%3E%3C/svg%3E");
+  --cx-cross-svg-dark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%23ffffff' fill-opacity='.045'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* 🌙 ليلي */
+html[data-theme="dark"] body,
+html[data-theme="dark"] #appRoot,
+html[data-theme="dark"] .app,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] #view,
+html[data-theme="dark"] #printArea,
+html.dark body, html.dark #appRoot, html.dark .app, html.dark .main,
+html.dark #view, html.dark #printArea{
+  background-color:#0a1220!important;
+  background-image:
+    var(--cx-cross-svg),
+    radial-gradient(1100px 640px at 78% -8%, rgba(28,79,134,.42), transparent 62%),
+    radial-gradient(820px 520px at 4% 2%, rgba(216,180,95,.10), transparent 58%)!important;
+  background-repeat:repeat,no-repeat,no-repeat!important;
+  background-size:205px 205px,auto,auto!important;
+  background-position:0 0,0 0,0 0!important;
+  background-attachment:fixed,fixed,fixed!important;
+  background-origin:border-box!important;
+  background-clip:border-box!important;
+}
+/* الصلبان الفوق العناصر (النسخة القديمة) تتشال عشان مفيش تكرار */
+html[data-theme="dark"] body::before,html.dark body::before{display:none!important}
+
+/* ☀️ نهاري — نفس القاعدة على ورق الرق */
+html:not([data-theme="dark"]):not(.dark) body,
+html:not([data-theme="dark"]):not(.dark) #appRoot,
+html:not([data-theme="dark"]):not(.dark) .app,
+html:not([data-theme="dark"]):not(.dark) .main,
+html:not([data-theme="dark"]):not(.dark) #view{
+  background-color:#f3f2ec!important;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cg fill='%238a7a4f' fill-opacity='.06'%3E%3Cpath d='M14 3c1.7 0 3 1.3 3 3v5h5c1.7 0 3 1.3 3 3s-1.3 3-3 3h-5v5c0 1.7-1.3 3-3 3s-3-1.3-3-3v-5H6c-1.7 0-3-1.3-3-3s1.3-3 3-3h5V6c0-1.7 1.3-3 3-3z'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1000px 600px at 10% 0%, rgba(59,138,214,.10), transparent 55%),
+    radial-gradient(900px 560px at 96% 10%, rgba(195,146,43,.14), transparent 52%)!important;
+  background-repeat:repeat,no-repeat,no-repeat!important;
+  background-size:205px 205px,auto,auto!important;
+  background-position:0 0,0 0,0 0!important;
+  background-attachment:fixed,fixed,fixed!important;
+}
+html:not([data-theme="dark"]):not(.dark) body::before{display:none!important}
+
+/* ── الهيرو والفوتر: يتأكد إنهم واخدين الليل نفسه ── */
+html[data-theme="dark"] .hero-header,html.dark .hero-header{
+  background:linear-gradient(158deg,#04080f 0%,#08182a 34%,#0f3355 68%,#1c4f86 100%)!important;
+}
+html[data-theme="dark"] .site-foot,html.dark .site-foot{
+  background:linear-gradient(158deg,#04080f 0%,#08182a 40%,#0f3355 100%)!important;
+}
+/* أقسام فاضية أو غلاف بيلوّن نفسه = شفاف */
+html[data-theme="dark"] .content,html[data-theme="dark"] .page,html[data-theme="dark"] .shell,
+html.dark .content,html.dark .page,html.dark .shell{background:transparent!important}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v5.3 — شاشة التحقق (بيتأكد من بيانات الخادم) — نسخة تليق بالدخول
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* الستارة: كحلي ليلي + بلور */
+.vz-ov{
+  background:
+    radial-gradient(circle at 50% 26%,rgba(28,79,134,.42),transparent 58%),
+    radial-gradient(circle at 50% 110%,rgba(216,180,95,.16),transparent 55%),
+    rgba(3,8,15,.80)!important;
+  backdrop-filter:blur(14px) saturate(115%)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(115%)!important;
+}
+.vz-ov.show{animation:vzFade .28s ease both}
+@keyframes vzFade{from{opacity:0;backdrop-filter:blur(2px)}to{opacity:1}}
+
+/* الكارت: زجاج كحلي بحدود ذهبية + هالة */
+.vz-box{
+  width:min(470px,100%)!important;
+  border-radius:28px!important;
+  padding:24px 22px 22px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,0) 46%),
+    var(--cx-paper)!important;
+  border:1px solid color-mix(in srgb,var(--cx-gold) 38%,transparent)!important;
+  box-shadow:
+    0 44px 110px rgba(0,0,0,.60),
+    0 0 0 1px rgba(255,255,255,.05) inset,
+    0 0 80px rgba(216,180,95,.13)!important;
+  animation:vzRise .5s cubic-bezier(.2,.9,.25,1) both!important;
+}
+@keyframes vzRise{from{opacity:0;transform:translateY(16px) scale(.965)}to{opacity:1;transform:none}}
+.vz-box::before{
+  height:6px!important;opacity:1!important;
+  filter:drop-shadow(0 3px 10px rgba(216,180,95,.55));
+}
+.vz-box.done{
+  border-color:color-mix(in srgb,var(--cx-success) 55%,transparent)!important;
+  box-shadow:0 44px 110px rgba(0,0,0,.6),0 0 90px rgba(55,207,160,.20)!important;
+}
+.vz-box.fail{border-color:color-mix(in srgb,var(--cx-danger) 55%,transparent)!important}
+
+/* العنوان */
+.vz-head{margin-bottom:18px!important}
+.vz-title{font-size:.9rem!important;letter-spacing:.2px}
+.vz-snd{width:34px!important;height:34px!important;border-radius:12px!important}
+
+/* ── الدايرة: صورة الحساب + حلقة ذهبية بتلف + هالة ── */
+.vz-ring{
+  width:112px!important;height:112px!important;padding:6px!important;
+  margin:4px auto 16px!important;position:relative;
+  background:conic-gradient(from 0deg,
+    var(--cx-gold-2), #3b8ad6 30%, var(--cx-gold-3) 55%, var(--cx-gold) 78%, var(--cx-gold-2))!important;
+  animation:vzSpin 3.4s linear infinite!important;
+  box-shadow:0 0 0 1px rgba(216,180,95,.25),0 18px 44px rgba(0,0,0,.45),0 0 46px rgba(216,180,95,.22);
+}
+@keyframes vzSpin{to{transform:rotate(360deg)}}
+.vz-ring::after{
+  content:"";position:absolute;inset:-9px;border-radius:50%;pointer-events:none;
+  border:1.5px solid rgba(216,180,95,.38);
+  animation:vzHalo 2.6s ease-out infinite;
+}
+@keyframes vzHalo{
+  0%{transform:scale(.92);opacity:.75}
+  70%{transform:scale(1.16);opacity:0}
+  100%{transform:scale(1.16);opacity:0}
+}
+.vz-ring-in{
+  animation:none!important;
+  background:radial-gradient(circle at 50% 25%,#16202f,#0d1520)!important;
+  overflow:hidden!important;
+  font-size:2.1rem!important;
+  box-shadow:inset 0 0 0 1px rgba(216,180,95,.25),inset 0 10px 30px rgba(0,0,0,.5)!important;
+}
+.vz-ring-in img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.vz-ring-in b{font-size:2.2rem;font-weight:900;color:var(--cx-gold-2);line-height:1}
+.vz-box.done .vz-ring{
+  animation:none!important;
+  background:conic-gradient(from 0deg,#37cfa0,#a9f0d5,#37cfa0)!important;
+  box-shadow:0 0 0 1px rgba(55,207,160,.35),0 0 60px rgba(55,207,160,.35);
+}
+.vz-box.done .vz-ring::after{animation:none;opacity:0}
+.vz-box.fail .vz-ring{animation:none!important;background:conic-gradient(from 0deg,#e0627d,#f3a6b6,#e0627d)!important}
+.vz-box.fail .vz-ring::after{animation:none;opacity:0}
+
+/* الاسم */
+.vz-who{
+  font-size:.8rem!important;line-height:2!important;
+  background:rgba(255,255,255,.04);border:1px solid rgba(216,180,95,.16);
+  border-radius:999px;padding:7px 15px;width:fit-content;margin:0 auto 12px!important;
+  color:var(--cx-muted);
+}
+.vz-who b{color:var(--cx-brand-3)}
+
+/* السجل */
+.vz-log{gap:6px!important;margin-bottom:12px!important;max-height:204px!important}
+.vz-log .ln{
+  padding:8px 11px!important;border-radius:12px!important;
+  background:linear-gradient(90deg,rgba(255,255,255,.035),rgba(255,255,255,.012))!important;
+  border:1px solid rgba(255,255,255,.05);
+  animation:vzLine .34s cubic-bezier(.2,.9,.3,1) both!important;
+}
+@keyframes vzLine{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.vz-log .ln .ic{width:14px;text-align:center}
+
+/* شريط التقدم */
+.vz-bar{margin:12px 0 6px!important}
+.vz-bar>span:first-child{
+  height:10px!important;
+  background:rgba(255,255,255,.07)!important;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.5);
+}
+.vz-bar .fill{background:transparent!important;width:100%}
+.vz-bar .fill i{
+  position:relative;overflow:hidden;
+  background:linear-gradient(90deg,var(--cx-brand-2),var(--cx-gold-2))!important;
+  box-shadow:0 0 14px rgba(216,180,95,.55);
+  transition:width .45s cubic-bezier(.4,0,.2,1)!important;
+}
+.vz-bar .fill i::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:translateX(-100%);animation:vzShine 1.35s linear infinite;
+}
+@keyframes vzShine{to{transform:translateX(100%)}}
+.vz-box.done .vz-bar .fill i{background:linear-gradient(90deg,#23a37c,#5fe3b4)!important;box-shadow:0 0 16px rgba(55,207,160,.6)}
+.vz-box.done .vz-bar .fill i::after{animation:none;opacity:0}
+.vz-pct{font-size:.78rem!important;letter-spacing:.5px}
+
+/* النتيجة */
+.vz-res{font-size:1.05rem!important}
+.vz-res.ok::before{content:"✓ ";color:var(--cx-success)}
+.vz-box.done .vz-res{animation:vzPop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes vzPop{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+
+.vz-btn{border-radius:999px!important;padding:10px 20px!important}
+
+@media(max-width:420px){
+  .vz-ring{width:96px!important;height:96px!important}
+  .vz-box{padding:20px 16px 18px!important;border-radius:24px!important}
+}
+
+/* ── نسخة النهاري: أسطح واضحة (كانت شفافة على أبيض) ── */
+html:not([data-theme="dark"]):not(.dark) .vz-who{
+  background:color-mix(in srgb,var(--cx-paper-2) 92%,transparent);
+  border-color:color-mix(in srgb,var(--cx-gold) 30%,var(--cx-line));
+}
+html:not([data-theme="dark"]):not(.dark) .vz-log .ln{
+  background:var(--cx-paper-2)!important;
+  border:1px solid var(--cx-line)!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
+}
+html:not([data-theme="dark"]):not(.dark) .vz-bar>span:first-child{background:color-mix(in srgb,var(--cx-line) 55%,#fff)!important}
+html:not([data-theme="dark"]):not(.dark) .vz-ring-in{background:radial-gradient(circle at 50% 25%,#ffffff,#eceae1)!important}
+html:not([data-theme="dark"]):not(.dark) .vz-ring-in b{color:#a8811f}
+html:not([data-theme="dark"]):not(.dark) .vz-box{box-shadow:0 40px 100px rgba(40,25,10,.28),0 0 0 1px rgba(255,255,255,.7) inset!important}
 </style>
 </head>
 <body class="login-page">
@@ -2175,7 +2394,7 @@ html[data-theme="dark"] body::before,html.dark body::before{
       <button type="button" class="vz-snd" id="vzSnd" title="صوت التحقق" aria-label="تشغيل أو كتم صوت التحقق">🔊</button>
     </div>
     <div class="vz-body">
-      <div class="vz-ring"><span class="vz-ring-in" aria-hidden="true">☦</span></div>
+      <div class="vz-ring"><span class="vz-ring-in" id="vzAva" aria-hidden="true">☦</span></div>
       <div class="vz-who" id="vzWho"></div>
       <div class="vz-log" id="vzLog"></div>
       <div class="vz-bar">
@@ -2801,6 +3020,14 @@ var VZ = (function () {
       var nm = user.displayName || user.username || '';
       var un = user.username ? ' <small dir="ltr" style="opacity:.65">@' + _e(user.username) + '</small>' : '';
       who.innerHTML = nm ? '🕯️ بنطابق حساب <b>' + _e(nm) + '</b>' + un : '';
+      var av = q('vzAva');
+      if (av) {
+        var ph = String((user && user.photo) || '');
+        var nmx = String(nm || '').trim();
+        if (/^data:image\//i.test(ph) || /^https?:\/\//i.test(ph)) av.innerHTML = '<img src="' + ph + '" alt="">';
+        else if (nmx) av.innerHTML = '<b>' + _e(nmx.charAt(0)) + '</b>';
+        else av.innerHTML = '☦';
+      }
     }
     keyHandler = function (e) { if (e.key === 'Escape' && box && box.classList.contains('fail')) close(); };
     document.addEventListener('keydown', keyHandler);
@@ -3161,8 +3388,8 @@ async function doLogin() {
   /* ---------- الحساب مش موجود ---------- */
   if (!users.length) {
     await VZ.seq([
-      { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 240 },
-      { k: 'bad', t: 'البحث عن اسم المستخدم — مفيش نتيجة', d: 380 }
+      { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 520 },
+      { k: 'bad', t: 'البحث عن اسم المستخدم — مفيش نتيجة', d: 760 }
     ]);
     VZ.finish(false, 'اسم المستخدم غير موجود', 'مفيش حساب بالاسم ده على السيستم');
     VZ.dismissable();
@@ -3205,9 +3432,10 @@ async function doLogin() {
   })();
 
   await VZ.seq([
-    { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 210 },
-    { k: 'ok', t: 'لقينا الحساب: ' + _e(first.displayName || first.username), d: 300 },
-    { k: 'wait', t: 'بنفحص كلمة السر…', d: 120 }
+    { k: 'ok', t: 'تأمين الاتصال المشفّر 🔒', d: 620 },
+    { k: 'ok', t: 'الاتصال بقاعدة بيانات الخدمة', d: 700 },
+    { k: 'ok', t: 'لقينا الحساب: ' + _e(first.displayName || first.username), d: 700 },
+    { k: 'wait', t: 'بنفحص كلمة السر…', d: 560 }
   ]);
   VZ.progress(62);
 
@@ -3294,8 +3522,12 @@ async function doLogin() {
 
   /* ---------- نجاح ---------- */
   VZ.line('ok', 'كلمة السر مطابقة');
-  VZ.progress(84);
+  VZ.progress(76);
+  await _sleep(480);
   VZ.line('ok', 'صلاحيات الحساب اتفعّلت');
+  VZ.progress(90);
+  await _sleep(420);
+  VZ.line('ok', 'تجهيز لوحة التحكم ✨');
   VZ.progress(100);
   VZ.finish(true, 'تم التحقق — أهلًا بيك', 'جارٍ فتح لوحة التحكم…');
 
@@ -3352,7 +3584,7 @@ async function doLogin() {
   busy = false;
   setBusy(false);
 
-  await _sleep(220);
+  await _sleep(1500);
   VZ.close();
   welcome(acc, { vaultOK: vaultOK, tolerant: res.mode === 'tolerant' });
 }
@@ -3711,7 +3943,7 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
    ═══════════════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
-  var VERSION = '5.1';
+  var VERSION = '5.3';
   try{ document.documentElement.setAttribute('data-cx-version', VERSION); }catch(e){}
 
   function $(s,r){ return (r||document).querySelector(s); }
