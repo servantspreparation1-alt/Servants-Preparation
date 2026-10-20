@@ -1,5 +1,79 @@
-/* إعداد خدام — سيرفيس ووركر خفيف: شرط التثبيت على الموبايل (بدون كاش — البيانات على Firebase) */
-var V = 'e3-sw-v1';
-self.addEventListener('install', function (e) { self.skipWaiting(); });
-self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
-self.addEventListener('fetch', function (e) { /* مرور عادي — الشبكة هي المصدر */ });
+/* إعداد خدام للتلمذة — Service Worker v6.3 (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
+var CACHE = 'e3-sw-v6.3';
+var SHELL = ['./', './index.html', './admin.html', './manifest.json'];
+
+self.addEventListener('install', function (e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function (cache) {
+      return Promise.allSettled(SHELL.map(function (u) {
+        return fetch(u, { cache: 'reload' }).then(function (res) {
+          if (res && res.ok) return cache.put(u, res.clone());
+        });
+      }));
+    }).then(function () {
+      return self.skipWaiting();
+    })
+  );
+});
+
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.map(function (k) {
+        if (k !== CACHE) return caches.delete(k);
+      }));
+    }).then(function () {
+      return self.clients.claim();
+    })
+  );
+});
+
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (!req || req.method !== 'GET') return;
+
+  var url;
+  try { url = new URL(req.url); } catch (_err) { return; }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+  /* لا تتدخل في اتصالات قاعدة البيانات اللحظية لـ Firebase */
+  var host = url.hostname.toLowerCase();
+  if (
+    host.indexOf('firebasedatabase.app') > -1 ||
+    host.indexOf('firebaseio.com') > -1 ||
+    host.indexOf('googleapis.com') > -1
+  ) {
+    return;
+  }
+
+  var sameOrigin = url.origin === self.location.origin;
+  var staticCdn = (
+    host.indexOf('gstatic.com') > -1 ||
+    host.indexOf('fonts.googleapis.com') > -1
+  );
+  if (!sameOrigin && !staticCdn) return;
+
+  e.respondWith(
+    fetch(req).then(function (res) {
+      if (res && (res.status === 200 || res.type === 'opaque')) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});
+      }
+      return res;
+    }).catch(function () {
+      return caches.open(CACHE).then(function (cache) {
+        return cache.match(req).then(function (hit) {
+          if (hit) return hit;
+          if (sameOrigin) {
+            return cache.match(req, { ignoreSearch: true }).then(function (cleanHit) {
+              if (cleanHit) return cleanHit;
+              if (req.mode === 'navigate') return cache.match('./index.html');
+              return Response.error();
+            });
+          }
+          return Response.error();
+        });
+      });
+    })
+  );
+});
