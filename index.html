@@ -2366,7 +2366,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 .sx-bar .sx-search{flex:1;min-width:180px}
 .sx-search{border-radius:999px !important;padding-inline-start:42px !important;background:var(--cx-paper) !important}
 </style>
-</head>
+<style>#vzAva{position:relative;overflow:hidden}#vzAva img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}.vz-box.done #vzAva{animation:none!important}</style></head>
 <body class="login-page">
 
 <nav class="cx-nav no-print" id="cxNav">
@@ -2566,6 +2566,9 @@ function $(s){return document.querySelector(s);}
 function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function toEn(s){return String(s==null?'':s).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);}).replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d);});}
+function displayPersonName(value){
+ return String(value||'').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/<[^>]*>/g,'').replace(/<[^>]*$/g,'').replace(/[\u0000-\u001f\u007f]/g,'').replace(/\s+/g,' ').trim();
+}
 function clean(s){return toEn(String(s||'')).replace(/[\u200b-\u200f\u202a-\u202e]/g,'').replace(/\s+/g,' ').trim();}
 function normAr(s){return clean(s).toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي');}
 /* بصمة خفيفة لكلمة السر (بدون تخزين كلمة السر النصية في الجلسة) لرصد تغييرها من الإدارة */
@@ -2777,6 +2780,22 @@ window.handleInstall=function(){
 var VZ=(function(){
   var ov=$('#vzOv'),box=$('#vzBox'),who=$('#vzWho'),log=$('#vzLog'),bar=$('#vzBarFill'),pct=$('#vzPct'),res=$('#vzRes'),resSub=$('#vzResSub'),act=$('#vzAct'),snd=$('#vzSnd');
   var muted=false,n=0,audioCtx=null;
+  var avatar=$('#vzAva');
+  function showAccount(account){
+    if(!avatar)return;avatar.textContent='';
+    var label=displayPersonName(account&&(account.name||account.username||account.u))||'خادم';
+    var initial=document.createElement('b');initial.textContent=account?Array.from(label)[0]:'☦';avatar.appendChild(initial);
+    var src=String(account&&account.photo||'').trim();
+    var validData=src.length<1500000&&/^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(src);
+    var validURL=false;try{var parsed=new URL(src);validURL=parsed.protocol==='https:'&&!parsed.username&&!parsed.password;}catch(_e){}
+    if(!validData&&!validURL)return;
+    var img=document.createElement('img');img.alt='صورة '+label;img.referrerPolicy='no-referrer';
+    img.onload=function(){if(avatar.contains(initial))initial.style.display='none';};
+    img.onerror=function(){img.remove();initial.style.display='';};
+    avatar.appendChild(img);img.src=src;
+    if(who)who.textContent=label;
+  }
+
   function beep(){
     if(muted)return;
     try{
@@ -2795,10 +2814,11 @@ var VZ=(function(){
   return{
     open:function(u){
       if(!ov)return;ov.classList.add('show');box.classList.remove('done','fail');
-      if(who)who.textContent='اسم المستخدم: '+u;
+      showAccount(null);if(who)who.textContent='اسم المستخدم: '+u;
       if(log)log.innerHTML='';if(res)res.innerHTML='';if(resSub)resSub.innerHTML='';if(act)act.innerHTML='';
       if(bar)bar.style.width='8%';if(pct)pct.textContent='8%';n=0;beep();
     },
+    account:showAccount,
     step:function(t,delayMs){
       if(!ov)return Promise.resolve();n++;
       var l=document.createElement('div');l.textContent='✓ '+t;l.style.cssText='padding:2px 0;font-size:.78rem;font-weight:700';
@@ -2890,6 +2910,7 @@ window.doLogin=async function(){
     await VZ.step('البحث عن الحساب ومراجعة بيانات الدخول');
     var acc=matchAccount(arr,u);
     if(!acc){
+      try{var _badref=firebase.database().ref('activityLog'),_bts=Date.now();_badref.push({eventId:'login-failed-'+_bts+'-'+Math.random().toString(36).slice(2,8),ts:_bts,actorId:'',actorName:u,actorRole:'غير معروف',actorPhoto:'',action:'login_failed',target:'اسم المستخدم المُدخل: '+u,details:'فشل تسجيل الدخول: الحساب غير موجود',outcome:'failure',source:{userAgent:(navigator.userAgent||'').slice(0,240),timeZone:(Intl.DateTimeFormat().resolvedOptions().timeZone||'')},protected:true});}catch(_e){}
       VZ.finish(false,'بيانات الدخول غير صحيحة',true);
       await new Promise(function(r){setTimeout(r,550);});
       throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. راجع البيانات أو تواصل مع أمين الخدمة.',authFail:true};
@@ -2901,16 +2922,19 @@ window.doLogin=async function(){
     }
     await VZ.step('التأكد من كلمة السر');
     if(String(acc.pass||'')!==p){
+      try{var _badref2=firebase.database().ref('activityLog'),_bts2=Date.now();_badref2.push({eventId:'login-failed-'+_bts2+'-'+Math.random().toString(36).slice(2,8),ts:_bts2,actorId:acc.id||'',actorName:acc.name||acc.u||u,actorRole:acc.role||'خادم',actorPhoto:'',action:'login_failed',target:'الحساب: '+(acc.name||acc.u||u),details:'فشل تسجيل الدخول: كلمة المرور غير صحيحة',outcome:'failure',source:{userAgent:(navigator.userAgent||'').slice(0,240),timeZone:(Intl.DateTimeFormat().resolvedOptions().timeZone||'')},protected:true});}catch(_e){}
       VZ.finish(false,'بيانات الدخول غير صحيحة',true);
       await new Promise(function(r){setTimeout(r,550);});
       throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. لو نسيتها اتواصل مع أمين الخدمة.',authFail:true};
     }
+    VZ.account(acc);
     resetFailedAttempts();
     var rememberEl=$('#remember7d');
     var remember=rememberEl?!!rememberEl.checked:true;
-    await VZ.step('التأكد من الصلاحيات ('+esc(acc.role||'خادم')+')');
-    VZ.finish(true,'أهلاً '+esc(acc.name||u)+' — بنفتح لوحة التحكم');
+    await VZ.step('التأكد من الصلاحيات ('+(acc.role||'خادم')+')');
+    VZ.finish(true,'أهلاً '+displayPersonName(acc.name||u)+' — بنفتح لوحة التحكم');
     writeSession(acc,remember);
+    try{var _actdb=firebase.database(),_actref=_actdb.ref('activityLog'),_ts=Date.now();if(acc.id)_actdb.ref('activityActors/'+acc.id).update({actorId:acc.id,name:acc.name||acc.u||u,role:acc.role||'خادم',photo:acc.photo||''}).catch(function(){});_actref.push({eventId:'login-'+_ts+'-'+Math.random().toString(36).slice(2,8),ts:_ts,actorId:acc.id||'',actorName:acc.name||acc.u||u,actorRole:acc.role||'خادم',actorPhoto:(acc.photo&&String(acc.photo).indexOf('data:')!==0)?acc.photo:'',action:'login',target:'الحساب: '+(acc.name||acc.u||u),details:'تسجيل دخول ناجح',outcome:'success',source:{userAgent:(navigator.userAgent||'').slice(0,240),timeZone:(Intl.DateTimeFormat().resolvedOptions().timeZone||'')},protected:true}).then(function(){return _actref.orderByChild('ts').limitToLast(1501).once('value');}).then(function(sn){var ar=[];sn.forEach(function(ch){ar.push({k:ch.key,v:ch.val()});});if(ar.length>1500){ar.sort(function(a,b){return (+a.v.ts||0)-(+b.v.ts||0);});return _actref.child(ar[0].k).remove();}}).catch(function(){});}catch(_e){}
     btn.innerHTML='✅ تم التحقق — بنفتح اللوحة…';
     setTimeout(function(){location.replace('admin.html');},550);
     busy=false;

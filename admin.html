@@ -1469,7 +1469,11 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 /* Account studio v7 */
 .fb-user{cursor:pointer;font-family:inherit}.fb-user:hover{border-color:var(--cx-gold)}.staff-tile[data-card-user]{cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}.staff-tile[data-card-user]:hover{transform:translateY(-4px);border-color:var(--cx-gold);box-shadow:0 14px 28px #0002}.staff-tile:focus-visible{outline:2px solid var(--cx-gold);outline-offset:4px}
 .account-page{max-width:940px;padding:28px}.account-shell{padding:8px}.account-title{align-items:flex-start;margin:0 0 24px;padding:0 0 20px;border-color:var(--card-border)}.editor-eyebrow{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--cx-muted)}.account-title h3{font-size:24px!important;color:var(--cx-ink);margin:8px 0!important}.account-title p{margin:0;color:var(--cx-muted);font-size:12px}.account-title .sx-x{width:32px;height:32px;font-size:22px;border:1px solid var(--card-border);background:transparent;color:var(--cx-muted);border-radius:10px}.account-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:start}.account-photo{display:flex;flex-direction:column;gap:12px;padding:24px 16px;margin:0;border:1px solid var(--card-border);border-radius:18px;background:var(--cx-paper-2);text-align:center}.account-photo .staff-avatar{width:100px;height:100px;flex:0 0 100px;margin:4px 0;cursor:pointer;border:3px solid var(--cx-paper);box-shadow:0 0 0 1px var(--cx-gold)}.account-photo b{font-size:12px;color:var(--cx-ink)}.account-photo p{font-size:11px;line-height:1.9;margin:0}.account-photo small{font-size:9px;color:var(--cx-muted)}.account-photo input[hidden]{display:none!important}.photo-pick{display:block;width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--cx-gold);border-radius:10px;color:var(--cx-ink);font-size:12px;font-weight:800;cursor:pointer;background:var(--cx-paper)}.photo-pick:hover{background:var(--cx-gold-soft)}#removePhoto{border:0;background:none;color:var(--cx-muted);font-size:11px;cursor:pointer}.account-section{padding:4px 0 20px}.section-heading{display:flex;gap:12px;align-items:center;margin-bottom:22px}.section-heading>span{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--card-border);border-radius:10px;color:var(--cx-gold);font-size:11px}.section-heading h4{margin:0;color:var(--cx-ink);font-size:15px}.section-heading p{margin:4px 0 0;color:var(--cx-muted);font-size:11px}.account-fields{gap:18px 14px}.account-fields .sx-f{font-size:12px;font-weight:700;gap:8px}.account-editor input:not([type=file]),.account-editor select{height:46px;min-height:46px;border-radius:10px;font:inherit;font-size:13px;padding:10px 12px;box-shadow:none!important}.account-editor input:focus{outline:1px solid var(--cx-gold);outline-offset:1px}.account-editor input:-webkit-autofill{-webkit-text-fill-color:var(--cx-ink);transition:background-color 99999s}.account-security{border:1px solid var(--card-border);border-radius:14px;margin-top:6px;padding:16px}.account-security summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--cx-ink)}.account-security summary small{display:block;margin:6px 0 0;font-size:10px;font-weight:400;color:var(--cx-muted)}.account-security[open] .account-fields{margin-top:20px}.account-footer{align-items:center;padding-top:20px;margin-top:24px}.account-footer>small{margin-inline-end:auto;font-size:10px;color:var(--cx-muted)}.account-footer .btn{border-radius:10px!important;font-size:12px;padding:11px 18px!important}.account-error{font-size:12px}@media(max-width:680px){.account-layout{grid-template-columns:1fr;gap:20px}.account-photo{padding:18px}.account-photo .staff-avatar{width:80px;height:80px;flex-basis:80px}.account-fields{grid-template-columns:1fr}.account-footer{flex-wrap:wrap}.account-footer>small{width:100%;margin:0}.account-title h3{font-size:20px!important}.account-page{padding:18px}.account-shell{padding:0}}
-</style></head>
+</style>
+<style>
+.activity-list{display:flex;flex-direction:column;gap:10px}.activity-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:start;padding:14px;background:var(--cx-paper);border:1px solid var(--card-border);border-radius:14px}.activity-row.locked{border-style:dashed}.activity-avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--cx-paper-2);border:2px solid var(--cx-gold);font-weight:800}.activity-avatar img{width:100%;height:100%;object-fit:cover}.activity-main{min-width:0}.activity-heading{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.activity-action{font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:var(--cx-paper-2);border:1px solid var(--card-border)}.activity-action.add{color:#166534;background:#dcfce7}.activity-action.edit{color:#1e40af;background:#dbeafe}.activity-action.delete{color:#991b1b;background:#fee2e2}.activity-target{font-weight:800;margin-top:5px;overflow-wrap:anywhere}.activity-details{color:var(--cx-muted);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}.activity-time{color:var(--cx-muted);font-size:12px;margin-top:5px}.activity-select{padding:8px}.activity-lock{font-size:12px}.activity-empty{padding:30px;text-align:center;color:var(--cx-muted);background:var(--cx-paper);border:1px dashed var(--card-border);border-radius:16px}@media(max-width:600px){.activity-row{grid-template-columns:36px minmax(0,1fr) auto;gap:8px;padding:10px}.activity-avatar{width:36px;height:36px}}
+</style>
+</head>
 
 <body>
 
@@ -1483,7 +1487,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
         <span class="logo-icon cx-logo" id="sideLogo" style="display:grid;place-items:center;overflow:hidden"><img src="data:image/png;base64,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" alt="معلم الأجيال للتلمذة" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></span>
         <span class="cx-brand-copy"><b id="orgNameSide">معلم الأجيال للتلمذة</b><span>إعداد خدام</span></span>
       </a>
-      <div class="cx-links" id="topLinks"><a class="nav-item" data-view="students" href="#students">الدارسون</a><a class="nav-item" data-view="subjects" href="#subjects">المواد</a><a class="nav-item" data-view="results" href="#results">النتائج</a><a class="nav-item" data-view="team" href="#team" data-need="manageUsers">إدارة الخدام</a></div>
+      <div class="cx-links" id="topLinks"><a class="nav-item" data-view="students" href="#students">الدارسون</a><a class="nav-item" data-view="subjects" href="#subjects">المواد</a><a class="nav-item" data-view="results" href="#results">النتائج</a><a class="nav-item" data-view="team" id="teamTab" href="#team" data-need="manageUsers">إدارة الخدام</a><a class="nav-item" data-view="activity" id="activityTab" href="#activity" style="display:none">📜 سجل النشاطات</a></div>
       <div class="cx-actions"></div>
     </div>
   </nav>
@@ -1535,6 +1539,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
     <button type="button" data-view="subjects" onclick="location.hash='subjects'"><span>📚</span><small>المواد</small></button>
     <button type="button" data-view="results" onclick="location.hash='results'"><span>📊</span><small>النتائج</small></button>
     <button type="button" data-view="team" id="teamTabMob" style="display:none" onclick="location.hash='team'"><span>🧑‍🏫</span><small>الخدام</small></button>
+    <button type="button" data-view="activity" id="activityTabMob" style="display:none" onclick="location.hash='activity'"><span>📜</span><small>النشاطات</small></button>
   </nav>
 </div>
 
@@ -1600,7 +1605,7 @@ function clearSession(){try{sessionStorage.removeItem(AUTH_KEY);}catch(_e){}try{
 var ME=(function(){var s=readSession();if(s)return s;location.replace('index.html');return null;})();
 if(!ME){document.documentElement.style.visibility='hidden';}
 if(ME){
-var USERS=[],fbUsersRef=null;
+var USERS=[],fbUsersRef=null,ACTIVITY=[],ACTOR_PHOTOS={},fbActivityRef=null,fbActorRef=null,activityTrimBusy=false,activityListening=false,activityErrorShown=false;
 /* لا تخزّن كلمات سر الخدام محليًا، واحذف أي نسخة قديمة كانت تفعل ذلك */
 try{localStorage.removeItem(STAFF_KEY);}catch(_e){}
 var ROLES=['إدارة النظام','أمين خدمة إعداد خدام','مساعد أمين إعداد خدام','خادم'];
@@ -1620,9 +1625,10 @@ function writeSession(){
   var chip=document.getElementById('fbUser');
   if(chip){chip.title='الحساب الحالي — الدور: '+ME.role;chip.innerHTML='<b>👤 '+esc(ME.name||ME.u)+'</b><small>'+esc(ME.role)+'</small>';}
 }
-function logout(){clearSession();ME=null;location.replace('index.html');}
+function logout(){var finished=false,done=function(){if(finished)return;finished=true;clearSession();ME=null;location.replace('index.html');};logActivity('logout','جلسة لوحة التحكم','تسجيل خروج ناجح',{protected:true}).then(done);setTimeout(done,700);}
 function revokeSession(msg){
   if(!ME)return;
+  logActivity('session_revoked','الجلسة','إنهاء الجلسة: '+String(msg||'انتهت صلاحية الجلسة'),{protected:true});
   clearSession();ME=null;
   if(view)view.innerHTML='<div class="sx-empty"><div class="big">🔒</div><p>'+esc(msg||'انتهت صلاحية جلستك')+'</p><a class="btn primary" href="index.html">العودة للدخول</a></div>';
   setTimeout(function(){location.replace('index.html');},1800);
@@ -1653,6 +1659,10 @@ function applyPerms(noRoute){
   if(tt)tt.style.display=show?'':'none';
   if(mt)mt.style.display=show?'':'none';
   if(!show&&(location.hash||'').indexOf('#team')===0){location.replace(can('manageStudents')?'#students':'#results');return;}
+  var at=document.getElementById('activityTab'),amt=document.getElementById('activityTabMob');
+  if(at)at.style.display=isOwner()?'':'none';if(amt)amt.style.display=isOwner()?'':'none';
+  if(isOwner())startActivityListener();
+  if(!isOwner()&&(location.hash||'').indexOf('#activity')===0){location.replace(can('manageUsers')?'#team':(can('manageStudents')?'#students':'#results'));return;}
   var studentsNav=document.querySelectorAll('[data-view=students],[data-view=subjects]');
   studentsNav.forEach(function(el){el.style.display=ME.role==='خادم'?'none':'';});
   var nb=document.getElementById('sxNewStu');if(nb)nb.style.display=can('manageStudents')?'':'none';
@@ -1766,6 +1776,7 @@ function initFirebase(){
       if((location.hash||'').indexOf('#team')===0)renderTeam();
     },function(){setSync('error','تعذّر التحقق من صلاحية حسابك');});
   }catch(_e){}
+  try{fbActivityRef=fbdb.ref('activityLog');fbActorRef=fbdb.ref('activityActors');}catch(_e){}
   setSync('connecting','بيتصل…');
   try{fbdb.ref('.info/connected').on('value',function(s){
     fbConnected=!!s.val();
@@ -1830,6 +1841,7 @@ function exportBackup(){
   a.download='نسخة-احتياطية-إعداد-خدام-'+new Date().toISOString().slice(0,10)+'.json';
   document.body.appendChild(a); a.click();
   setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+  logActivity('export','نسخة احتياطية','تصدير نسخة JSON كاملة');
   toast('⬇️ تم تنزيل النسخة الاحتياطية');
 }
 function importBackup(file){
@@ -1845,7 +1857,7 @@ function importBackup(file){
     ask('استيراد نسخة احتياطية','هيتم استبدال كل البيانات الحالية ('+nf(db.students.length)+' دارس) ببيانات الملف ('+nf(nd.students.length)+' دارس، '+nf(nd.subjects.length)+' مادة) وهيتزامن على كل الأجهزة. (بتتحفظ نسخة أمان تلقائية قبل الاستبدال)','⬆️ استيراد').then(function(ok){
       if(!ok)return;
       autoBackup(); db=nd;
-      if(save()){toast('⬆️ تم الاستيراد بنجاح');route();}
+      if(save()){logActivity('import','نسخة احتياطية','استيراد نسخة بيانات JSON · '+nf(nd.students.length)+' دارس و'+nf(nd.subjects.length)+' مادة');toast('⬆️ تم الاستيراد بنجاح');route();}
     });
   };
   fr.readAsText(file);
@@ -1893,11 +1905,73 @@ function pushUsers(){
   fbUsersRef.set(o||{}).then(function(){},function(){toast('⚠️ تعذّر حفظ حسابات الخدمة على السحابة — تحقق من صلاحيات Firebase');});
   return true;
 }
-document.addEventListener('click',function(e){var b=e.target.closest('[data-toggle-user]');if(!b)return;var u=USERS.find(function(x){return x.id===b.dataset.toggleUser;});if(!u||!accountAllowed(u)||u.role==='إدارة النظام'||u.id===ME.id)return;fbUsersRef.child(u.id).child('active').set(u.active===false).catch(function(){toast('تعذر الحفظ');});});
+document.addEventListener('click',function(e){var b=e.target.closest('[data-toggle-user]');if(!b)return;var u=USERS.find(function(x){return x.id===b.dataset.toggleUser;});if(!u||!accountAllowed(u)||u.role==='إدارة النظام'||u.id===ME.id)return;fbUsersRef.child(u.id).child('active').set(u.active===false).then(function(){logActivity(u.active===false?'activate_user':'deactivate_user','الحساب: '+(u.name||u.u||u.username),'تغيير حالة الحساب إلى '+(u.active===false?'نشط':'موقوف'));}).catch(function(){toast('تعذر الحفظ');});});
 function nmForCard(u){return u.name||u.username||u.u||'';}
 function activateAccountCard(e){var card=e.target.closest('[data-card-user]');if(!card||e.target.closest('button,a,details,input,select,label'))return;if(e.type==='keydown'&&e.key!=='Enter'&&e.key!==' ')return;if(e.type==='keydown')e.preventDefault();var id=card.dataset.cardUser;if(id===ME.id){if(location.hash==='#profile')openStaffForm(id,true);else location.hash='profile';}else openStaffForm(id);}
 document.addEventListener('click',activateAccountCard);document.addEventListener('keydown',activateAccountCard);
+function startActivityListener(){
+  if(!isOwner()||!fbActivityRef||activityListening)return;
+  activityListening=true;
+  if(fbActorRef)fbActorRef.on('value',function(snap){ACTOR_PHOTOS=snap.val()||{};if((location.hash||'').indexOf('#activity')===0)renderActivity();},function(){});
+  fbActivityRef.on('value',function(snap){
+    var list=[];snap.forEach(function(ch){var x=ch.val();if(x&&typeof x==='object'){x._key=ch.key;list.push(x);}});
+    list.sort(function(a,b){return (+a.ts||0)-(+b.ts||0);});
+    if(list.length>1500&&!activityTrimBusy){activityTrimBusy=true;var excess=list.slice(0,list.length-1500);Promise.all(excess.map(function(x){return fbActivityRef.child(x._key).remove().catch(function(){});})).then(function(){activityTrimBusy=false;});list=list.slice(-1500);}
+    ACTIVITY=list;if((location.hash||'').indexOf('#activity')===0)renderActivity();
+  },function(){});
+}
 function isOwner(){return ME&&ME.role==='إدارة النظام';}
+function activityPhoto(id){
+  var u=USERS.find(function(x){return x&&x.id===id;});
+  return safePhoto((u&&u.photo)||(ACTOR_PHOTOS[id]&&ACTOR_PHOTOS[id].photo)||'');
+}
+function logActivity(action,target,details,opts){
+  if(!ME||!fbActivityRef)return Promise.resolve(false);
+  var user=USERS.find(function(x){return x&&x.id===ME.id;})||{};
+  var photo=safePhoto(user.photo||ME.photo||'');
+  /* لا نكرر صور data-uri الضخمة داخل كل سجل؛ تُعرض من بطاقة الحساب الحالية. */
+  if(photo.indexOf('data:')===0)photo='';
+  var entry={eventId:uid(),ts:Date.now(),actorId:ME.id,actorName:ME.name||ME.u||'',actorRole:ME.role||'',actorPhoto:photo,action:String(action||'other'),target:String(target||''),details:String(details||''),outcome:(opts&&opts.outcome)||'success',source:{userAgent:(navigator.userAgent||'').slice(0,240),timeZone:(Intl.DateTimeFormat().resolvedOptions().timeZone||'')},protected:!!(opts&&opts.protected)};
+  try{
+    if(fbActorRef)fbActorRef.child(ME.id).update({actorId:ME.id,name:ME.name||ME.u||'',role:ME.role||'',photo:user.photo||ME.photo||''}).catch(function(){});
+    var write=fbActivityRef.push(entry);
+    return write.then(function(){
+      return fbActivityRef.orderByChild('ts').limitToLast(1501).once('value').then(function(snap){
+        var rows=[];snap.forEach(function(ch){rows.push({key:ch.key,value:ch.val()});});
+        if(rows.length>1500){rows.sort(function(a,b){return (+a.value.ts||0)-(+b.value.ts||0);});return fbActivityRef.child(rows[0].key).remove();}
+      });
+    }).then(function(){return true;}).catch(function(){if(!activityErrorShown){activityErrorShown=true;toast('تعذّر تسجيل النشاطات — راجع صلاحيات Firebase للمسار activityLog');}return false;});
+  }catch(_e){return Promise.resolve(false);}
+}
+function activityLabel(action){
+  var m={login:['تسجيل دخول','edit'],login_failed:['محاولة دخول فاشلة','delete'],session_revoked:['إنهاء جلسة','edit'],logout:['تسجيل خروج','edit'],add_user:['إضافة حساب','add'],edit_user:['تعديل حساب','edit'],delete_user:['حذف حساب','delete'],delete_activity_log:['حذف من سجل النشاطات','delete'],activate_user:['تفعيل حساب','add'],deactivate_user:['إيقاف حساب','delete'],change_password:['تغيير كلمة المرور','edit'],add_student:['إضافة دارس','add'],edit_student:['تعديل دارس','edit'],delete_student:['حذف دارس','delete'],add_subject:['إضافة مادة','add'],edit_subject:['تعديل مادة','edit'],delete_subject:['حذف مادة','delete'],edit_grades:['تعديل درجات','edit'],export:['تصدير نسخة احتياطية','edit'],import:['استيراد نسخة احتياطية','edit'],retake:['إعادة امتحان','edit'],edit_attendance:['تعديل الحضور','edit']};
+  return m[action]||[action||'نشاط آخر','edit'];
+}
+function activityDate(ts){try{return new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'medium',timeStyle:'short'}).format(new Date(ts));}catch(_e){return new Date(ts||0).toLocaleString();}}
+function renderActivity(){
+  if(!isOwner())return;
+  var q=normAr(S.activityQ||''),items=ACTIVITY.filter(function(x){return normAr([x.actorName,x.actorRole,x.action,x.target,x.details].join(' ')).indexOf(q)>=0;}).slice().reverse();
+  var html='<div class="sx-bar"><input class="sx-search" id="activitySearch" type="search" placeholder="ابحث بالفاعل أو الفعل أو التفاصيل…" value="'+esc(S.activityQ||'')+'"><button class="btn danger" id="activityDelete" disabled>🗑 حذف المحدد</button></div><p class="sx-count">'+nf(items.length)+' حدث معروض · يحتفظ النظام بآخر ١٥٠٠ حدث</p><div class="activity-list">';
+  if(!items.length)html+='<div class="activity-empty">📜 لا توجد نشاطات مطابقة حاليًا.</div>';
+  items.forEach(function(x){
+    var meta=activityLabel(x.action),photo=safePhoto(x.actorPhoto)||activityPhoto(x.actorId),locked=!!x.protected;
+    html+='<article class="activity-row '+(locked?'locked':'')+'"><div class="activity-avatar">'+(photo?'<img src="'+esc(photo)+'" alt="">':esc((x.actorName||'?').charAt(0)))+'</div><div class="activity-main"><div class="activity-heading"><b>'+esc(x.actorName||'—')+'</b><span class="chip-role">'+esc(x.actorRole||'')+'</span><span class="activity-action '+meta[1]+'">'+esc(meta[0])+'</span>'+(locked?'<span class="activity-lock" title="سجل محمي">🔒</span>':'')+'</div><div class="activity-target">'+esc(x.target||'—')+'</div>'+(x.details?'<div class="activity-details">'+esc(x.details)+'</div>':'')+'<div class="activity-time">'+activityDate(x.ts)+'</div></div>'+(locked?'':'<label class="activity-select" title="تحديد للحذف"><input type="checkbox" data-activity-key="'+esc(x._key)+'" aria-label="تحديد الحدث"></label>')+'</article>';
+  });
+  html+='</div>';view.innerHTML=html;
+  var search=document.getElementById('activitySearch');if(search)search.oninput=function(){S.activityQ=this.value;var pos=this.selectionStart;renderActivity();var n=document.getElementById('activitySearch');n.focus();try{n.setSelectionRange(pos,pos);}catch(_e){}};
+  var del=document.getElementById('activityDelete');
+  function refreshDelete(){if(del)del.disabled=!view.querySelector('[data-activity-key]:checked');}
+  view.querySelectorAll('[data-activity-key]').forEach(function(c){c.addEventListener('change',refreshDelete);});
+  if(del)del.onclick=function(){
+    var keys=Array.prototype.slice.call(view.querySelectorAll('[data-activity-key]:checked')).map(function(c){return c.getAttribute('data-activity-key');}).filter(Boolean);
+    if(!keys.length)return;
+    ask('حذف النشاطات المحددة','سيتم حذف السجلات المحددة فقط. سجلات الدخول والخروج وتغيير كلمة المرور محمية ولا يمكن حذفها.','🗑 حذف').then(function(ok){
+      if(!ok||!isOwner()||!fbActivityRef)return;
+      var removed=keys.filter(function(k){var e=ACTIVITY.find(function(x){return x._key===k;});return e&&!e.protected;});
+      Promise.all(removed.map(function(k){return fbActivityRef.child(k).remove();})).then(function(){logActivity('delete_activity_log','سجل النشاطات','حذف '+nf(removed.length)+' سجل يدويًا',{protected:true});toast('تم حذف السجلات المحددة');});
+    });
+  };
+}
 function accountAllowed(u){return u&&(u.id===ME.id||isOwner()||(can('manageUsers')&&u.role!=='إدارة النظام'));}
 function renderTeam(){
  if(!can('manageUsers'))return;
@@ -1972,7 +2046,7 @@ function openStaffForm(id,self){
  if(!self){next.role=document.getElementById('acRole').value;if(!isOwner()&&next.role==='إدارة النظام')return fail('غير مسموح');}
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;err.textContent='جارٍ الحفظ…';
- fbUsersRef.child(u.id).set(next).then(function(){var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}if(!self)closeModal();toast('تم حفظ الحساب والصورة');if(self)openStaffForm(ME.id,true);else renderTeam();}).catch(function(){btn.disabled=false;fail('تعذر الحفظ — تحقق من الاتصال والصلاحيات');});
+ fbUsersRef.child(u.id).set(next).then(function(){var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}var _fields=[];if(existing){[['الاسم','name'],['اسم المستخدم','username'],['الهاتف','phone'],['الرتبة','role'],['الصورة','photo']].forEach(function(pair){if(String(u[pair[1]]||'')!==String(next[pair[1]]||''))_fields.push(pair[0]);});}logActivity(existing?'edit_user':'add_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')',existing?('الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة')):('إنشاء حساب جديد · الرتبة: '+(next.role||'—'))+(pw&&canPassword?' · تم تعيين كلمة مرور جديدة':''));if(pw&&canPassword)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور',{protected:true});if(!self)closeModal();toast('تم حفظ الحساب والصورة');if(self)openStaffForm(ME.id,true);else renderTeam();}).catch(function(){btn.disabled=false;fail('تعذر الحفظ — تحقق من الاتصال والصلاحيات');});
  };
 }
 function delStaff(id){
@@ -1986,6 +2060,7 @@ function delStaff(id){
   if(u.role==='إدارة النظام'&&admins.length<=1){toast('⚠️ ده آخر حساب «إدارة النظام» — لازم يفضل حساب واحد على الأقل');return;}
   ask('حذف الحساب','هيتم حذف حساب «'+(u.name||u.u)+'» نهائيًا من النظام، ومش هيقدر يدخل خالص.','🗑 حذف').then(function(ok){
     if(!ok)return;
+    logActivity('delete_user','الحساب: '+(u.name||u.u||u.username),'حذف الحساب · الرتبة: '+(u.role||'—'));
     USERS=USERS.filter(function(x){return x.id!==id;});
     pushUsers();renderTeam();toast('اتحذف الحساب');
   });
@@ -2099,7 +2174,7 @@ function readPhoto(file,cb,onError){
 
 /* ===== حالة العرض ===== */
 var view=$('#view');
-var S={fLevel:0,fJoin:'',q:'',subjLevel:1,gradeLevel:null,cust:null,resLevel:1,resMode:'table',resQ:'',pgl:null};
+var S={fLevel:0,fJoin:'',q:'',subjLevel:1,gradeLevel:null,cust:null,resLevel:1,resMode:'table',resQ:'',pgl:null,activityQ:''};
 
 /* ===== التنقل ===== */
 function route(noScroll){
@@ -2107,7 +2182,8 @@ function route(noScroll){
   pendingRender=false;
   var h=(location.hash||'#students').slice(1),parts=h.split('/'),tab=parts[0];
   if(tab==='profile'){openStaffForm(ME.id,true);return;}
-  if(tab!=='students'&&tab!=='student'&&tab!=='subjects'&&tab!=='results'&&tab!=='team')tab=ME.role==='خادم'?'results':'students';
+  if(tab!=='students'&&tab!=='student'&&tab!=='subjects'&&tab!=='results'&&tab!=='team'&&tab!=='activity')tab=ME.role==='خادم'?'results':'students';
+  if(tab==='activity'&&!isOwner()){location.replace(can('manageStudents')?'#students':'#results');return;}
   if(ME.role==='خادم'&&tab!=='results'){location.replace('#results');return;}
   var active=tab==='student'?'students':tab;
   $$('[data-view]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-view')===active);});
@@ -2115,6 +2191,7 @@ function route(noScroll){
   else if(tab==='student')renderStudent(parts[1]);
   else if(tab==='results')renderResults();
   else if(tab==='team')renderTeam();
+  else if(tab==='activity')renderActivity();
   else renderSubjects();
   applyPerms(true);
   if(noScroll!==true)window.scrollTo(0,0);
@@ -2266,7 +2343,7 @@ function applyCust(st,sub,k,card){
   if(chk.checked){ if(def&&def.max===mx)delete m[k]; else m[k]={max:mx}; }
   else{ if(def)m[k]=false; else delete m[k]; }
   if(!Object.keys(m).length)delete st.custom[sub.id];
-  save();renderStudent(st.id);
+  if(save()){logActivity('edit_grades','الدارس: '+(st.name||'—')+' · المادة: '+(sub.name||'—'),'تغيير إعداد معيار التقييم '+k);renderStudent(st.id);}
 }
 
 /* ============================================================
@@ -2282,7 +2359,7 @@ function tf(f,label,val,type,extra,full){
 }
 function openStudentForm(id){
   if(!can('manageStudents')){toast('🔒 صلاحيتك للعرض بس — تعديل الدارسين مش متاح');return;}
-  var s=id?getStudent(id):{level:S.fLevel||1,status:'new',gender:'',joinYear:THIS_YEAR};
+  var s=id?getStudent(id):{level:S.fLevel||1,status:'new',gender:'',joinYear:THIS_YEAR},beforeStudent=id?JSON.parse(JSON.stringify(s)):null;
   var photo=safePhoto(s.photo);
   var cf=confessors(),names=Object.keys(cf),churches={};
   names.forEach(function(n){if(cf[n].church)churches[cf[n].church]=1;});
@@ -2350,6 +2427,7 @@ function openStudentForm(id){
     if(id){target=getStudent(id);Object.assign(target,d);}
     else{d.id=uid();d.grades={};db.students.push(d);target=d;}
     if(!save())return;
+    var _studentFields=[];if(beforeStudent){[['الاسم','name'],['السنة','level'],['الحالة','status'],['النوع','gender'],['سنة الانضمام','joinYear'],['الصورة','photo'],['بيانات التواصل/البيانات الشخصية','phone'],['بيانات أخرى','nid']].forEach(function(p){if(String(beforeStudent[p[1]]||'')!==String(d[p[1]]||''))_studentFields.push(p[0]);});}logActivity(id?'edit_student':'add_student','الدارس: '+(d.name||target.name||'—'),id?('الحقول المعدلة: '+(_studentFields.join('، ')||'لا تغييرات ظاهرة')):('إضافة دارس جديد · السنة '+(d.level||'')));
     closeModal();toast('اتحفظت بيانات الدارس ✓');
     if(id)route();else go('student/'+d.id);
   });
@@ -2377,7 +2455,7 @@ function renderSubjects(){
 }
 function openSubjectForm(id){
   if(!can('manageSubjects')){toast('🔒 صلاحيتك للعرض بس — تعديل المواد مش متاح');return;}
-  var s=id?getSubject(id):{level:S.subjLevel,name:'',criteria:{},weights:null};
+  var s=id?getSubject(id):{level:S.subjLevel,name:'',criteria:{},weights:null},beforeSubject=id?JSON.parse(JSON.stringify(s)):null;
   var custom=!!s.weights;
   var rows=CRIT.map(function(c){
     var cr=s.criteria[c.k],on=!!cr;
@@ -2427,7 +2505,7 @@ function openSubjectForm(id){
     else{sid=uid();db.subjects.push({id:sid,name:name,level:level,criteria:crit,weights:weights,pass:pass});}
     /* تنبيه لو درجات محفوظة بقت أكبر من الدرجة الكاملة الجديدة */
     var over=0;db.students.forEach(function(st){var g=st.grades&&st.grades[sid];if(!g)return;Object.keys(crit).forEach(function(k){if(g[k]!=null&&g[k]>crit[k].max)over++;});});
-    S.subjLevel=level;if(!save())return;closeModal();
+    if(!save())return;var _subjectDetails=id?('تعديل المادة · الحقول: '+[(beforeSubject.name!==name?'الاسم':'') ,(beforeSubject.level!==level?'السنة':''),(beforeSubject.pass!==pass?'نسبة النجاح':''),(JSON.stringify(beforeSubject.criteria||{})!==JSON.stringify(crit)?'معايير التقييم':''),(JSON.stringify(beforeSubject.weights||null)!==JSON.stringify(weights)?'الأوزان':'')].filter(Boolean).join('، ')):'إضافة مادة جديدة · السنة '+level;logActivity(id?'edit_subject':'add_subject','المادة: '+name,_subjectDetails);S.subjLevel=level;closeModal();
     toast(over?'اتحفظت — في '+nf(over)+' درجة أكبر من الدرجة الكاملة الجديدة، راجعها':'اتحفظت المادة ✓');route();
   });
 }
@@ -2510,7 +2588,7 @@ function doRetake(stId,subId){
     st.attempts=st.attempts||{};st.attempts[subId]=st.attempts[subId]||[];
     st.attempts[subId].push({n:st.attempts[subId].length+1,grades:Object.assign({},(st.grades&&st.grades[subId])||{}),pct:r.pct||0,passed:r.status==='pass',date:new Date().toISOString()});
     st.grades=st.grades||{};st.grades[subId]={};
-    if(save()){toast('اتسجلت الإعادة — محاولة جديدة ✓');route(true);}
+    if(save()){logActivity('retake','الدارس: '+(st.name||'—')+' · المادة: '+(sub.name||'—'),'تسجيل نتيجة المحاولة السابقة وبدء إعادة بدرجات فارغة');toast('اتسجلت الإعادة — محاولة جديدة ✓');route(true);}
   });
 }
 
@@ -2543,8 +2621,8 @@ document.addEventListener('click',function(e){
   else if(a==='editSub')openSubjectForm(id);
   else if(a==='cust'&&can('editGrades')){S.cust=(S.cust===sid?null:sid);renderStudent(S._gradeFor);}
   else if(a==='resetCust'&&can('editGrades')){var st0=getStudent(S._gradeFor);if(st0&&st0.custom){delete st0.custom[sid];save();renderStudent(st0.id);}}
-  else if(a==='delStu'&&can('manageStudents')){var st=getStudent(id);ask('حذف الدارس','هتتحذف بيانات «'+st.name+'» وكل درجاته نهائيًا.','🗑 حذف').then(function(ok){if(!ok)return;db.students=db.students.filter(function(s){return s.id!==id;});save();toast('اتحذف الدارس');go('students');});}
-  else if(a==='delSub'&&can('manageSubjects')){var sb=getSubject(id);ask('حذف المادة','هتتحذف «'+sb.name+'» ودرجاتها عند كل الدارسين.','🗑 حذف').then(function(ok){if(!ok)return;db.subjects=db.subjects.filter(function(s){return s.id!==id;});db.students.forEach(function(s){if(s.grades)delete s.grades[id];if(s.custom)delete s.custom[id];if(s.attempts)delete s.attempts[id];});save();toast('اتحذفت المادة');renderSubjects();});}
+  else if(a==='delStu'&&can('manageStudents')){var st=getStudent(id);ask('حذف الدارس','هتتحذف بيانات «'+st.name+'» وكل درجاته نهائيًا.','🗑 حذف').then(function(ok){if(!ok)return;db.students=db.students.filter(function(s){return s.id!==id;});save();logActivity('delete_student','الدارس: '+(st.name||'—'),'حذف الدارس ودرجاته');toast('اتحذف الدارس');go('students');});}
+  else if(a==='delSub'&&can('manageSubjects')){var sb=getSubject(id);ask('حذف المادة','هتتحذف «'+sb.name+'» ودرجاتها عند كل الدارسين.','🗑 حذف').then(function(ok){if(!ok)return;db.subjects=db.subjects.filter(function(s){return s.id!==id;});db.students.forEach(function(s){if(s.grades)delete s.grades[id];if(s.custom)delete s.custom[id];if(s.attempts)delete s.attempts[id];});save();logActivity('delete_subject','المادة: '+(sb.name||'—'),'حذف المادة ودرجاتها المرتبطة');toast('اتحذفت المادة');renderSubjects();});}
 });
 document.addEventListener('input',function(e){
   var t=e.target;
@@ -2573,9 +2651,12 @@ document.addEventListener('change',function(e){
       applyCust(st,sub,key,el);}
     return;
   }
-  if(!t.classList||!t.classList.contains('sx-grade')||t.value==='')return;
+  if(!t.classList||!t.classList.contains('sx-grade'))return;
+  var gs=getStudent(S._gradeFor),gb=getSubject(t.getAttribute('data-sub'));
+  if(t.value===''){if(gs&&gb)logActivity('edit_grades','الدارس: '+(gs.name||'—')+' · المادة: '+(gb.name||'—'),'مسح درجة معيار '+(t.getAttribute('data-k')||''));return;}
   var val=toEn(t.value).trim(),n=Number(val),m=parseFloat(t.max);
-  if(!/^\d+(?:\.\d+)?$/.test(val)||!Number.isFinite(n)||n<0||n>m){t.value=!Number.isFinite(n)||n<0?0:m;t.classList.remove('bad');t.dispatchEvent(new Event('input',{bubbles:true}));toast('الدرجة لازم تكون بين صفر و'+nf(m));}
+  if(!/^\d+(?:\.\d+)?$/.test(val)||!Number.isFinite(n)||n<0||n>m){t.value=!Number.isFinite(n)||n<0?0:m;t.classList.remove('bad');t.dispatchEvent(new Event('input',{bubbles:true}));toast('الدرجة لازم تكون بين صفر و'+nf(m));return;}
+  if(gs&&gb)logActivity('edit_grades','الدارس: '+(gs.name||'—')+' · المادة: '+(gb.name||'—'),'تعديل درجة معيار '+(t.getAttribute('data-k')||'')+' إلى '+nf(n)+' من '+nf(m));
 });
 
 initHeaderTools();
