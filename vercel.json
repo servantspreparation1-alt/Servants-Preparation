@@ -1,9 +1,21 @@
 {
- "buildCommand":"node -e \"console.log('Static site + protected API')\"",
- "outputDirectory":"public",
- "functions":{"api/secure.js":{"maxDuration":30}},
- "headers":[
-  {"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store"},{"key":"X-Content-Type-Options","value":"nosniff"}]},
-  {"source":"/(.*)","headers":[{"key":"Referrer-Policy","value":"strict-origin-when-cross-origin"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Permissions-Policy","value":"camera=(), microphone=(), geolocation=()"}]}
- ]
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
 }
