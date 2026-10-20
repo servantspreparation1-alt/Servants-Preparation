@@ -138,6 +138,15 @@
   };
   const readLocal = () => { try { return JSON.parse(localStorage.getItem(dbKey) || "null"); } catch (e) { return null; } };
   const writeLocal = (db) => { try { localStorage.setItem(dbKey, JSON.stringify(db)); } catch (e) {} };
+  const stateSignature = (db) => JSON.stringify({
+    users: (db && db.users) || [],
+    students: (db && db.students) || [],
+    activityLog: (db && db.activityLog) || [],
+    attendanceSessions: (db && db.attendanceSessions) || [],
+    tasks: (db && db.tasks) || [],
+    templates: (db && db.templates) || {},
+    settings: (db && db.settings) || {},
+  });
   const parseLoose = (v, fallback) => {
     if (v == null) return fallback;
     if (typeof v !== "string") return v;
@@ -247,14 +256,14 @@
     const base = getBase();
     const [usersRaw, valRaw] = await Promise.all([
       j(base + "/users.json"),
-      j(base + "/val.json").catch(() => null),
+      j(base + "/val.json"),
     ]);
     const local = readLocal() || {};
     const remoteUsers = usersRaw && typeof usersRaw === "object"
       ? Object.keys(usersRaw).map((k) => remoteUserToLocal(k, usersRaw[k]))
       : [];
 
-    const before = JSON.stringify({ u: local.users || [] });
+    const before = stateSignature(local);
     const merged = { ...local };
 
     if (remoteUsers.length) {
@@ -272,9 +281,9 @@
       merged.settings = data.settings;
     }
 
-    const changed = JSON.stringify({ u: merged.users || [] }) !== before;
-    const sig = JSON.stringify({ u: merged.users || [], s: (merged.students || []).length, t: merged.settings && merged.settings.updatedAt });
-    const remoteChanged = !!sig && sig !== lastRemoteSig && lastRemoteSig !== "";
+    const sig = stateSignature(merged);
+    const changed = sig !== before;
+    const remoteChanged = changed || (!!sig && sig !== lastRemoteSig && lastRemoteSig !== "");
     lastRemoteSig = sig;
 
     writeLocal(merged);
@@ -321,7 +330,9 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(val),
       }));
-      await Promise.all(writes);
+      const responses = await Promise.all(writes);
+      const failed = responses.filter((res) => res && typeof res.ok === "boolean" && !res.ok);
+      if (failed.length) throw new Error("HTTP " + failed[0].status + " — فشل رفع بعض البيانات");
       const fresh = readLocal();
       if (fresh && Array.isArray(fresh.users)) {
         let touched = false;
@@ -350,7 +361,7 @@
   async function sync() {
     try {
       const r = await pull();
-      if (r.remoteChanged && onRemote) onRemote();
+      if ((r.changed || r.remoteChanged) && onRemote) onRemote();
       return r;
     } catch (e) {
       return { ok: false, error: e.message };
@@ -367,8 +378,10 @@
   /** رفع كل حاجة ثم سحب — لزرار «مزامنة الآن» */
   async function syncNow() {
     const p = await push();
-    const l = await pull();
-    return { ok: !!(p && p.ok), pushed: p, pulled: l };
+    let l;
+    try { l = await pull(); } catch (e) { l = { ok: false, error: e.message }; }
+    if ((l.changed || l.remoteChanged) && onRemote) onRemote();
+    return { ok: !!(p && p.ok) && !!(l && l.ok), pushed: p, pulled: l };
   }
 
   /** تحديث وقت آخر دخول على القاعدة (حقل واحد بس) */

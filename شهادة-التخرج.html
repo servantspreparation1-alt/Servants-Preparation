@@ -2253,15 +2253,16 @@ const SESSION_KEY = 'e3dad_auth_v2'; /* ★ نفس مفتاح الجلسة ال�
 
 let DB = { students: [], users: [], settings: {} };
 try {
-  DB = JSON.parse(E3.store.getItem(E3.DB_KEY) || '{}');
-  DB.students = DB.students || []; DB.users = cleanUsers(DB.users); DB.settings = DB.settings || {};
+  const storedDB = JSON.parse(E3.store.getItem(E3.DB_KEY) || '{}');
+  DB = storedDB && typeof storedDB === 'object' ? storedDB : { students: [], users: [], settings: {} };
+  DB.students = Array.isArray(DB.students) ? DB.students.filter(x => x && typeof x === 'object') : []; DB.users = cleanUsers(DB.users); DB.settings = DB.settings || {};
 } catch (e) {}
 
 /* ★ التحقق من الجلسة — الشهادات للخدام المسجلين دخول فقط
    (٧ أيام لو «خلّيني مُتّصل» / ١٢ ساعة لو دخول عادي) */
 const sessionId = E3.store.getItem(SESSION_KEY);
 const sessionAt = +E3.store.getItem(SESSION_KEY + '_at') || 0;
-const me = (DB.users || []).find(u => u.id === sessionId);
+const me = (DB.users || []).find(u => String(u.id) === String(sessionId));
 const sessionRemember = E3.store.getItem(SESSION_KEY + '_remember');
 const maxMs = (sessionRemember === '0') ? 12 * 3600000 : 7 * 86400000;
 const meOK = !!(me && (me.active !== false || (typeof isLucasOwner === 'function' && isLucasOwner(me))));
@@ -2273,6 +2274,13 @@ if (!meOK || !sessionAt || (Date.now() - sessionAt) > maxMs) {
 }
 
 const YEAR_NAMES = { 1: 'السنة الأولى', 2: 'السنة الثانية', 3: 'السنة الثالثة' };
+function canAccessCertificateStudent(st) {
+  const scope = Array.isArray(me && me.scopeYears) ? me.scopeYears.map(Number).filter(y => [1,2,3].includes(y)) : [];
+  if (!scope.length) return true;
+  const enrollments = Array.isArray(st && st.enrollments) ? st.enrollments : [];
+  const current = enrollments[enrollments.length - 1] || null;
+  return !current || scope.includes(Number(current.yearLevel));
+}
 function subjFinal(sub) {
   const sc = (sub.assessments || []).filter(a => a.score !== '' && a.score != null && !isNaN(+a.score));
   if (!sc.length) return null;
@@ -2292,7 +2300,7 @@ const settings = DB.settings || {};
 if (settings.orgName) document.getElementById('orgLine').textContent = settings.orgName + (settings.church ? ' — ' + settings.church : '');
 if (settings.orgLogo) document.querySelectorAll('img.logo').forEach(i => i.src = settings.orgLogo);
 
-const eligible = (DB.students || []).filter(st => (st.enrollments || []).some(e => e.status === 'passed'));
+const eligible = (DB.students || []).filter(st => canAccessCertificateStudent(st) && (Array.isArray(st.enrollments) ? st.enrollments : []).some(e => e.status === 'passed'));
 const sel = document.getElementById('studentSel');
 sel.innerHTML = eligible.length
   ? eligible.map(st => `<option value="${st.id}">${esc(st.name)} (${esc(st.code)})${st.status === 'graduated' ? ' — 🎓 خريج' : ''}</option>`).join('')
@@ -2300,12 +2308,24 @@ sel.innerHTML = eligible.length
 document.getElementById('certDate').value = today();
 
 function renderCert() {
-  const st = (DB.students || []).find(x => x.id === sel.value);
-  if (!st) { document.getElementById('certBox').innerHTML = '<div class="empty">لا يوجد دارس مؤهل للشهادة بعد — الشهادة بعد أول سنة منتهية بنجاح</div>'; return; }
-  const passed = (st.enrollments || []).filter(e => e.status === 'passed');
+  const st = (DB.students || []).find(x => String(x.id) === String(sel.value));
+  if (!st || !canAccessCertificateStudent(st)) { document.getElementById('certBox').innerHTML = '<div class="empty">لا يوجد دارس مؤهل ضمن نطاق حسابك — راجع نطاق السنة أو قائمة الدارسين</div>'; return; }
+  const passed = (Array.isArray(st.enrollments) ? st.enrollments : []).filter(e => e.status === 'passed');
   const last = passed[passed.length - 1];
+  const passedYears = new Set(passed.map(e => Number(e.yearLevel)));
+  const hasAllThreeYears = [1,2,3].every(y => passedYears.has(y));
   const type = document.getElementById('certType').value;
-  const isGrad = type === 'grad' || (type === 'auto' && (st.status === 'graduated' || passed.some(e => e.yearLevel === 3)));
+  if (st.status === 'graduated' && !hasAllThreeYears) {
+    const missing = [1,2,3].filter(y => !passedYears.has(y)).map(y => YEAR_NAMES[y]).join('، ');
+    document.getElementById('certBox').innerHTML = `<div class="empty">حالة الدارس «خريج» لكن سجل النجاح غير مكتمل؛ لن تُصدر شهادة حتى تصحيح السجل.${missing ? '<br>سنوات غير مكتملة: '+esc(missing) : ''}</div>`;
+    return;
+  }
+  if (type === 'grad' && (!hasAllThreeYears || st.status !== 'graduated')) {
+    const missing = [1,2,3].filter(y => !passedYears.has(y)).map(y => YEAR_NAMES[y]).join('، ');
+    document.getElementById('certBox').innerHTML = `<div class="empty">لا يمكن إصدار شهادة التخرّج قبل تسجيل النجاح في السنوات الثلاث واعتماد حالة التخرّج.${missing ? '<br>سنوات غير مكتملة: '+esc(missing) : ''}</div>`;
+    return;
+  }
+  const isGrad = type === 'grad' || (type === 'auto' && st.status === 'graduated' && hasAllThreeYears);
   const date = document.getElementById('certDate').value || today();
   const org = settings.orgName || 'إعداد الخدّام', church = settings.church || '', logo = settings.orgLogo || 'assets/img/logo-512.png';
   const title = isGrad ? 'شهادة تخرّج من خدمة إعداد الخدّام' : 'شهادة إنهاء ' + YEAR_NAMES[last.yearLevel] + ' — إعداد الخدّام';

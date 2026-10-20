@@ -2950,7 +2950,28 @@ function defaultAssessments(){return[
  {id:uid(),title:'الاختبار النهائي',type:'امتحان نهائي',date:'',score:'',max:50}
 ]}
 function loadDB(){
- try{const raw=E3.store.getItem(DB_KEY); if(raw){const d=JSON.parse(raw); d.settings={...defaultSettings(),...(d.settings||{})}; d.users=cleanUsers(d.users); d.deletedUserIds=d.deletedUserIds||[]; d.users=(d.users||[]).filter(u=>isLucasOwner(u)||!(d.deletedUserIds||[]).includes(u.id)); d.activityLog=Array.isArray(d.activityLog)?d.activityLog.slice(0,1500):[]; d.attendanceSessions=d.attendanceSessions||[]; d.tasks=d.tasks||[]; return d;}}catch(e){}
+ try{
+  const raw=E3.store.getItem(DB_KEY);
+  if(raw){
+   const d=JSON.parse(raw);
+   d.students=Array.isArray(d.students)?d.students.filter(x=>x&&typeof x==='object'):[];
+   d.students.forEach(st=>{
+    if(st.id==null||st.id==='')st.id=uid();
+    st.code=String(st.code||'').trim();
+    st.enrollments=Array.isArray(st.enrollments)?st.enrollments.filter(e=>e&&typeof e==='object'):[];
+    st.enrollments.forEach((en,i)=>{if(en.id==null||en.id==='')en.id=uid();en.yearLevel=Number(en.yearLevel)||1;en.attemptNo=Math.max(1,Number(en.attemptNo)||i+1);en.subjects=Array.isArray(en.subjects)?en.subjects:[];en.activities=Array.isArray(en.activities)?en.activities:[];});
+    st.notes=Array.isArray(st.notes)?st.notes:[];
+   });
+   d.settings={...defaultSettings(),...(d.settings||{})};
+   d.templates={...defaultTemplates(),...(d.templates&&typeof d.templates==='object'?d.templates:{})};
+   d.users=cleanUsers(d.users); d.deletedUserIds=Array.isArray(d.deletedUserIds)?d.deletedUserIds:[];
+   d.users=(d.users||[]).filter(u=>isLucasOwner(u)||!(d.deletedUserIds||[]).includes(u.id));
+   d.activityLog=Array.isArray(d.activityLog)?d.activityLog.slice(0,1500):[];
+   d.attendanceSessions=Array.isArray(d.attendanceSessions)?d.attendanceSessions:[];
+   d.tasks=Array.isArray(d.tasks)?d.tasks:[];
+   return d;
+  }
+ }catch(e){try{window._e3LoadDBError=String(e&&e.message||e)}catch(_){}}
  return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
 }
 function preserveLucasRecord(users){
@@ -3086,9 +3107,26 @@ const E3_FREE_EDIT=true; /* كل اللي داخل يقدر يعمل أي حاج
 function hasPerm(p){const u=currentUser(); if(!u||u.active===false||u.guest)return false; return E3_FREE_EDIT?true:effectivePerms(u).includes(p)}
 function canEdit(){return hasPerm('enter_grades')||hasPerm('edit_students')||hasPerm('manage_years')||hasPerm('add_notes')}
 function isAdmin(){const u=currentUser(); return !!u&&(u.role==='amin'||isLucasOwner(u))}
+function canMakeYearDecision(u=currentUser()){return !!u&&(isLucasOwner(u)||(['amin','assistant'].includes(u.role)&&effectivePerms(u).includes('make_decisions')))}
 function userAvatar(u){if(!u)return '<span>؟</span>'; if(u.photo)return `<img src="${u.photo}" alt="">`; if(isLucasOwner(u))return '<span aria-label="إدارة السيستم">🛡️</span>'; return `<span>${esc(initials(u.displayName||'خ'))}</span>`}
 function logActivity(action){const u=currentUser(); DB.activityLog=DB.activityLog||[]; DB.activityLog.unshift({id:uid(),at:new Date().toISOString(),date:new Date().toLocaleString('ar-EG'),userId:u?.id||null,user:u?(isLucasOwner(u)?E3.SYSTEM_ADMIN_LABEL:u.displayName+' ('+u.username+')'):'—',action:String(action).slice(0,500)}); DB.activityLog=DB.activityLog.slice(0,1500)}
-function canAccessStudent(st){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; if(!sc.length)return true; const en=studentCurrent(st); if(!en)return false; return sc.includes(en.yearLevel)}
+function scopedYears(u=currentUser()){
+ const raw=Array.isArray(u&&u.scopeYears)?u.scopeYears:[];
+ return [...new Set(raw.map(Number).filter(y=>[1,2,3].includes(y)))];
+}
+function canAccessYear(year,u=currentUser()){
+ const sc=scopedYears(u);
+ return !sc.length||sc.includes(Number(year));
+}
+function canAccessStudent(st){
+ const u=currentUser(); if(!u||!st)return false;
+ const sc=scopedYears(u); if(!sc.length)return true;
+ const en=studentCurrent(st);
+ /* ملف الاستقبال الذي لم تُفتح له سنة بعد يظل مرئياً للمشرفين؛
+    وإلا كان الدارس يختفي فور تسجيله قبل إسناده لسنة. */
+ if(!en)return true;
+ return sc.includes(Number(en.yearLevel));
+}
 function canAccessEnrollment(en){const u=currentUser(); if(!u)return false; const sc=u.scopeYears||[]; return !sc.length||sc.includes(en.yearLevel)}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 function readPhotoFile(file,cb,maxSize=760){ if(!file)return; if(!/^image\//.test(file.type||''))return toast('اختر ملف صورة صحيح'); if(file.size>10*1024*1024)return toast('الصورة كبيرة جداً — اختر صورة أقل من ١٠ ميجا');
@@ -3121,6 +3159,26 @@ function enrollStats(en){
 function gradeLabel(v){if(v==null)return'—'; if(v>=90)return'ممتاز'; if(v>=80)return'جيد جداً'; if(v>=70)return'جيد'; if(v>=DB.settings.passMark)return'ناجح'; return'يحتاج إعادة'}
 function gradeClass(v){if(v==null)return''; if(v>=80)return''; if(v>=DB.settings.passMark)return'mid'; if(v>=40)return'low'; return'fail'}
 function studentCurrent(st){return (st.enrollments||[])[(st.enrollments||[]).length-1]||null}
+function hasPassedYear(st,yearLevel){return (st.enrollments||[]).some(e=>Number(e.yearLevel)===Number(yearLevel)&&e.status==='passed')}
+function hasOngoingAttempt(st,exceptId){return (st.enrollments||[]).some(e=>e.status==='ongoing'&&(exceptId==null||String(e.id)!==String(exceptId)))}
+function nextAttemptNo(st,yearLevel,exceptId){
+ const nums=(st.enrollments||[]).filter(e=>(exceptId==null||String(e.id)!==String(exceptId))&&Number(e.yearLevel)===Number(yearLevel)).map(e=>Number(e.attemptNo)||0);
+ return Math.max(0,...nums)+1;
+}
+function nextStudentCode(){
+ const used=new Set((DB.students||[]).map(s=>String(s.code||'').trim().toLowerCase()).filter(Boolean));
+ let n=(DB.students||[]).length+1, code;
+ do{code='D-'+String(n++).padStart(3,'0')}while(used.has(code.toLowerCase()));
+ return code;
+}
+function getScopedEnrollment(studentId,enrollId){
+ const st=getStudent(studentId);
+ if(!st){toast('الدارس غير موجود — ارجع لقائمة الدارسين وحدّث الصفحة');return null}
+ const en=(st.enrollments||[]).find(e=>String(e.id)===String(enrollId));
+ if(!en){toast('المحاولة دي مش موجودة في ملف الدارس');return null}
+ if(!canAccessStudent(st)||!canAccessEnrollment(en)){toast('المحاولة خارج نطاق السنوات المسموح لحسابك');return null}
+ return {st,en};
+}
 function studentOverallAvg(st){const vals=(st.enrollments||[]).map(e=>enrollStats(e).overall).filter(v=>v!=null); return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10:null}
 function isAtRisk(st){const en=studentCurrent(st); if(!en||en.status!=='ongoing')return false; const s=enrollStats(en); return (s.overall!=null&&s.overall<65)||(s.att!=null&&s.att<DB.settings.attendanceWarn)||(en.serviceHours!=null&&en.serviceHours<DB.settings.serviceHoursTarget*0.4&&en.status==='ongoing')}
 function avatarHTML(st,size){return st.photo?`<img src="${st.photo}" alt="">`:`<span>${esc(initials(st.name))}</span>`}
@@ -3267,14 +3325,7 @@ function viewUsers(){
         <small>${toArabicDigits(sealedCount)} من ${toArabicDigits(users.length)} كلمة سر متشفّرة وجاهزة للعرض. مفتاح الخزنة مستخدَم من كلمة سرك ومافيش حد غيرك يقدر يفكها — وكل عملية عرض بتتسجل في سجل النشاطات.</small>
       </div>
       <button class="btn gold sm" onclick="openVaultPanel()">🔎 فتح خزنة البيانات</button>
-    </div>` : `
-    <div class="vault-banner" style="border-color:var(--line);background:var(--surface-2)">
-      <div class="vic" style="background:linear-gradient(135deg,#1e5b96,#123a6b)">🔒</div>
-      <div style="flex:1;min-width:200px">
-        <b>كلمات السر مشفّرة — عرضها لإدارة السيستم فقط</b>
-        <small>انت تقدر تضيف وتوقف وتعيد تعيين كلمة سر أي حساب، لكن <b>مش هتقدر تشوف كلمة السر نفسها</b> غير لو انت إدارة السيستم.</small>
-      </div>
-    </div>`;
+    </div>` : '';
 
   return `
   ${syncBanner}
@@ -3684,7 +3735,7 @@ function studentCard(st){
 function viewStudents(){
  return `<div class="card" style="margin-bottom:14px"><div class="filters">
   <div class="field" style="flex:1;min-width:200px"><label>بحث بالاسم أو الكود أو الهاتف</label><input id="fSearch" placeholder="مثال: أحمد أو D-001" oninput="renderStudentList()"></div>
-  <div class="field"><label>السنة الحالية</label><select id="fYear" onchange="renderStudentList()"><option value="">الكل</option><option value="1">الأولى</option><option value="2">الثانية</option><option value="3">الثالثة</option></select></div>
+  <div class="field"><label>السنة الحالية</label><select id="fYear" onchange="renderStudentList()"><option value="">الكل</option><option value="none">لم يبدأ سنة</option><option value="1">الأولى</option><option value="2">الثانية</option><option value="3">الثالثة</option></select></div>
   <div class="field"><label>الحالة</label><select id="fStatus" onchange="renderStudentList()"><option value="">الكل</option><option value="active">نشط</option><option value="graduated">خريج</option><option value="paused">موقوف</option><option value="withdrawn">منسحب</option><option value="risk">⚠️ يحتاج متابعة</option><option value="repeater">عنده إعادة (محاولة &gt; ١)</option></select></div>
   <div class="field"><label>الدفعة</label><input id="fBatch" placeholder="مثال: 2024" oninput="renderStudentList()"></div>
   <button class="btn primary" onclick="openStudentForm()">➕ دارس جديد</button>
@@ -3697,18 +3748,18 @@ function filteredStudents(){
   if(!canAccessStudent(st))return false;
   if(q && !(st.name.includes(q)||(st.code||'').includes(q)||(st.phone||'').includes(q)))return false;
   if(b && !(st.batch||'').includes(b))return false;
-  if(y){const en=studentCurrent(st); if(!en||String(en.yearLevel)!==y)return false}
+  if(y==='none'){if(studentCurrent(st))return false} else if(y){const en=studentCurrent(st); if(!en||String(en.yearLevel)!==y)return false}
   if(fs==='risk')return isAtRisk(st);
   if(fs==='repeater')return (st.enrollments||[]).some(e=>e.attemptNo>1);
   if(fs)return st.status===fs;
   return true;
  });
 }
-function renderStudentList(){const el=$('#studentList'); if(!el)return; const list=filteredStudents();
- el.innerHTML= list.length? `<p style="color:var(--muted);font-size:13px">عرض ${list.length} من ${DB.students.length} دارس</p><div class="student-grid">${list.map(studentCard).join('')}</div>` : (DB.students.length? '<div class="card empty"><div class="big">🔍</div>لا توجد نتائج مطابقة للبحث</div>' : emptyState());}
+function renderStudentList(){const el=$('#studentList'); if(!el)return; const list=filteredStudents(); const visibleTotal=(DB.students||[]).filter(canAccessStudent).length;
+ el.innerHTML= list.length? `<p style="color:var(--muted);font-size:13px">عرض ${list.length} من ${visibleTotal} دارس ضمن نطاقك</p><div class="student-grid">${list.map(studentCard).join('')}</div>` : (visibleTotal? '<div class="card empty"><div class="big">🔍</div>لا توجد نتائج مطابقة للبحث</div>' : emptyState());}
 
 /* ---------- ملف الدارس ---------- */
-function getStudent(id){return DB.students.find(s=>s.id===id)}
+function getStudent(id){return (DB.students||[]).find(s=>String(s&&s.id)===String(id))||null}
 function viewProfile(){
  const st=getStudent(state.studentId); if(!st) return `<div class="card empty">الدارس غير موجود <br><button class="btn" onclick="go('students')">رجوع</button></div>`;
  if(!canAccessStudent(st)) return `<div class="card empty"><div class="big">🔒</div><b>الدارس ده خارج نطاق السنوات المسموح لك بها</b><p>نطاقك الحالي: ${(currentUser().scopeYears||[]).map(y=>YEAR_NAMES[y]).join('، ')||'—'} — كلّم الأمين لو محتاج صلاحية أوسع.</p><button class="btn" onclick="go('students')">رجوع لقائمة الدارسين</button></div>`;
@@ -3729,7 +3780,7 @@ function viewProfile(){
      <button class="btn gold" ${hasPerm('print_reports')?'':'disabled'} onclick="printStudentCard('${st.id}')">🪪 كارت الدارس</button>
      <button class="btn gold" ${hasPerm('print_reports')?'':'disabled'} onclick="printCertificate('${st.id}')">🎓 شهادة إنهاء / تخرج</button>
      <button class="btn" onclick="openCertStudio()">🎓 صفحة الشهادات</button>
-     ${hasPerm('delete_students')?`<button class="btn danger" onclick="deleteStudent('${st.id}')">🗑️ حذف الدارس نهائياً</button>`:''}
+     ${(isAdmin()&&effectivePerms(currentUser()).includes('delete_students'))?`<button class="btn danger" onclick="deleteStudent('${st.id}')">🗑️ حذف الدارس نهائياً</button>`:''}
    </div>
    <div class="grid c3" style="margin-top:16px">
      <div><div class="kv"><span>النوع</span><b>${esc(st.gender||'—')}</b></div><div class="kv"><span>تاريخ الميلاد</span><b>${esc(st.birthDate||'—')}</b></div><div class="kv"><span>الرقم القومي</span><b>${esc(st.nationalId||'—')}</b></div><div class="kv" style="border:0"><span>الإيميل</span><b>${esc(st.email||'—')}</b></div></div>
@@ -3763,7 +3814,7 @@ function profileYears(st){
         <button class="btn sm" ${hasPerm('manage_activities')&&canAccessEnrollment(en)?'':'disabled'} onclick="openActivityForm('${st.id}','${en.id}')">➕ نشاط / تدريب</button>
         <button class="btn sm" ${hasPerm('manage_years')?'':'disabled'} onclick="openEnrollmentForm('${st.id}','${en.id}')">✏️ تعديل بيانات المحاولة والحضور</button>
         <button class="btn sm" ${hasPerm('print_reports')?'':'disabled'} onclick="printStudentReport('${st.id}','${en.id}')">🖨️ تقرير المحاولة دي بس</button>
-        ${en.status==='ongoing'?`<button class="btn sm green" ${hasPerm('make_decisions')?'':'disabled'} onclick="openDecisionForm('${st.id}','${en.id}')">🏁 إنهاء السنة واتخاذ قرار (نقل / إعادة / تخرج)</button>`:''}
+        ${en.status==='ongoing'&&canMakeYearDecision()?`<button class="btn sm green" onclick="openDecisionForm('${st.id}','${en.id}')">🏁 إنهاء السنة واتخاذ قرار (نقل / إعادة / تخرج)</button>`:''}
         ${isAdmin()?`<button class="btn sm danger" onclick="deleteEnrollment('${st.id}','${en.id}')">حذف المحاولة</button>`:''}
       </div>
       <h3 style="margin-top:16px">المواد والتقييمات ${s.failedCount?`<span class="badge b-red">${s.failedCount} مادة تحتاج إعادة: ${esc(s.failedNames.join('، '))}</span>`:''}</h3>
@@ -3800,28 +3851,30 @@ function profileTimeline(st){
    الحضور بالمحاضرات — كل محاضرة سجل مستقل، ونسبة الحضور في
    ملف الدارس بتتحدث تلقائياً، والغياب المتكرر = افتقاد.
 ============================================================ */
-function sessionStudents(year){return DB.students.filter(st=>{if(!canAccessStudent(st))return false; const en=studentCurrent(st); return en&&en.yearLevel===year&&en.status==='ongoing'})}
+function sessionStudents(year){return (DB.students||[]).filter(st=>{if(!canAccessStudent(st))return false; const en=studentCurrent(st); return en&&Number(en.yearLevel)===Number(year)&&en.status==='ongoing'})}
 function recalcEnrollmentAttendance(enrollmentId){
-  DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{ if(en.id!==enrollmentId)return;
-    let total=0,att=0; (DB.attendanceSessions||[]).forEach(se=>{(se.records||[]).forEach(r=>{if(r.enrollmentId===enrollmentId){total++; if(r.status==='present'||r.status==='late')att++}})});
+  DB.students.forEach(st=>{(st.enrollments||[]).forEach(en=>{ if(String(en.id)!==String(enrollmentId))return;
+    let total=0,att=0; (DB.attendanceSessions||[]).forEach(se=>{(se.records||[]).forEach(r=>{if(String(r.enrollmentId)===String(enrollmentId)){total++; if(r.status==='present'||r.status==='late')att++}})});
     if(total>0){en.attendanceTotal=(en._attBaseTotal||0)+total; en.attendanceAttended=(en._attBaseAttended||0)+att}
+    else if(en._attBaseTotal!==undefined){en.attendanceTotal=en._attBaseTotal||0;en.attendanceAttended=en._attBaseAttended||0}
   })});
 }
-function recalcAllAttendance(){const ids=new Set(); (DB.attendanceSessions||[]).forEach(se=>(se.records||[]).forEach(r=>ids.add(r.enrollmentId))); ids.forEach(recalcEnrollmentAttendance)}
+function recalcAllAttendance(){const ids=new Set(); (DB.attendanceSessions||[]).forEach(se=>(se.records||[]).forEach(r=>ids.add(String(r.enrollmentId)))); ids.forEach(recalcEnrollmentAttendance)}
 function attStatusLabel(v){return {present:'✅ حاضر',absent:'❌ غائب',late:'⏰ متأخر',excused:'📄 بعذر'}[v]||v}
 function consecutiveAbsences(studentId,year){
-  const sessions=(DB.attendanceSessions||[]).filter(se=>se.yearLevel===year).sort((a,b)=>(b.date||'').localeCompare(a.date||'')); let count=0;
-  for(const se of sessions){const r=(se.records||[]).find(x=>x.studentId===studentId); if(!r)continue; if(r.status==='absent')count++; else break}
+  const sessions=(DB.attendanceSessions||[]).filter(se=>Number(se.yearLevel)===Number(year)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')); let count=0;
+  for(const se of sessions){const r=(se.records||[]).find(x=>String(x.studentId)===String(studentId)); if(!r)continue; if(r.status==='absent')count++; else break}
   return count;
 }
 function viewAttendance(){
   if(!hasPerm('manage_activities'))return `<div class="card empty"><div class="big">🔒</div>تسجيل الحضور متاح لمن له صلاحية «إدارة الأنشطة»</div>`;
-  const y=state.attYear||1;
-  const sessions=(DB.attendanceSessions||[]).filter(se=>se.yearLevel===y).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const scope=scopedYears(), visibleYears=scope.length?scope:[1,2,3];
+  const y=visibleYears.includes(Number(state.attYear))?Number(state.attYear):visibleYears[0]; state.attYear=y;
+  const sessions=(DB.attendanceSessions||[]).filter(se=>Number(se.yearLevel)===y).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const studs=sessionStudents(y);
   const repeated=studs.map(st=>({st,n:consecutiveAbsences(st.id,y)})).filter(x=>x.n>=2).sort((a,b)=>b.n-a.n);
   return `<div class="card" style="margin-bottom:14px"><div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-    <div style="display:flex;gap:7px;flex-wrap:wrap">${[1,2,3].map(yy=>`<button class="btn ${y===yy?'primary':''}" onclick="state.attYear=${yy};render()">${YEAR_NAMES[yy]}</button>`).join('')}</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">${visibleYears.map(yy=>`<button class="btn ${y===yy?'primary':''}" onclick="state.attYear=${yy};render()">${YEAR_NAMES[yy]}</button>`).join('')}</div>
     <button class="btn primary" onclick="openSessionForm(${y})">➕ تسجيل محاضرة جديدة</button></div>
    <p style="color:var(--muted);font-size:13px;margin:11px 0 0">دارسو ${YEAR_NAMES[y]} الجاريين: <b>${studs.length}</b> • محاضرات مسجلة: <b>${sessions.length}</b> — نسبة الحضور في ملف كل دارس بتتحدث لوحدها من السجلات دي (حاضر/متأخر = حضور، غائب/بعذر = مش حضور).</p></div>
   ${repeated.length?`<div class="card" style="margin-bottom:14px;border-color:#f0b8b3"><h3>💗 غياب متكرر — دول أولى بالافتقاد والمكالمة</h3>${repeated.map(x=>{const en=studentCurrent(x.st);return `<div class="kv"><span><a href="#" onclick="go('profile','${x.st.id}');return false"><b>${esc(x.st.name)}</b></a> — غاب آخر <b>${x.n}</b> محاضرات ورا بعض</span><span style="display:flex;gap:6px;flex-wrap:wrap">${x.st.whatsapp||x.st.phone?`<a class="btn sm green" target="_blank" href="https://wa.me/${esc(String(x.st.whatsapp||x.st.phone).replace(/[^0-9]/g,'').replace(/^0/,'20'))}?text=${encodeURIComponent('أهلاً '+x.st.name+'، وحشتنا في إعداد الخدام ومفتقدينك. طمّنا عليك، ولو في أي حاجة معطّلاك إحنا جنبك ☦')}">💬 واتساب افتقاد</a>`:''}<button class="btn sm gold" onclick="quickFollowTask('${x.st.id}')">💗 مهمة متابعة</button></span></div>`}).join('')}</div>`:''}
@@ -3832,43 +3885,69 @@ function viewAttendance(){
 }
 function openSessionForm(year,sessionId){
   if(!hasPerm('manage_activities'))return toast('صلاحية الحضور/الأنشطة غير مفعّلة لحسابك');
-  const se=sessionId?(DB.attendanceSessions||[]).find(x=>x.id===sessionId):null;
-  const studs=sessionStudents(se?se.yearLevel:year);
-  if(!studs.length&&!se)return toast('لا يوجد دارسون جاريون في السنة دي حالياً');
-  const oldMap={}; if(se)(se.records||[]).forEach(r=>oldMap[r.studentId]=r.status);
+  const se=sessionId?(DB.attendanceSessions||[]).find(x=>String(x.id)===String(sessionId)):null;
+  if(sessionId&&!se)return toast('سجل المحاضرة مش موجود — حدّث الصفحة');
+  const sessionYear=Number(se?se.yearLevel:year);
+  if(!canAccessYear(sessionYear))return toast('السنة دي خارج نطاقك — لا يمكن تسجيل أو تعديل حضورها');
+  const currentStudents=sessionStudents(sessionYear);
+  const studentsById=new Map(currentStudents.map(st=>[String(st.id),{st,en:studentCurrent(st)}]));
+  // Preserve the original roster/attempt when editing an old session, even if a student has since advanced or left.
+  if(se)(se.records||[]).forEach(r=>{
+    const st=getStudent(r.studentId); if(!st)return;
+    const en=(st.enrollments||[]).find(x=>String(x.id)===String(r.enrollmentId));
+    if(en&&Number(en.yearLevel)===sessionYear&&canAccessEnrollment(en))studentsById.set(String(st.id),{st,en});
+  });
+  const roster=[...studentsById.values()];
+  if(!roster.length&&!se)return toast('لا يوجد دارسون جاريون في السنة دي حالياً');
+  const oldMap={}; if(se)(se.records||[]).forEach(r=>oldMap[String(r.studentId)]=r.status);
   $('#modalBox').classList.add('wide');
   openModal(se?'تعديل حضور محاضرة':'تسجيل حضور محاضرة جديدة',`
   <div class="form-grid">${field('عنوان المحاضرة / الموضوع *','seTitle',se?.title,'text','مثال: العقيدة ٢ — محاضرة ٥')}
   ${field('التاريخ','seDate',se?.date||today(),'date')}${field('المحاضر','seLecturer',se?.lecturer||'')}</div>
   <div style="display:flex;gap:7px;flex-wrap:wrap;margin:13px 0"><button class="btn sm green" onclick="window._markAll('present')">✅ الكل حاضر</button><button class="btn sm" onclick="window._markAll('absent')">❌ الكل غائب</button><span style="font-size:12px;color:var(--muted);align-self:center">علّم الغائب والمتأخر والبعذر بس — والباقي حاضر افتراضياً</span></div>
   <div style="max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:12px">
-  ${studs.map(st=>{const en=studentCurrent(st); const old=oldMap[st.id]||'present'; return `<div style="display:flex;justify-content:space-between;gap:9px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)"><span><div class="avatar" style="display:inline-grid;width:32px;height:32px;font-size:12px;vertical-align:middle">${avatarHTML(st)}</div> <b>${esc(st.name)}</b> <small style="color:var(--muted)">${esc(st.code)} • محاولة ${en.attemptNo}</small></span>
+  ${roster.map(({st,en})=>{const old=oldMap[String(st.id)]||'present'; return `<div style="display:flex;justify-content:space-between;gap:9px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)"><span><div class="avatar" style="display:inline-grid;width:32px;height:32px;font-size:12px;vertical-align:middle">${avatarHTML(st)}</div> <b>${esc(st.name)}</b> <small style="color:var(--muted)">${esc(st.code)} • محاولة ${en.attemptNo}</small></span>
    <select class="att-sel" data-sid="${st.id}" data-enid="${en.id}">${['present','late','excused','absent'].map(v=>`<option value="${v}" ${old===v?'selected':''}>${attStatusLabel(v)}</option>`).join('')}</select></div>`}).join('')||'<p style="padding:14px;color:var(--muted)">لا يوجد دارسون جاريون في السنة دي</p>'}
-  </div>`,
+  </div>`, 
   ()=>{
     const title=document.getElementById('seTitle').value.trim(); if(!title)return toast('اكتب عنوان المحاضرة');
     const records=$$('.att-sel').map(sel=>({studentId:sel.dataset.sid,enrollmentId:sel.dataset.enid,status:sel.value}));
-    // أول مرة يتسجل حضور بالمحاضرات لمحاولة: الأرقام اليدوية القديمة بتتحفظ كرصيد افتتاحي وتتضاف عليها المحاضرات
-    records.forEach(r=>{const st=getStudent(r.studentId); const en=st&&(st.enrollments||[]).find(e=>e.id===r.enrollmentId); if(en&&en._attBaseTotal===undefined){en._attBaseTotal=en.attendanceTotal||0; en._attBaseAttended=en.attendanceAttended||0}});
-    const data={yearLevel:se?se.yearLevel:year,date:document.getElementById('seDate').value||today(),title,lecturer:document.getElementById('seLecturer').value.trim(),records};
+    const previousRecords=se?(se.records||[]):[];
+    // Reconstruct the manual baseline once, accounting for any older session records already stored.
+    [...previousRecords,...records].forEach(r=>{const st=getStudent(r.studentId); const en=st&&(st.enrollments||[]).find(e=>String(e.id)===String(r.enrollmentId)); if(en&&en._attBaseTotal===undefined){
+      let priorTotal=0,priorAttended=0;
+      (DB.attendanceSessions||[]).forEach(session=>(session.records||[]).forEach(row=>{if(String(row.enrollmentId)===String(en.id)){priorTotal++;if(row.status==='present'||row.status==='late')priorAttended++}}));
+      en._attBaseTotal=Math.max(0,(Number(en.attendanceTotal)||0)-priorTotal);
+      en._attBaseAttended=Math.max(0,(Number(en.attendanceAttended)||0)-priorAttended);
+    }});
+    const data={yearLevel:se?Number(se.yearLevel):sessionYear,date:document.getElementById('seDate').value||today(),title,lecturer:document.getElementById('seLecturer').value.trim(),records};
     if(se){Object.assign(se,data)} else {(DB.attendanceSessions=DB.attendanceSessions||[]).push({id:uid(),createdBy:currentUser().displayName,createdAt:today(),...data})}
-    recalcAllAttendance(); const affected=new Set(records.map(r=>r.studentId)); affected.forEach(id=>{const st=getStudent(id); if(st)st.updatedAt=today()});
+    const touchedEnrollments=new Set([...previousRecords,...records].map(r=>String(r.enrollmentId)).filter(Boolean));
+    touchedEnrollments.forEach(recalcEnrollmentAttendance); recalcAllAttendance();
+    const affected=new Set([...previousRecords,...records].map(r=>String(r.studentId))); affected.forEach(id=>{const st=getStudent(id); if(st)st.updatedAt=today()});
     logActivity((se?'عدّل':'سجّل')+' حضور محاضرة: '+title); saveDB(); closeModal(); render(); toast('تم حفظ الحضور ✅ واتحدثت نسب الحضور في ملفات الدارسين');
   });
   window._markAll=(v)=>{$$('.att-sel').forEach(sel=>sel.value=v)};
 }
-async function deleteSession(id){const se=(DB.attendanceSessions||[]).find(x=>x.id===id); if(!se)return;
+async function deleteSession(id){
+ const actor=currentUser(); if(!actor||!isAdmin())return toast('حذف سجل المحاضرة للأمين فقط');
+ const se=(DB.attendanceSessions||[]).find(x=>String(x.id)===String(id)); if(!se)return;
+ if(!canAccessYear(se.yearLevel))return toast('سجل المحاضرة خارج نطاق السنوات المسموح');
  if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف سجل محاضرة',ok:'نعم، احذف',message:'حذف سجل محاضرة «'+esc(se.title)+'»؟ نسب الحضور هتتظبط لوحدها بعده.'}))return;
- DB.attendanceSessions=DB.attendanceSessions.filter(x=>x.id!==id); recalcAllAttendance(); logActivity('حذف سجل محاضرة: '+se.title); saveDB(); render(); toast('تم حذف سجل المحاضرة')}
+ const affected=new Set((se.records||[]).map(r=>String(r.enrollmentId)).filter(Boolean));
+ DB.attendanceSessions=DB.attendanceSessions.filter(x=>String(x.id)!==String(id));
+ affected.forEach(recalcEnrollmentAttendance); recalcAllAttendance();
+ logActivity('حذف سجل محاضرة: '+se.title); saveDB(); render(); toast('تم حذف سجل المحاضرة')
+}
 
 /* ---------- المتابعة والافتقاد ---------- */
-function quickFollowTask(studentId){ if(!hasPerm('add_notes'))return toast('صلاحية المتابعة غير مفعّلة لحسابك'); const st=getStudent(studentId); if(!st)return;
+function quickFollowTask(studentId){ if(!hasPerm('add_notes'))return toast('صلاحية المتابعة غير مفعّلة لحسابك'); const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
   (DB.tasks=DB.tasks||[]).unshift({id:uid(),studentId,title:'متابعة وافتقاد — '+st.name,dueDate:new Date(Date.now()+7*864e5).toISOString().slice(0,10),assignee:currentUser().username,status:'open',createdBy:currentUser().displayName,createdAt:today(),doneAt:''});
   logActivity('أنشأ مهمة متابعة لـ '+st.name); saveDB(); toast('اتعملت مهمة متابعة لـ '+st.name+' 💗 — هتلاقيها في «المتابعة والافتقاد»'); if(state.view==='tasks'||state.view==='attendance')render();
 }
 function viewTasks(){
   if(!hasPerm('add_notes'))return `<div class="card empty"><div class="big">🔒</div>صفحة المتابعة متاحة لمن له صلاحية الملاحظات والمتابعة</div>`;
-  const tasks=(DB.tasks||[]); const open=tasks.filter(t=>t.status!=='done'), done=tasks.filter(t=>t.status==='done');
+  const tasks=(DB.tasks||[]).filter(t=>{const st=getStudent(t.studentId);return !!st&&canAccessStudent(st)}); const open=tasks.filter(t=>t.status!=='done'), done=tasks.filter(t=>t.status==='done');
   const overdue=t=>t.status!=='done'&&t.dueDate&&t.dueDate<today();
   const row=t=>{const st=getStudent(t.studentId); return `<div class="kv" style="align-items:center"><span>${t.status==='done'?'✅':'💗'} <b>${esc(t.title)}</b>${st?` — <a href="#" onclick="go('profile','${st.id}');return false">${esc(st.name)}</a> <small style="color:var(--muted)">${esc(st.phone||'')}</small>`:''}<br><small style="color:var(--muted)">مسؤول: @${esc(t.assignee||'—')} • أضافها ${esc(t.createdBy||'—')} ${t.createdAt||''}</small></span><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="badge ${t.status==='done'?'b-green':overdue(t)?'b-red':'b-amber'}">${t.status==='done'?'تمت '+esc(t.doneAt||''):overdue(t)?'⏰ متأخرة — معادها '+esc(t.dueDate):'معادها '+esc(t.dueDate||'—')}</span>${t.status!=='done'?`<button class="btn sm green" onclick="doneTask('${t.id}')">✔ تمت المتابعة</button>`:`<button class="btn sm" onclick="reopenTask('${t.id}')">↩ إعادة فتح</button>`}${isAdmin()?`<button class="btn sm danger" onclick="deleteTask('${t.id}')">حذف</button>`:''}</span></div>`};
   return `<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap;align-items:center"><h3 style="margin:0">💗 مهام المتابعة والافتقاد — ${open.length} مفتوحة • ${done.length} تمت</h3><button class="btn primary" onclick="openTaskForm()">➕ مهمة متابعة جديدة</button></div>
@@ -3878,7 +3957,8 @@ function viewTasks(){
 }
 function openTaskForm(){
   if(!hasPerm('add_notes'))return;
-  const studs=DB.students.filter(st=>canAccessStudent(st));
+  const studs=(DB.students||[]).filter(st=>canAccessStudent(st));
+  if(!studs.length)return toast('لا يوجد دارسون متاحون ضمن نطاقك لإضافة مهمة لهم');
   const users=(DB.users||[]).filter(u=>u.active!==false);
   openModal('مهمة متابعة وافتقاد جديدة',`<div class="form-grid">
   <div class="field"><label>الدارس *</label><select id="tStudent">${studs.map(st=>`<option value="${st.id}">${esc(st.name)} (${esc(st.code)})</option>`).join('')}</select></div>
@@ -3886,35 +3966,50 @@ function openTaskForm(){
   ${field('المطلوب / عنوان المهمة *','tTitle','','text','مثال: مكالمة افتقاد وسؤال عن سبب الغياب')}
   ${field('المعاد المستهدف','tDue',new Date(Date.now()+7*864e5).toISOString().slice(0,10),'date')}</div>`,
   ()=>{const sid=document.getElementById('tStudent').value, title=document.getElementById('tTitle').value.trim(); if(!sid||!title)return toast('اختر الدارس واكتب المطلوب');
+   const st=getStudent(sid); if(!st)return toast('الدارس لم يعد موجوداً — حدّث الصفحة'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
    (DB.tasks=DB.tasks||[]).unshift({id:uid(),studentId:sid,title,assignee:document.getElementById('tAssignee').value,dueDate:document.getElementById('tDue').value,status:'open',createdBy:currentUser().displayName,createdAt:today(),doneAt:''});
    logActivity('أنشأ مهمة متابعة: '+title); saveDB(); closeModal(); render(); toast('تمت إضافة مهمة المتابعة 💗')});
 }
-function doneTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='done'; t.doneAt=today(); logActivity('أنهى مهمة متابعة: '+t.title); saveDB(); render(); toast('بركة 💗 اتسجلت المتابعة كم تمت — كملوا افتقاد')}
-function reopenTask(id){const t=(DB.tasks||[]).find(x=>x.id===id); if(!t)return; t.status='open'; t.doneAt=''; saveDB(); render()}
-async function deleteTask(id){if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف مهمة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف مهمة المتابعة دي؟'}))return; const t=DB.tasks.find(x=>x.id===id); DB.tasks=DB.tasks.filter(x=>x.id!==id); logActivity('حذف مهمة متابعة: '+(t?.title||id)); saveDB(); render()}
+function doneTask(id){const t=(DB.tasks||[]).find(x=>String(x.id)===String(id)); if(!t)return toast('المهمة مش موجودة'); const st=getStudent(t.studentId); if(!st||!canAccessStudent(st))return toast('المهمة خارج نطاقك أو ملف الدارس مش موجود'); t.status='done'; t.doneAt=today(); logActivity('أنهى مهمة متابعة: '+t.title); saveDB(); render(); toast('بركة 💗 اتسجلت المتابعة كم تمت — كملوا افتقاد')}
+function reopenTask(id){const t=(DB.tasks||[]).find(x=>String(x.id)===String(id)); if(!t)return toast('المهمة مش موجودة'); const st=getStudent(t.studentId); if(!st||!canAccessStudent(st))return toast('المهمة خارج نطاقك أو ملف الدارس مش موجود'); t.status='open'; t.doneAt=''; saveDB(); render()}
+async function deleteTask(id){if(!isAdmin())return toast('حذف مهام المتابعة للأمين فقط'); const t=(DB.tasks||[]).find(x=>String(x.id)===String(id)); if(!t)return toast('المهمة مش موجودة'); const st=getStudent(t.studentId); if(!st||!canAccessStudent(st))return toast('المهمة خارج نطاقك أو ملف الدارس مش موجود'); if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف مهمة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف مهمة المتابعة دي؟'}))return; DB.tasks=DB.tasks.filter(x=>String(x.id)!==String(id)); logActivity('حذف مهمة متابعة: '+(t.title||id)); saveDB(); render()}
 
 /* ---------- استيراد الدارسين CSV + كارت وشهادة ---------- */
 function downloadImportTemplate(){
   const csv='الاسم,الكود,الدفعة,تاريخ الالتحاق,الهاتف,واتساب,النوع,تاريخ الميلاد,الكنيسة,أب الاعتراف,المؤهل\nأحمد سمير,D-101,دفعة 2026,2026-10-01,01001234567,01001234567,ذكر,2002-05-10,,أبونا داود,طالب جامعي\n';
   download(new Blob(['\ufeff'+csv],{type:'text/csv'}),'نموذج-استيراد-الدارسين.csv'); toast('نزل النموذج — عبّيه في Excel وارفعه CSV أو xlsx');
 }
+function rowsToCSV(rows){return rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\n')}
+function parseCSV(text){
+ const rows=[]; let row=[], cell='', quoted=false;
+ for(let i=0;i<text.length;i++){
+   const ch=text[i];
+   if(quoted){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"')quoted=false;else cell+=ch;continue}
+   if(ch==='"'&&cell===''){quoted=true;continue}
+   if(ch===','){row.push(cell);cell='';continue}
+   if(ch==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell='';continue}
+   cell+=ch;
+ }
+ if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row)}
+ return rows;
+}
 function importStudentsCSV(text){
-  const lines=text.replace(/^\ufeff/,'').split(/\r?\n/).filter(l=>l.trim()); if(lines.length<2)return toast('الملف فاضي أو بدون صفوف');
-  const head=lines[0].split(',').map(h=>h.trim());
-  const idx=(names)=>{for(const n of names){const i=head.indexOf(n); if(i>=0)return i} return -1};
-  const I={name:idx(['الاسم','name','اسم الدارس']),code:idx(['الكود','code']),batch:idx(['الدفعة','batch']),join:idx(['تاريخ الالتحاق','joinDate']),phone:idx(['الهاتف','phone','الموبايل']),whats:idx(['واتساب','whatsapp']),gender:idx(['النوع','gender']),birth:idx(['تاريخ الميلاد','birthDate']),church:idx(['الكنيسة','church']),father:idx(['أب الاعتراف','confessionFather']),edu:idx(['المؤهل','education','الوظيفة'])};
+  const rows=parseCSV(String(text||'').replace(/^\ufeff/,'' )).filter(r=>r.some(v=>String(v||'').trim())); if(rows.length<2)return toast('الملف فاضي أو بدون صفوف');
+  const head=rows[0].map(h=>String(h||'').trim().toLowerCase());
+  const idx=(names)=>{for(const n of names){const i=head.indexOf(String(n).toLowerCase()); if(i>=0)return i} return -1};
+  const I={name:idx(['الاسم','الاسم بالكامل','اسم الدارس','name','full name']),code:idx(['الكود','code']),batch:idx(['الدفعة','batch']),join:idx(['تاريخ الالتحاق','joinDate']),phone:idx(['الهاتف','phone','الموبايل']),whats:idx(['واتساب','whatsapp']),gender:idx(['النوع','gender']),birth:idx(['تاريخ الميلاد','birthDate']),church:idx(['الكنيسة','church']),father:idx(['أب الاعتراف','confessionFather']),edu:idx(['المؤهل','education','الوظيفة'])};
   if(I.name<0)return toast('لازم يكون في عمود «الاسم» في أول صف');
   let added=0,skipped=0;
-  lines.slice(1).forEach(line=>{const c=line.split(',').map(x=>x.trim()); const name=c[I.name]; if(!name){skipped++;return}
-    const code=I.code>=0&&c[I.code]?c[I.code]:('D-'+String(DB.students.length+added+1).padStart(3,'0'));
-    if(DB.students.some(st=>st.code===code)){skipped++;return}
+  rows.slice(1).forEach(row=>{const c=row.map(x=>String(x??'').trim()); const name=c[I.name]; if(!name){skipped++;return}
+    const code=I.code>=0&&c[I.code]?c[I.code]:nextStudentCode();
+    if(DB.students.some(st=>String(st.code||'').trim().toLowerCase()===String(code).trim().toLowerCase())){skipped++;return}
     DB.students.push({id:uid(),code,name,batch:I.batch>=0?c[I.batch]:'',joinDate:I.join>=0?c[I.join]:today(),phone:I.phone>=0?c[I.phone]:'',whatsapp:I.whats>=0?c[I.whats]:'',gender:I.gender>=0?c[I.gender]:'',birthDate:I.birth>=0?c[I.birth]:'',email:'',nationalId:'',address:'',education:I.edu>=0?c[I.edu]:'',church:I.church>=0?c[I.church]:'',confessionFather:I.father>=0?c[I.father]:'',status:'active',fixedNotes:'',photo:'',createdAt:today(),updatedAt:today(),enrollments:[],notes:[]}); added++;
   });
   logActivity('استورد '+added+' دارس من ملف CSV'); saveDB(); render(); toast('تم استيراد '+added+' دارس ✅'+(skipped?' (اتخطى '+skipped+' صف: فاضي أو كود مكرر)':''));
 }
 function printStudentCard(studentId){
   if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك');
-  const st=getStudent(studentId); if(!st)return; const en=studentCurrent(st);
+  const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك'); const en=studentCurrent(st);
   showPrint(`<div style="max-width:520px;margin:0 auto;border:2.5px solid var(--gold);border-radius:18px;overflow:hidden">
    <div style="background:linear-gradient(120deg,#123a63,#1e5b96);color:#f4f9ff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:17px">${DB.settings.orgLogo?`<img src="${DB.settings.orgLogo}" style="height:30px;width:30px;border-radius:50%;vertical-align:middle"> `:''}${esc(DB.settings.orgName)}</b><div style="font-size:11.5px;opacity:.85">كارت دارس — إعداد الخدام${DB.settings.church?' • '+esc(DB.settings.church):''}</div></div><div style="font-size:26px">☦</div></div>
    <div style="display:flex;gap:16px;padding:18px;align-items:center"><div class="avatar" style="width:104px;height:104px;font-size:36px;border-radius:16px">${avatarHTML(st)}</div>
@@ -3926,10 +4021,12 @@ function printStudentCard(studentId){
 }
 function printCertificate(studentId){
   if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك');
-  const st=getStudent(studentId); if(!st)return;
+  const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
   const passed=(st.enrollments||[]).filter(e=>e.status==='passed');
-  const isGrad=st.status==='graduated'||passed.some(e=>e.yearLevel===3);
+  const hasAllThreeYears=[1,2,3].every(y=>passed.some(e=>Number(e.yearLevel)===y));
+  const isGrad=st.status==='graduated'&&hasAllThreeYears;
   const lastPassed=passed[passed.length-1];
+  if(st.status==='graduated'&&!hasAllThreeYears)return toast('بيانات التخرج غير مكتملة — لازم توجد محاولة ناجحة لكل سنة من الأولى للثالثة');
   if(!lastPassed)return toast('الدارس لسه مفيش سنة منهيّة بنجاح عشان الشهادة — الشهادة بتتطبع بعد أول سنة ناجحة');
   const avg=studentOverallAvg(st);
   const title=isGrad?'شهادة تخرّج من خدمة إعداد الخدّام':'شهادة إنهاء '+YEAR_NAMES[lastPassed.yearLevel]+' — إعداد الخدّام';
@@ -4283,14 +4380,31 @@ function askConfirm(opts){
   });
 }
 function openModal(title,bodyHTML,onSave,saveLabel){const bg=$('#modalBg'),box=$('#modalBox');box.innerHTML=`<h2>${title}</h2><div class="sub">الحقول الأساسية بس هي المطلوبة — والباقي اختياري</div>${bodyHTML}<div class="modal-actions"><button class="btn primary" id="mSave">${saveLabel||'💾 حفظ'}</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`;bg.classList.add('open');document.body.classList.add('no-scroll');$('#mSave').onclick=onSave}
-function closeModal(){$('#modalBg').classList.remove('open');$('#modalBox').classList.remove('wide');var _sb=document.getElementById('sidebar');document.body.classList.toggle('no-scroll',!!(_sb&&_sb.classList.contains('open')))}
+function processDeferredRemoteRefresh(){
+ if(!window._remoteRefreshPending)return;
+ if($('#modalBg')?.classList.contains('open'))return;
+ const a=document.activeElement;
+ if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
+ window._remoteRefreshPending=false;
+ DB=loadDB();
+ if(!currentUser())ensureDefaultAdminUser();
+ render();
+}
+document.addEventListener('focusout',()=>setTimeout(processDeferredRemoteRefresh,0),true);
+function closeModal(){
+ $('#modalBg').classList.remove('open');$('#modalBox').classList.remove('wide');
+ var _sb=document.getElementById('sidebar');document.body.classList.toggle('no-scroll',!!(_sb&&_sb.classList.contains('open')));
+ setTimeout(processDeferredRemoteRefresh,0);
+}
 $('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
 function field(label,id,value,type,ph,full){return `<div class="field ${full?'full':''}"><label>${label}</label><input id="${id}" type="${type||'text'}" value="${esc(value??'')}" placeholder="${esc(ph||'')}"></div>`}
 
 function openStudentForm(id){
  if(!hasPerm('edit_students'))return toast('صلاحية «إضافة/تعديل بيانات الدارسين» غير مفعّلة لحسابك — كلّم الأمين');
  const st=id?getStudent(id):null;
- const nextCode='D-'+String(DB.students.length+1).padStart(3,'0');
+ if(id&&!st)return toast('الدارس غير موجود — ارجع لقائمة الدارسين وحدّث الصفحة');
+ if(st&&!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
+ const nextCode=nextStudentCode();
  openModal(st?'تعديل البيانات الثابتة للدارس':'إضافة دارس جديد — البيانات الثابتة',`
  <div class="photo-up"><div class="avatar" id="photoPrev">${st?avatarHTML(st):'؟'}</div><div><input class="file-input" type="file" id="sPhoto" accept="image/*"><label class="upload-btn" for="sPhoto">📷 اختيار صورة الدارس</label><div class="file-name" id="sPhotoName">الصورة اختيارية — وبتتضغط تلقائياً قبل الحفظ</div><div style="font-size:11px;color:var(--muted)">صورة الدارس — بتفضل ثابتة في ملفه</div></div></div>
  <div class="form-grid" style="margin-top:12px">
@@ -4307,23 +4421,49 @@ function openStudentForm(id){
  ()=>{
   const name=$('#sName').value.trim(); if(!name)return toast('الاسم مطلوب');
   const data={name,code:$('#sCode').value.trim()||nextCode,joinDate:$('#sJoin').value,batch:$('#sBatch').value.trim(),gender:$('#sGender').value,birthDate:$('#sBirth').value,phone:$('#sPhone').value.trim(),whatsapp:$('#sWhats').value.trim(),email:$('#sEmail').value.trim(),nationalId:$('#sNat').value.trim(),address:$('#sAddr').value.trim(),education:$('#sEdu').value.trim(),church:$('#sChurch').value.trim(),confessionFather:$('#sFather').value.trim(),status:$('#sStatus').value,fixedNotes:$('#sFixed').value,photo:window._tmpPhoto!==undefined?window._tmpPhoto:(st?.photo||''),updatedAt:today()};
-  if(st){Object.assign(st,data)} else {DB.students.push({id:uid(),createdAt:today(),enrollments:[],notes:[],...data}); toast('تمت إضافة الدارس ✅ — دلوقتي ابدأ له السنة الأولى من ملفه')}
-  window._tmpPhoto=undefined; saveDB(); closeModal(); if(st||state.view==='profile'){if(!st){const ns=DB.students[DB.students.length-1]; go('profile',ns.id)}else render()} else render();
+  const duplicateCode=DB.students.some(x=>x.id!==st?.id&&String(x.code||'').trim().toLowerCase()===data.code.toLowerCase());
+  if(duplicateCode)return toast('الكود ده مستخدم لدارس تاني — اختار كود مختلف');
+  let created=null;
+  if(st){Object.assign(st,data)} else {created={id:uid(),createdAt:today(),enrollments:[],notes:[],...data}; DB.students.push(created)}
+  window._tmpPhoto=undefined; saveDB(); closeModal();
+  if(created){go('profile',created.id);toast('تمت إضافة الدارس ✅ — ملفه مفتوح الآن؛ ابدأ له السنة من الزر بالأعلى')}
+  else render();
  });
  setTimeout(()=>{const p=$('#sPhoto'); if(p)p.onchange=()=>{const f=p.files[0]; if(!f)return; readPhotoFile(f,data=>{window._tmpPhoto=data; const n=$('#sPhotoName'); if(n)n.textContent='تم اختيار: '+f.name; $('#photoPrev').innerHTML=`<img src="${data}">`})}},0);
 }
-async function deleteStudent(id){if(!(hasPerm('delete_students')||isLucasOwner(currentUser())))return toast('الحذف النهائي للأمين أو إدارة السيستم'); const st=getStudent(id);
+async function deleteStudent(id){if(!(isAdmin()&&effectivePerms(currentUser()).includes('delete_students')))return toast('الحذف النهائي للأمين أو إدارة السيستم'); const st=getStudent(id); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
  if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف دارس',ok:'نعم، احذف نهائياً',message:'حذف نهائي للدارس <b>'+esc(st.name)+'</b> وكل سجله؟ الأفضل تصدير نسخة احتياطية أولاً.'}))return;
- DB.students=DB.students.filter(s=>s.id!==id); saveDB(); go('students'); toast('تم حذف الدارس')}
+ DB.students=DB.students.filter(s=>String(s.id)!==String(id));
+ DB.attendanceSessions=(DB.attendanceSessions||[]).map(se=>({...se,records:(se.records||[]).filter(r=>String(r.studentId)!==String(id))}));
+ DB.tasks=(DB.tasks||[]).filter(t=>String(t.studentId)!==String(id));
+ saveDB(); go('students'); toast('تم حذف الدارس وسجلات حضوره ومتابعته') }
 
 function openEnrollmentForm(studentId,enrollId){
  if(!hasPerm('manage_years'))return toast('صلاحية «فتح السنوات والمحاولات» غير مفعّلة لحسابك');
- const st=getStudent(studentId); const en=enrollId?(st.enrollments||[]).find(e=>e.id===enrollId):null;
- const nextYear=en?en.yearLevel:((studentCurrent(st)?.yearLevel||0)+1>3?3:(studentCurrent(st)?.yearLevel||0)+1);
- const attemptNo=en?en.attemptNo:((st.enrollments||[]).filter(e=>e.yearLevel===nextYear).length+1);
+ const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود — ارجع لقائمة الدارسين وحدّث الصفحة');
+ if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
+ const en=enrollId?(st.enrollments||[]).find(e=>String(e.id)===String(enrollId)):null;
+ if(enrollId&&!en)return toast('المحاولة دي مش موجودة في ملف الدارس');
+ const scoped=scopedYears(), scopePool=scoped.length?scoped:[1,2,3];
+ if(en&&!canAccessYear(en.yearLevel))return toast('السنة دي خارج نطاقك — لا يمكن تعديل محاولتها');
+ if(!en){
+   if(hasOngoingAttempt(st))return toast('فيه محاولة جارية بالفعل — عدّلها أو أنهِها بقرار قبل فتح محاولة جديدة');
+ }
+ const current=studentCurrent(st);
+ let progressionYears=[1,2,3];
+ if(current){
+   const currentYear=Number(current.yearLevel)||1;
+   if(current.status==='passed') progressionYears=currentYear<3?[currentYear+1]:[];
+   else progressionYears=[currentYear];
+ }
+ const selectableYears=en?[Number(en.yearLevel)]:scopePool.filter(y=>progressionYears.includes(y));
+ if(!selectableYears.length)return toast(current&&current.status==='passed'&&Number(current.yearLevel)>=3?'الدارس أنهى السنة الثالثة بنجاح — لا يمكن فتح سنة رابعة':'مفيش سنة متاحة ضمن نطاقك لهذا الدارس');
+ const wantedYear=en?Number(en.yearLevel):(current&&current.status==='passed'?Number(current.yearLevel)+1:(Number(current?.yearLevel)||selectableYears[0]));
+ const nextYear=selectableYears.includes(wantedYear)?wantedYear:selectableYears[0];
+ const attemptNo=en?Math.max(1,Number(en.attemptNo)||1):nextAttemptNo(st,nextYear);
  openModal(en?`تعديل محاولة ${en.attemptNo} — ${YEAR_NAMES[en.yearLevel]}`:'بدء سنة / محاولة جديدة',`
  <div class="form-grid">
- <div class="field"><label>السنة الدراسية</label><select id="eYear">${[1,2,3].map(y=>`<option value="${y}" ${nextYear===y?'selected':''}>${YEAR_NAMES[y]}</option>`).join('')}</select></div>
+ <div class="field"><label>السنة الدراسية</label><select id="eYear" ${en?'disabled':''}>${selectableYears.map(y=>`<option value="${y}" ${nextYear===y?'selected':''}>${YEAR_NAMES[y]}</option>`).join('')}</select></div>
  ${field('رقم المحاولة (تلقائي — بيزيد مع كل إعادة)','eAttempt',attemptNo,'number')}
  ${field('العام الدراسي','eAcad',en?.academicYear||'','text','مثال: 2025 / 2026')}
  ${field('تاريخ البدء','eStart',en?.startDate||today(),'date')}${field('تاريخ الانتهاء','eEnd',en?.endDate||'','date')}
@@ -4332,20 +4472,39 @@ function openEnrollmentForm(studentId,enrollId){
  ${field('ساعات الخدمة العملية','eService',en?.serviceHours??0,'number')}${field('لقاءات الإرشاد / الاعتراف','eSpirit',en?.spiritualMeetings??0,'number')}
  <div class="field full"><label>ملاحظة قرار نهاية السنة (سبب إعادة / شروط انتقال...)</label><textarea id="eDecision">${esc(en?.decisionNote||'')}</textarea></div></div>`,
  ()=>{
-  const data={yearLevel:+$('#eYear').value,attemptNo:+$('#eAttempt').value||attemptNo,academicYear:$('#eAcad').value.trim(),startDate:$('#eStart').value,endDate:$('#eEnd').value,status:$('#eStatus').value,attendanceAttended:+$('#eAttA').value||0,attendanceTotal:+$('#eAttT').value||0,serviceHours:+$('#eService').value||0,spiritualMeetings:+$('#eSpirit').value||0,decisionNote:$('#eDecision').value};
-  if(en)Object.assign(en,data); else {(st.enrollments=st.enrollments||[]).push({id:uid(),subjects:[],activities:[],...data}); toast('بدأت محاولة جديدة ✅ — طبّق مواد المنهج من صفحة السنة')}
+  if(!DB.students.some(x=>x.id===st.id))return toast('اتحذف ملف الدارس أو اتغير — حدّث الصفحة وجرب تاني');
+  const yearLevel=Number($('#eYear').value);
+  if(!selectableYears.includes(yearLevel)||!canAccessYear(yearLevel))return toast('اختار سنة من النطاق المسموح لحسابك');
+  if(!en&&hasOngoingAttempt(st))return toast('فيه محاولة جارية بالفعل — لا يمكن فتح محاولة متوازية');
+  const attemptValue=Math.max(1,Math.floor(Number($('#eAttempt').value)||attemptNo));
+  const duplicateAttempt=(st.enrollments||[]).some(x=>x.id!==en?.id&&Number(x.yearLevel)===yearLevel&&Number(x.attemptNo)===attemptValue);
+  if(duplicateAttempt)return toast('رقم المحاولة مستخدم بالفعل في السنة دي — اختار رقم تاني');
+  const attendanceTotal=Math.max(0,Number($('#eAttT').value)||0);
+  const attendanceAttended=Math.max(0,Math.min(attendanceTotal,Number($('#eAttA').value)||0));
+  const data={yearLevel,attemptNo:attemptValue,academicYear:$('#eAcad').value.trim(),startDate:$('#eStart').value,endDate:$('#eEnd').value,status:$('#eStatus').value,attendanceAttended,attendanceTotal,serviceHours:Math.max(0,Number($('#eService').value)||0),spiritualMeetings:Math.max(0,Number($('#eSpirit').value)||0),decisionNote:$('#eDecision').value};
+  if(data.status==='ongoing'){
+    if(hasOngoingAttempt(st,en?.id))return toast('يوجد بالفعل محاولة جارية — لا يمكن فتح محاولتين بالتوازي');
+    if(en&&studentCurrent(st)?.id!==en.id)return toast('لا يمكن إعادة فتح محاولة قديمة؛ أنشئ محاولة جديدة بدل تعديل السجل السابق');
+  }
+  if(en)Object.assign(en,data); else {(st.enrollments=st.enrollments||[]).push({id:uid(),subjects:[],activities:[],...data}); toast('بدأت محاولة جديدة ✅ — الدارس سيظل ظاهرًا ضمن سنته');}
   st.updatedAt=today(); saveDB(); closeModal(); render();
  });
 }
-async function deleteEnrollment(studentId,enrollId){const st=getStudent(studentId); const en=st.enrollments.find(e=>e.id===enrollId);
+async function deleteEnrollment(studentId,enrollId){
+ const actor=currentUser(); if(!actor||!(isLucasOwner(actor)||actor.role==='amin'))return toast('حذف المحاولة للأمين فقط');
+ const record=getScopedEnrollment(studentId,enrollId); if(!record)return; const {st,en}=record;
  if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف محاولة',ok:'نعم، احذف',message:'حذف محاولة '+en.attemptNo+' ('+YEAR_NAMES[en.yearLevel]+') بكل نتائجها؟<br>الأصل إن القديم لا يُحذف — الحذف هنا للتصحيح الاستثنائي فقط.'}))return;
- st.enrollments=st.enrollments.filter(e=>e.id!==enrollId); st.updatedAt=today(); saveDB(); render(); toast('تم حذف المحاولة')}
-function applyTemplate(studentId,enrollId){if(!hasPerm('enter_grades'))return toast('صلاحية الدرجات غير مفعّلة لحسابك'); const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const list=DB.templates[en.yearLevel]||[]; let added=0;
+ st.enrollments=st.enrollments.filter(e=>String(e.id)!==String(enrollId));
+ DB.attendanceSessions=(DB.attendanceSessions||[]).map(se=>({...se,records:(se.records||[]).filter(r=>String(r.enrollmentId)!==String(en.id))}));
+ st.updatedAt=today(); recalcAllAttendance(); saveDB(); render(); toast('تم حذف المحاولة وسجلات حضورها المرتبطة')}
+function applyTemplate(studentId,enrollId){if(!hasPerm('enter_grades'))return toast('صلاحية الدرجات غير مفعّلة لحسابك'); const record=getScopedEnrollment(studentId,enrollId); if(!record)return; const {st,en}=record; const list=DB.templates[en.yearLevel]||[]; let added=0;
  list.forEach(([name,cat])=>{if(!(en.subjects||[]).some(s=>s.name===name)){en.subjects.push({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()});added++}}); st.updatedAt=today(); saveDB(); render(); toast(added?`تمت إضافة ${added} مادة من المنهج ✅`:'مواد المنهج موجودة بالفعل')}
 
 function openSubjectForm(studentId,enrollId,subjectId){
  if(!hasPerm('enter_grades'))return toast('صلاحية «إدخال الدرجات» غير مفعّلة لحسابك');
- const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const sub=subjectId?en.subjects.find(s=>s.id===subjectId):null;
+ const record=getScopedEnrollment(studentId,enrollId); if(!record)return;
+ const {st,en}=record; const sub=subjectId?(en.subjects||[]).find(s=>String(s.id)===String(subjectId)):null;
+ if(subjectId&&!sub)return toast('المادة مش موجودة في المحاولة دي');
  const box=$('#modalBox'); $('#modalBox').classList.add('wide');
  const renderAssess=(list)=>list.map((a,i)=>`<div style="display:grid;grid-template-columns:2fr 1fr 1fr .7fr .7fr auto;gap:6px;margin-bottom:6px"><input placeholder="اسم التقييم" value="${esc(a.title)}" data-a="title" data-i="${i}"><input placeholder="النوع" value="${esc(a.type||'')}" data-a="type" data-i="${i}"><input type="date" value="${esc(a.date||'')}" data-a="date" data-i="${i}"><input type="number" step="any" placeholder="الدرجة" value="${a.score??''}" data-a="score" data-i="${i}"><input type="number" step="any" placeholder="من" value="${a.max??''}" data-a="max" data-i="${i}"><button class="btn sm danger" onclick="this.parentElement.remove()">✕</button></div>`).join('');
  openModal(sub?'تعديل المادة وتقييماتها':'إضافة مادة',`
@@ -4365,7 +4524,9 @@ function openSubjectForm(studentId,enrollId,subjectId){
 }
 function openActivityForm(studentId,enrollId,actId){
  if(!hasPerm('manage_activities'))return toast('صلاحية «إدارة الأنشطة» غير مفعّلة لحسابك');
- const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const a=actId?en.activities.find(x=>x.id===actId):null;
+ const record=getScopedEnrollment(studentId,enrollId); if(!record)return;
+ const {st,en}=record; const a=actId?(en.activities||[]).find(x=>String(x.id)===String(actId)):null;
+ if(actId&&!a)return toast('النشاط مش موجود في المحاولة دي');
  openModal(a?'تعديل نشاط':'إضافة نشاط / تقييم مصاحب / تدريب عملي',`
  <div class="form-grid">${field('اسم النشاط *','aTitle',a?.title)}
  <div class="field"><label>النوع</label><select id="aType">${['نشاط عام','خلوة','مؤتمر','تدريب عملي','خدمة ميدانية','مشروع','تقييم مشرف','حضور قداسات / اجتماعات','أخرى'].map(t=>`<option ${a?.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
@@ -4381,7 +4542,9 @@ function openActivityForm(studentId,enrollId,actId){
 }
 function openNoteForm(studentId,noteId){
  if(!hasPerm('add_notes'))return toast('صلاحية «الملاحظات والتقارير» غير مفعّلة لحسابك');
- const st=getStudent(studentId); const n=noteId?(st.notes||[]).find(x=>x.id===noteId):null;
+ const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
+ const n=noteId?(st.notes||[]).find(x=>String(x.id)===String(noteId)):null;
+ if(noteId&&!n)return toast('الملاحظة مش موجودة في ملف الدارس');
  openModal(n?'تعديل ملاحظة / تقرير':'إضافة ملاحظة أو تقرير',`
  <div class="form-grid">${field('العنوان *','nTitle',n?.title)}
  <div class="field"><label>التصنيف</label><select id="nCat">${['ملاحظة مشرف','تقرير فردي','تقرير جماعي','تقييم نشاط','تقييم روحي','تقييم سلوكي','متابعة إعادة / خطة تحسين','قرار إداري','أخرى'].map(t=>`<option ${n?.category===t?'selected':''}>${t}</option>`).join('')}</select></div>
@@ -4393,16 +4556,28 @@ function openNoteForm(studentId,noteId){
   if(n)Object.assign(n,data); else (st.notes=st.notes||[]).push({id:uid(),...data});
   st.updatedAt=today(); saveDB(); closeModal(); state.profileTab='notes'; render(); toast('تم حفظ الملاحظة ✅')});
 }
-async function deleteNote(studentId,noteId){const st=getStudent(studentId); if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف ملاحظة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف هذه الملاحظة نهائياً؟'}))return; st.notes=st.notes.filter(n=>n.id!==noteId); saveDB(); render()}
+async function deleteNote(studentId,noteId){
+ if(!hasPerm('add_notes'))return toast('حذف الملاحظات غير مفعّل لحسابك');
+ const st=getStudent(studentId); if(!st)return toast('الدارس غير موجود'); if(!canAccessStudent(st))return toast('الدارس خارج نطاق السنوات المسموح لحسابك');
+ if(!(st.notes||[]).some(n=>String(n.id)===String(noteId)))return toast('الملاحظة مش موجودة في ملف الدارس');
+ if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف ملاحظة',ok:'نعم، احذف',message:'هل أنت متأكد من حذف هذه الملاحظة نهائياً؟'}))return;
+ st.notes=st.notes.filter(n=>String(n.id)!==String(noteId)); saveDB(); render()
+}
 function openDecisionForm(studentId,enrollId){
- if(!hasPerm('make_decisions'))return toast('قرارات نهاية السنة للأمين ومساعده فقط');
- const st=getStudent(studentId),en=st.enrollments.find(e=>e.id===enrollId); const s=enrollStats(en);
+ if(!canMakeYearDecision())return toast('قرارات نهاية السنة للأمين ومساعده فقط');
+ const record=getScopedEnrollment(studentId,enrollId); if(!record)return;
+ const {st,en}=record;
+ if(en.status!=='ongoing')return toast('القرار متاح للمحاولة الجارية فقط');
+ if(studentCurrent(st)?.id!==en.id)return toast('دي مش المحاولة الحالية للدارس — حدّث الملف قبل القرار');
+ if(hasOngoingAttempt(st,en.id))return toast('فيه أكثر من محاولة جارية في السجل — صحّح التكرار قبل اتخاذ القرار');
+ const s=enrollStats(en);
  const failed=s.failedNames;
  openModal(`إنهاء ${YEAR_NAMES[en.yearLevel]} — المحاولة ${en.attemptNo}`,`
  <div class="card" style="background:#f8fbff;box-shadow:none"><b>ملخص المحاولة:</b> النتيجة العامة ${s.overall??'—'}% • الحضور ${s.att??'—'}% • خدمة ${en.serviceHours||0} ساعة ${failed.length?`<br><span style="color:var(--red)"><b>مواد تحتاج إعادة:</b> ${esc(failed.join('، '))}</span>`:'<br><span style="color:var(--green)"><b>لا توجد مواد راسبة</b></span>'}</div>
  <div class="field" style="margin-top:12px"><label>القرار</label><select id="dChoice">
   ${en.yearLevel<3?'<option value="promote">✅ ناجح — انتقال للسنة التالية (تُفتح محاولة جديدة تلقائياً)</option>':''}
-  ${en.yearLevel===3?'<option value="graduate">🎓 ناجح — تخرّج (إنهاء ٣ سنوات)</option>':''}
+  ${en.yearLevel===3&&hasPassedYear(st,1)&&hasPassedYear(st,2)?'<option value="graduate">🎓 ناجح — تخرّج (إنهاء ٣ سنوات)</option>':''}
+  ${en.yearLevel===3&&!(hasPassedYear(st,1)&&hasPassedYear(st,2))?'<option value="graduate" disabled>🎓 التخرّج يتطلب نجاح السنتين الأولى والثانية أولاً</option>':''}
   <option value="repeat_year">🔁 إعادة السنة كاملة (محاولة جديدة — القديمة محفوظة)</option>
   <option value="repeat_courses">📖 إعادة المواد الراسبة فقط (محاولة جديدة فيها المواد الراسبة فقط)</option>
   <option value="paused">⏸️ إيقاف مؤقت</option><option value="withdrawn">🚪 انسحاب</option></select></div>
@@ -4410,14 +4585,18 @@ function openDecisionForm(studentId,enrollId){
  <p style="font-size:12px;color:var(--muted)">⚠️ مهما كان القرار، <b>المحاولة الحالية بكل نتائجها هتفضل محفوظة زي ما هي</b> — القرار بس بيقفلها وبيفتح اللي بعدها.</p>`,
  ()=>{
   const choice=$('#dChoice').value, note=$('#dNote').value.trim();
+  if(choice==='promote'&&(Number(en.yearLevel)>=3||s.failedCount>0))return toast('لا يمكن اعتماد الانتقال: راجع السنة أو المواد الراسبة أولاً');
+  if(choice==='graduate'&&(Number(en.yearLevel)!==3||s.failedCount>0||!hasPassedYear(st,1)||!hasPassedYear(st,2)))return toast('التخرج يتطلب نجاح السنوات الثلاث واجتياز مواد السنة الثالثة');
+  if(choice==='repeat_courses'&&!s.failedCount)return toast('لا توجد مواد راسبة لإعادة موادها — اختر قراراً آخر');
+  if(!['promote','graduate','repeat_year','repeat_courses','paused','withdrawn'].includes(choice))return toast('القرار غير صحيح');
   en.status = choice==='promote'||choice==='graduate'?'passed': choice==='repeat_year'?'repeat_year': choice==='repeat_courses'?'repeat_courses': choice;
   en.endDate=en.endDate||today(); en.decisionNote=note||en.decisionNote||'';
   if(choice==='graduate'){st.status='graduated'}
   if(choice==='withdrawn'){st.status='withdrawn'}
   if(choice==='paused'){st.status='paused'}
-  if(choice==='promote'&&en.yearLevel<3){st.status='active'; st.enrollments.push({id:uid(),yearLevel:en.yearLevel+1,attemptNo:(st.enrollments.filter(e=>e.yearLevel===en.yearLevel+1).length+1),academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'',subjects:(DB.templates[en.yearLevel+1]||[]).map(([name,cat])=>({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()})),activities:[]})}
-  if(choice==='repeat_year'){st.status='active'; st.enrollments.push({id:uid(),yearLevel:en.yearLevel,attemptNo:en.attemptNo+1,academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'إعادة سنة — المحاولة السابقة ('+en.attemptNo+') محفوظة بنتائجها',subjects:(DB.templates[en.yearLevel]||[]).map(([name,cat])=>({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()})),activities:[]})}
-  if(choice==='repeat_courses'){st.status='active'; const failedSubs=(en.subjects||[]).filter(x=>subjStatus(x)==='يحتاج إعادة'); st.enrollments.push({id:uid(),yearLevel:en.yearLevel,attemptNo:en.attemptNo+1,academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'إعادة مواد: '+(failedSubs.map(x=>x.name).join('، ')||'—')+' — نتائج المحاولة '+en.attemptNo+' محفوظة',subjects:failedSubs.map(x=>({id:uid(),name:x.name,category:x.category,teacher:x.teacher||'',assessments:defaultAssessments()})),activities:[]})}
+  if(choice==='promote'&&en.yearLevel<3){st.status='active'; st.enrollments.push({id:uid(),yearLevel:en.yearLevel+1,attemptNo:nextAttemptNo(st,en.yearLevel+1),academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'',subjects:(DB.templates[en.yearLevel+1]||[]).map(([name,cat])=>({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()})),activities:[]})}
+  if(choice==='repeat_year'){st.status='active'; st.enrollments.push({id:uid(),yearLevel:en.yearLevel,attemptNo:nextAttemptNo(st,en.yearLevel),academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'إعادة سنة — المحاولة السابقة ('+en.attemptNo+') محفوظة بنتائجها',subjects:(DB.templates[en.yearLevel]||[]).map(([name,cat])=>({id:uid(),name,category:cat,teacher:'',assessments:defaultAssessments()})),activities:[]})}
+  if(choice==='repeat_courses'){st.status='active'; const failedSubs=(en.subjects||[]).filter(x=>subjStatus(x)==='يحتاج إعادة'); st.enrollments.push({id:uid(),yearLevel:en.yearLevel,attemptNo:nextAttemptNo(st,en.yearLevel),academicYear:'',startDate:today(),endDate:'',status:'ongoing',attendanceAttended:0,attendanceTotal:0,serviceHours:0,spiritualMeetings:0,decisionNote:'إعادة مواد: '+(failedSubs.map(x=>x.name).join('، ')||'—')+' — نتائج المحاولة '+en.attemptNo+' محفوظة',subjects:failedSubs.map(x=>({id:uid(),name:x.name,category:x.category,teacher:x.teacher||'',assessments:defaultAssessments()})),activities:[]})}
   st.updatedAt=today(); saveDB(); closeModal(); render(); toast('تم تنفيذ القرار ✅ — السجل القديم محفوظ كما هو');
  },'🏁 تنفيذ القرار');
 }
@@ -4469,7 +4648,7 @@ async function loadDemo(){
 $('#csvFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return;
  const name=(f.name||'').toLowerCase();
  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
-  const r=new FileReader(); r.onload=()=>{try{const wb=XLSX.read(r.result,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}); importStudentsCSV(rows.map(row=>row.join(',')).join('\n'));}catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f);
+  const r=new FileReader(); r.onload=()=>{try{const wb=XLSX.read(r.result,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1}); importStudentsCSV(rowsToCSV(rows));}catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f);
  } else { const r=new FileReader(); r.onload=()=>importStudentsCSV(String(r.result||'')); r.readAsText(f);} e.target.value='';});
 $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return;
  const name=(f.name||'').toLowerCase();
@@ -4479,7 +4658,7 @@ $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)
      const wb=XLSX.read(r.result,{type:'array'});
      const sheet=wb.Sheets[wb.SheetNames[0]];
      const rows=XLSX.utils.sheet_to_json(sheet,{header:1});
-     const csv=rows.map(row=>row.join(',')).join('\n');
+     const csv=rowsToCSV(rows);
      importStudentsCSV(csv);
    }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
  }
@@ -4491,10 +4670,10 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); deferredPr
 window.addEventListener('appinstalled',()=>{deferredPrompt=null; toast('تم تثبيت «إعداد خدام للتلمذة» على جهازك ☦📲')});
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js?v=6.0', { updateViaCache: 'none' }).catch(()=>{})}
 if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
+  const a=document.activeElement, modal=$('#modalBg');
+  if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open'))){window._remoteRefreshPending=true;return;}
   DB=loadDB();
   if(!currentUser()){ensureDefaultAdminUser();}
-  const a=document.activeElement, modal=$('#modalBg');
-  if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open')))return;
   render();
 }})}
 
