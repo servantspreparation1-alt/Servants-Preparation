@@ -1960,10 +1960,12 @@ function openStaffForm(id,self){
  if(!name||!un||(!existing&&!pw))return fail('الاسم واسم المستخدم وكلمة مرور الحساب الجديد مطلوبة');
  var confirm=canPassword?document.getElementById('acConfirm').value:'';
  var current=self&&existing?document.getElementById('acCurrent').value:'';
- if((current||confirm)&&!pw)return fail('اكتب كلمة المرور الجديدة أو اترك حقول تغيير المرور فارغة');
- if(pw&&self&&existing&&current!==u.pass)return fail('كلمة المرور الحالية غير صحيحة');
- if(pw&&pw!==confirm)return fail('تأكيد كلمة المرور الجديدة غير مطابق');
- if(pw&&pw.length<8)return fail('كلمة المرور الجديدة 8 أحرف على الأقل');
+ /* تغيير كلمة المرور يتم فقط لو المستخدم كتب باسورد جديد فعلاً — عشان تعديل الاسم/الصورة يشتغل من غير أي طلب أو تحقق من الباسورد */
+ if(pw){
+   if(self&&existing&&current!==u.pass)return fail('كلمة المرور الحالية غير صحيحة');
+   if(pw!==confirm)return fail('تأكيد كلمة المرور الجديدة غير مطابق');
+   if(pw.length<8)return fail('كلمة المرور الجديدة 8 أحرف على الأقل');
+ }
  if(USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
  var next=Object.assign({},u,{name:name,username:un,u:un,phone:document.getElementById('acPhone').value.trim(),photo:photo});
  if(pw&&canPassword)next.pass=pw;
@@ -2588,5 +2590,5 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 
 
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d9ff111b47e221',t:'MTc5MjUyMDAwNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
