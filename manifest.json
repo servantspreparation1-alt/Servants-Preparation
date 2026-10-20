@@ -1,56 +1,18 @@
 {
-  "name": "إعداد خدام للتلمذة",
-  "short_name": "إعداد خدام للتلمذة",
-  "description": "إعداد خدام للتلمذة — نظام متابعة دارسي إعداد الخدّام عبر ٣ سنوات — كنيسة رئيس الملائكة ميخائيل بالأندلس",
+  "name": "إعداد خدام للتلمذة — معلم الأجيال للتلمذة",
+  "short_name": "إعداد خدام",
+  "description": "سجل دارسي إعداد الخدّام عبر ٣ سنوات — المواد والتقييمات والنتائج",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "scope": "./",
-  "id": "./?app=e3dad-talmaza-v5",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "orientation": "any",
-  "background_color": "#f3f2ec",
-  "theme_color": "#123a63",
-  "categories": [
-    "education",
-    "productivity"
-  ],
+  "orientation": "portrait",
+  "background_color": "#0e1826",
+  "theme_color": "#101b2d",
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icons/icon-512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "لوحة التحكم",
-      "short_name": "اللوحة",
-      "url": "admin.html",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    }
+    { "src": "icons/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/logo-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
