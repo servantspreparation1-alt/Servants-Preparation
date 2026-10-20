@@ -1356,72 +1356,111 @@ html[data-theme="dark"] .fb-sync[data-state="error"]{color:#fda4af!important}
   .rc,.badge{border:1px solid #999!important;color:#111!important;background:#f5f5f5!important}
 }
 
-/* === PATCH v5.0 LIGHT REDESIGN + IMAGE UPLOAD === */
-:root{
-  --cx-paper:#ffffff;
-  --cx-paper-2:#fbf6e6;
-  --cx-bg:#fdfbf3;
-  --cx-line:#e9e1c4;
-  --cx-line2:#efe9d5;
-  --cx-ink:#162338;
-  --cx-muted:#6b7a90;
+/* === FIX v5.1 — إصلاحات إدارة الخدام === */
+/* 1) كروت الخدام بدل الصف الممل */
+.sx-staff{
+  display:grid !important;
+  grid-template-columns:auto 1fr auto;
+  grid-template-areas:"av meta act" "av row row";
+  gap:12px 14px;
+  align-items:center;
+  background:var(--cx-paper) !important;
+  border:1px solid var(--card-border) !important;
+  border-radius:20px !important;
+  padding:16px 16px !important;
+  box-shadow:0 10px 28px rgba(90,55,20,.07) !important;
+  transition:transform .18s, box-shadow .18s, border-color .18s;
 }
-body{background:var(--cx-bg) !important}
-/* hero lighter overlay handling - keep existing but add uploader affordance */
-.hero-header .hero-logo, .logo-ring img{
-  cursor:pointer;transition:transform .2s, box-shadow .2s;
+.sx-staff:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(90,55,20,.11) !important;border-color:var(--cx-gold) !important}
+.sx-sav{
+  grid-area:av;
+  width:58px !important;height:58px !important;flex:0 0 58px !important;
+  border-radius:16px !important;
+  font-size:1.4rem !important;
+  border:2px solid #fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.14), 0 0 0 2px var(--cx-gold);
+  overflow:hidden;
 }
-.hero-header .hero-logo:hover, .logo-ring:hover{
-  transform:scale(1.03); box-shadow:0 14px 32px rgba(0,0,0,.22);
+.sx-sav img{width:100%;height:100%;object-fit:cover}
+.sx-smeta{grid-area:meta;min-width:0}
+.sx-smeta > b{font-size:1rem !important;color:var(--cx-ink) !important}
+.chip-role{margin-inline-start:8px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-srow{grid-area:row; margin-top:6px !important;gap:8px 12px !important}
+.sx-srow code{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sx-smeta .chip-role{vertical-align:middle}
+.sx-sact{grid-area:act;gap:8px !important}
+.sx-sact .btn{border-radius:999px !important;padding:8px 14px !important}
+@media(max-width:640px){
+  .sx-staff{grid-template-columns:auto 1fr;grid-template-areas:"av meta" "row row" "act act"}
+  .sx-sact{width:100%}
+  .sx-sact .btn{flex:1;justify-content:center}
 }
-.hero-logo-edit{
-  position:absolute;inset:auto 8px 8px auto;
-  width:34px;height:34px;border-radius:50%;
-  background:linear-gradient(135deg,#e5c86b,#c8a227);
-  border:2px solid #fff;display:grid;place-items:center;
-  box-shadow:0 4px 12px rgba(0,0,0,.2);cursor:pointer;font-size:14px;
-  z-index:2;
+/* avatar image inside sav */
+.sx-sav.has-photo{background:none !important;padding:0 !important;border:2px solid #fff !important}
+
+/* 2) فورم حساب خادم جديد — تحسينات بدون كسر الدارك مود */
+.sx-mh{
+  background:var(--cx-grad) !important;
+  color:#fff !important;
+  padding:14px 16px !important;
+  border-radius:18px 18px 0 0 !important;
+  margin:-14px -14px 14px !important;
+  position:relative;
 }
-.logo-ring{position:relative}
-.logo-ring .hero-logo-edit{inset:auto -6px -6px auto;width:32px;height:32px}
-.uploader-inline{
-  display:flex;align-items:center;gap:10px;
-  background:linear-gradient(180deg,#fffef7,#fdf7e2);
-  border:1.5px dashed #e1d9b8;border-radius:14px;padding:10px 12px;
-  margin-top:10px;cursor:pointer;transition:.2s;
+.sx-mh::after{
+  content:"";position:absolute;inset:auto 0 0;height:3px;
+  background:linear-gradient(90deg,var(--cx-gold),var(--cx-gold-2));
+  opacity:.95;
 }
-.uploader-inline:hover{border-color:var(--cx-gold);background:#fffef2}
-.uploader-inline .up-mini{
-  width:42px;height:42px;border-radius:12px;overflow:hidden;
-  background:linear-gradient(135deg,#0e2f4d,#1a4a7a);display:grid;place-items:center;color:#fff;flex:0 0 42px;
+.sx-mh h3{color:#fff !important;margin:0 !important;font-size:1.02rem !important}
+.sx-mh .sx-x{
+  background:rgba(255,255,255,.16) !important;
+  border:1.5px solid rgba(255,255,255,.32) !important;
+  color:#fff !important;
+  width:36px;height:36px;border-radius:50% !important;
+  display:grid;place-items:center;
 }
-.uploader-inline .up-mini img{width:100%;height:100%;object-fit:cover}
-.uploader-inline b{font-size:.84rem;color:var(--cx-brand)}
-.uploader-inline span{font-size:.72rem;color:var(--cx-muted)}
-/* modal redesign */
-.sx-mh{background:linear-gradient(90deg,#0e2f4d,#1a4a7a) !important;color:#fff !important;border-radius:16px 16px 0 0}
-.sx-mh h3{color:#fff !important}
-.sx-mh .sx-x{background:rgba(255,255,255,.14) !important;color:#fff !important;border-color:rgba(255,255,255,.35) !important}
-#modal .modal, #modalBox .modal, .modal{
-  border-radius:22px !important;overflow:hidden;border:1px solid #e9e1c4 !important;
-  box-shadow:0 24px 60px rgba(14,47,77,.20) !important;
+.sx-note{
+  background:var(--cx-paper-2) !important;
+  border:1px dashed var(--cx-gold) !important;
+  border-radius:14px !important;
+  line-height:1.9 !important;
 }
-.sx-fg{gap:10px}
-.sx-f input, .sx-f select, .sx-f textarea{
-  border-radius:14px !important;border:1.5px solid #d9dfe6 !important;
-  background:#fbfcfe !important;padding:12px 14px !important;transition:.2s !important;
-}
+/* 3) لا نكسر ألوان الإنبوت — نترك الأصلي يشتغل، فقط نحسن التركيز */
 .sx-f input:focus, .sx-f select:focus, .sx-f textarea:focus{
-  border-color:#c8a227 !important;box-shadow:0 0 0 4px rgba(200,162,39,.16) !important;background:#fff !important;
+  box-shadow:0 0 0 4px rgba(200,162,39,.18) !important;
 }
-.sx-photo .sx-ph{position:relative;cursor:pointer}
-.sx-photo .sx-ph::after{
-  content:"📷";position:absolute;inset:auto 6px 6px auto;
-  width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#e5c86b,#c8a227);
-  display:grid;place-items:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15)
+/* 4) dropdown الصلاحية يظهر صح في الدارك واللايت */
+#sfRole{
+  color:var(--cx-ink) !important;
+  background-color:var(--cx-paper) !important;
 }
-/* topbar brand logo uploader */
-.cx-nav .brand-logo{cursor:pointer;position:relative}
+html[data-theme="dark"] #sfRole,
+html.dark #sfRole{
+  color:#e2ebf5 !important;
+  background-color:#16202f !important;
+}
+#sfRole option{
+  color:var(--cx-ink);
+  background:var(--cx-paper);
+}
+html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
+
+/* 5) مكان رفع صورة الخادم في الفورم */
+.sx-photo-staff{
+  display:flex;gap:14px;align-items:center;
+  background:var(--cx-paper-2);border:1.5px dashed var(--cx-gold);
+  border-radius:16px;padding:12px;margin-bottom:12px;
+}
+.sx-photo-staff .sx-ph{width:72px;height:72px;flex:0 0 72px;border-radius:50% !important}
+.sx-photo-staff .hint{font-size:.78rem;color:var(--cx-muted);line-height:1.6}
+.sx-photo-staff .hint b{color:var(--cx-ink);display:block;font-size:.86rem}
+
+/* grid for staff view */
+#view .sx-count{color:var(--cx-muted);font-weight:800;font-size:.82rem;margin:10px 2px}
+.sx-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.sx-bar .sx-search{flex:1;min-width:180px}
+.sx-search{border-radius:999px !important;padding-inline-start:42px !important;background:var(--cx-paper) !important}
 </style>
 
 </head>
@@ -2521,143 +2560,156 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 </script>
 
 <script>
-// === IMAGE UPLOAD PATCH v5.0 ===
+// === FIX v5.1 STAFF PHOTO + CARD PHOTO ===
 (function(){
-  const LS_LOGO='e3dad_logo_all_v5';
-  const LS_STAFF='e3dad_staff_avatar_tmp';
-  function compress(file, maxW, q){ return new Promise((resolve, reject)=>{
-    const r=new FileReader(); r.onload=e=>{
-      const img=new Image(); img.onload=()=>{
-        const scale=Math.min(1, maxW/img.width);
-        const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        c.getContext('2d').drawImage(img,0,0,w,h);
-        resolve(c.toDataURL('image/jpeg', q||0.82));
-      }; img.onerror=reject; img.src=e.target.result;
-    }; r.onerror=reject; r.readAsDataURL(file);
-  })}
-
-  function applyAllLogos(dataUrl){
-    if(!dataUrl) return;
-    // hero logos
-    document.querySelectorAll('.hero-header .hero-logo, .hero-logo, .logo-ring img, .brand-logo img, .cx-nav img').forEach(el=>{
-      if(el.tagName==='IMG'){ el.src=dataUrl; el.style.display=''; }
-    });
-    // any element that contains logo fallback
-    const heroImg=document.querySelector('.hero-logo'); if(heroImg && heroImg.tagName!=='IMG') {
-      // try to find img inside
-      const inner=heroImg.querySelector('img'); if(inner){ inner.src=dataUrl; }
-    }
-    localStorage.setItem(LS_LOGO, dataUrl);
-    // also update login preview if exists
+  // helper
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function safePhoto(src){ var s=String(src||'').trim(); return s.length<1500000 && /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s) ? s : ''; }
+  function readPhoto(file, cb){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var im=new Image();
+      im.onload=function(){
+        var sz=256, c=document.createElement('canvas'); c.width=c.height=sz;
+        var m=Math.min(im.width, im.height), sx=(im.width-m)/2, sy=(im.height-m)/2;
+        c.getContext('2d').drawImage(im,sx,sy,m,m,0,0,sz,sz);
+        cb(c.toDataURL('image/jpeg', .82));
+      };
+      im.onerror=function(){ if(window.toast) toast('الصورة مش مقروءة'); };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
   }
 
-  function restore(){
-    try{
-      const saved=localStorage.getItem(LS_LOGO);
-      if(saved) applyAllLogos(saved);
-    }catch(e){}
+  // Patch USERS display to include photo
+  // Monkey-patch renderTeam
+  const origRenderTeam = window.renderTeam;
+  if(origRenderTeam){
+    window.renderTeam = function(){
+      // call original but we'll after enhance avatars
+      const ret = origRenderTeam.apply(this, arguments);
+      // enhance each .sx-sav to show photo if exists in USERS
+      try{
+        document.querySelectorAll('.sx-staff').forEach((el, idx)=>{
+          // find corresponding user by order? Better find by username in card
+          const codeEl = el.querySelector('.sx-srow code');
+          const uname = codeEl ? codeEl.textContent.trim() : '';
+          const user = (window.USERS||[]).find(u=> (u.username||u.u)===uname );
+          if(user && user.photo){
+            const ph=safePhoto(user.photo);
+            if(ph){
+              const av=el.querySelector('.sx-sav');
+              if(av){ av.innerHTML=`<img src="${ph}" alt="">`; av.classList.add('has-photo'); }
+            }
+          }
+        });
+      }catch(e){}
+      return ret;
+    };
   }
 
-  function makeFileInput(id){
-    let inp=document.getElementById(id);
-    if(!inp){
-      inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.id=id; inp.style.display='none';
-      document.body.appendChild(inp);
-    }
-    return inp;
+  // Patch openStaffForm to include photo uploader
+  const origOpen = window.openStaffForm;
+  if(origOpen){
+    window.openStaffForm = function(id){
+      // call original first
+      origOpen.call(this, id);
+      // now enhance modal
+      setTimeout(()=>{
+        const form=document.getElementById('staffForm');
+        if(!form || form.dataset.photoPatched) return;
+        form.dataset.photoPatched='1';
+        const modal=form.closest('.modal') || form.parentElement;
+        const user = id ? (window.USERS||[]).find(x=>x.id===id) : null;
+        // get current photo from user or blank for new
+        let photo = safePhoto(user && user.photo ? user.photo : '');
+
+        // create photo section at top of form
+        const fg=form.querySelector('.sx-fg');
+        if(fg){
+          const wrap=document.createElement('div');
+          wrap.className='sx-photo-staff';
+          wrap.innerHTML=`
+            <label class="sx-ph" for="sfPhotoFile" style="cursor:pointer;margin:0">
+              <span id="sfPhotoPrev" style="width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--cx-paper-2)"></span>
+              <i>📷</i>
+            </label>
+            <input type="file" id="sfPhotoFile" accept="image/*" style="display:none">
+            <div class="hint">
+              <b>صورة الخادم (اختياري)</b>
+              دوس على الدائرة لرفع صورة — هتظهر في كارت الخادم. لو سيبتها فاضية هيظهر أول حرف من اسمه.
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <button type="button" class="btn sm" id="sfPhotoPick">📷 اختيار صورة</button>
+                <button type="button" class="btn sm" id="sfPhotoClear">إزالة</button>
+              </div>
+            </div>
+          `;
+          // insert before first field
+          fg.parentElement.insertBefore(wrap, fg);
+
+          const prevEl=document.getElementById('sfPhotoPrev');
+          const fileEl=document.getElementById('sfPhotoFile');
+          const pickBtn=document.getElementById('sfPhotoPick');
+          const clearBtn=document.getElementById('sfPhotoClear');
+
+          function draw(){
+            if(photo){
+              prevEl.innerHTML=`<img src="${photo}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+              clearBtn.style.display='';
+            } else {
+              prevEl.innerHTML='👤';
+              prevEl.style.fontSize='1.6rem';
+              clearBtn.style.display='none';
+            }
+          }
+          draw();
+          pickBtn.onclick=()=> fileEl.click();
+          // also click on circle
+          wrap.querySelector('.sx-ph').onclick=(e)=>{ e.preventDefault(); fileEl.click(); };
+          fileEl.addEventListener('change', e=>{
+            const f=e.target.files[0]; if(!f) return;
+            readPhoto(f, d=>{ photo=d; draw(); });
+          });
+          clearBtn.onclick=()=>{ photo=''; draw(); fileEl.value=''; };
+
+          // hijack form submit to include photo
+          form.addEventListener('submit', function(ev){
+            // we need to intercept before original handler? Original handler already bound.
+            // We'll set a temporary property on the user object via storing in window
+            window.__staffPhotoTmp = photo;
+          }, true); // capture phase
+
+          // Also patch the original submit logic to read our photo
+          // We monkey-patch by wrapping the form's submit listener: after original validates, it will pushUsers()
+          // So we hook pushUsers to inject photo
+          const origPush = window.pushUsers;
+          if(origPush && !origPush._patched){
+            window.pushUsers = function(){
+              // if we have temp photo, inject into the last edited user
+              try{
+                if(window.__staffPhotoTmp !== undefined){
+                  // find the user that was just edited - it is the one with matching username in form
+                  const unVal=(document.getElementById('sfUser')||{}).value||'';
+                  const target=(window.USERS||[]).find(u=> (u.username||u.u)===unVal.trim() );
+                  if(target){
+                    if(window.__staffPhotoTmp) target.photo=window.__staffPhotoTmp;
+                    else delete target.photo;
+                  }
+                  window.__staffPhotoTmp=undefined;
+                }
+              }catch(e){}
+              return origPush.apply(this, arguments);
+            };
+            window.pushUsers._patched=true;
+          }
+        }
+      }, 80);
+    };
   }
 
-  function wire(){
-    // add edit buttons to hero logo
-    const heroLogo=document.querySelector('.hero-header .hero-logo') || document.querySelector('.hero-logo') || document.querySelector('.logo-ring');
-    if(heroLogo && !heroLogo.querySelector('.hero-logo-edit')){
-      const wrap=heroLogo.parentElement;
-      if(wrap && getComputedStyle(wrap).position==='static') wrap.style.position='relative';
-      const btn=document.createElement('button');
-      btn.className='hero-logo-edit'; btn.type='button'; btn.innerHTML='✏️'; btn.title='تغيير الصورة';
-      btn.onclick=(e)=>{ e.stopPropagation(); logoInput.click(); };
-      // place near logo
-      if(heroLogo.classList.contains('logo-ring')){
-        heroLogo.appendChild(btn);
-      } else {
-        heroLogo.style.position='relative';
-        heroLogo.appendChild(btn);
-      }
-      heroLogo.style.cursor='pointer';
-      heroLogo.addEventListener('click', ()=> logoInput.click());
-    }
-
-    // add inline uploader in login card
-    const loginCard=document.querySelector('.login-card');
-    if(loginCard && !loginCard.querySelector('.uploader-inline')){
-      const u=document.createElement('div');
-      u.className='uploader-inline';
-      u.innerHTML = `<div class="up-mini" id="upMiniPrev">📷</div><div><b>ارفع شعار الخدمة / صورتك</b><span>اضغط هنا أو اسحب الصورة — هتظهر في كل الصفحات</span></div><button class="btn sm primary" type="button">اختيار</button>`;
-      u.onclick=()=> logoInput.click();
-      // insert after logo
-      const after=loginCard.querySelector('.logo-ring') || loginCard.firstElementChild;
-      if(after && after.nextSibling) loginCard.insertBefore(u, after.nextSibling);
-      else loginCard.appendChild(u);
-    }
-
-    // drag & drop on whole page
-    document.addEventListener('dragover', e=> e.preventDefault());
-    document.addEventListener('drop', async e=>{
-      e.preventDefault();
-      const f=e.dataTransfer.files[0];
-      if(f && f.type.startsWith('image/')){
-        const d=await compress(f, 900, .84);
-        applyAllLogos(d);
-        // update mini preview
-        const mini=document.getElementById('upMiniPrev');
-        if(mini) mini.innerHTML=`<img src="${d}" alt="">`;
-        try{ if(window.toast) toast('✅ اتحفظت الصورة وهتظهر في كل الصفحات'); }catch(e){}
-      }
-    });
-  }
-
-  const logoInput=makeFileInput('__logoUpload');
-  logoInput.addEventListener('change', async e=>{
-    const f=e.target.files[0]; if(!f) return;
-    if(!f.type.startsWith('image/')) return alert('اختار صورة فقط');
-    const d=await compress(f, 900, .84);
-    applyAllLogos(d);
-    const mini=document.getElementById('upMiniPrev');
-    if(mini) mini.innerHTML=`<img src="${d}" alt="">`;
-    if(window.toast) toast('✅ اتحفظت الصورة');
-    e.target.value='';
-  });
-
-  // enhance staff modal avatar
-  const staffObserver=new MutationObserver(()=>{
-    const ph=document.querySelector('#phPrev') || document.querySelector('.sx-ph span');
-    const fileInput=document.getElementById('phFile');
-    // if staff avatar exists, make it show saved draft
-    try{
-      const draft=localStorage.getItem(LS_STAFF);
-      if(draft && ph && !ph.querySelector('img')){
-        // will be handled by existing logic, but we can hook
-      }
-    }catch(e){}
-    if(fileInput && !fileInput.dataset.wired){
-      fileInput.dataset.wired='1';
-      fileInput.addEventListener('change', async e=>{
-        const f=e.target.files[0]; if(!f) return;
-        const d=await compress(f, 500, .84);
-        localStorage.setItem(LS_STAFF, d);
-        // preview will be updated by original handler, but ensure we keep it
-        setTimeout(()=>{
-          const img=ph && ph.querySelector('img');
-          if(img) img.src=d;
-        },200);
-      });
-    }
-  });
-  staffObserver.observe(document.body, {childList:true, subtree:true});
-
-  document.addEventListener('DOMContentLoaded', ()=>{ restore(); wire(); setTimeout(wire, 800); });
-  restore(); wire();
+  // Also patch global avatar helper if exists
+  // For hero/logo image permanence - keep previous logic simple: allow drag drop to set logo
+  // Logo is handled by hero-logo logic already in original - no need extra
 })();
 </script>
 </body>
