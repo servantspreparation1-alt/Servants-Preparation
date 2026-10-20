@@ -1473,6 +1473,81 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 
 
 
+
+<style id="activity-dark-polish">
+/* لوحة السجل: هرمية أوضح، فلاتر مدمجة، وقوائم وتقويم من نفس هوية التطبيق */
+.activity-hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 24px;margin:4px 0 18px;border:1px solid color-mix(in srgb,var(--cx-gold) 34%,var(--cx-line));border-radius:22px;background:linear-gradient(125deg,color-mix(in srgb,var(--cx-brand-2) 14%,var(--cx-paper)),var(--cx-paper));box-shadow:var(--cx-shadow-sm)}
+.activity-hero h2{margin:3px 0 2px!important;color:var(--cx-brand)!important;font-size:1.45rem!important}
+.activity-hero p{margin:0;color:var(--cx-muted);font-size:.82rem}
+.activity-eyebrow{color:var(--cx-gold);font-size:.69rem;font-weight:900;letter-spacing:.3px}
+.activity-note-button{white-space:nowrap;border-radius:13px!important;box-shadow:0 8px 22px rgba(var(--cx-brand-2-rgb),.2)}
+.activity-filter-panel{position:relative;z-index:4;padding:18px 20px 20px;margin-bottom:14px;border:1px solid var(--card-border);border-radius:20px;background:var(--cx-paper);box-shadow:var(--cx-shadow-sm)}
+.activity-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.activity-filter-heading>div{display:grid;gap:2px}.activity-filter-heading b{color:var(--cx-ink);font-size:.9rem}.activity-filter-heading small{color:var(--cx-muted);font-size:.72rem}
+.activity-reset{border:0;background:transparent;color:var(--cx-brand);font:inherit;font-size:.74rem;font-weight:900;cursor:pointer;padding:6px 9px;border-radius:9px}.activity-reset:hover{background:var(--cx-gold-soft)}
+.activity-filter-grid{display:grid;grid-template-columns:minmax(210px,1.5fr) repeat(4,minmax(145px,1fr));gap:12px;align-items:end}
+.activity-control{display:grid;gap:6px;min-width:0}.activity-control>span{font-size:.7rem;color:var(--cx-muted);font-weight:900}
+.activity-input,.activity-select-trigger,.activity-date-trigger{min-height:46px;width:100%;padding:10px 13px;border:1px solid var(--field-border);border-radius:13px;background:var(--field-bg);color:var(--cx-ink);font:700 .84rem var(--cx-font);text-align:right;transition:border-color .16s,box-shadow .16s,background .16s}
+.activity-input:focus,.activity-select-trigger:focus,.activity-date-trigger:focus{outline:0;border-color:var(--cx-gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--cx-gold) 22%,transparent)}
+.activity-select-wrap{position:relative}.activity-select-trigger,.activity-date-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
+.activity-select-trigger i{font-style:normal;color:var(--cx-gold);font-size:1.15rem;line-height:1}.activity-date-trigger b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem}.activity-calendar-icon{font-size:1.12rem;color:var(--cx-gold)}
+.activity-select-menu{position:absolute;top:calc(100% + 7px);inset-inline:0;z-index:80;display:grid;gap:3px;max-height:290px;overflow:auto;padding:7px;border:1px solid var(--card-border);border-radius:14px;background:var(--cx-paper);color:var(--cx-ink);box-shadow:0 18px 45px rgba(0,0,0,.26)}
+.activity-select-menu[hidden]{display:none!important}.activity-select-menu button{border:0;border-radius:9px;background:transparent;color:var(--cx-ink);font:700 .82rem var(--cx-font);text-align:right;padding:9px 11px;cursor:pointer}
+.activity-select-menu button:hover,.activity-select-menu button[aria-selected="true"]{background:color-mix(in srgb,var(--cx-brand-2) 16%,var(--cx-paper));color:var(--cx-brand)}
+.activity-calendar-pop{position:absolute;top:calc(100% + 8px);inset-inline-start:0;z-index:75;width:min(100%,390px);padding:16px;border:1px solid var(--card-border);border-radius:19px;background:var(--cx-paper);color:var(--cx-ink);box-shadow:0 22px 55px rgba(0,0,0,.3)}
+.activity-calendar-top{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:8px;margin-bottom:12px;text-align:center}.activity-calendar-top b{font-size:.9rem;color:var(--cx-ink)}
+.activity-cal-nav{width:38px;height:38px;border:1px solid var(--card-border);border-radius:12px;background:var(--cx-paper-2);color:var(--cx-brand);font:900 1.4rem var(--cx-font);cursor:pointer}.activity-cal-nav:hover{border-color:var(--cx-gold);background:var(--cx-gold-soft)}
+.activity-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;direction:rtl;text-align:center}.activity-weekday{padding:6px 0;color:var(--cx-muted);font-size:.65rem;font-weight:900}.activity-day-empty{min-height:36px}
+.activity-day-button{min-height:36px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--cx-ink);font:700 .78rem var(--cx-font);cursor:pointer}.activity-day-button:hover{border-color:var(--cx-gold);background:var(--cx-gold-soft)}
+.activity-day-button.is-in-range{border-radius:8px;background:color-mix(in srgb,var(--cx-brand-2) 15%,var(--cx-paper));color:var(--cx-brand)}
+.activity-day-button.is-edge{border-color:var(--cx-brand-2);background:var(--cx-brand-2);color:#fff;box-shadow:0 4px 12px rgba(var(--cx-brand-2-rgb),.25)}
+.activity-day-button.is-today:not(.is-edge){box-shadow:inset 0 0 0 1px var(--cx-gold)}
+.activity-calendar-footer{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px;padding-top:11px;border-top:1px solid var(--cx-line)}
+.activity-calendar-footer button{padding:7px 10px;border:1px solid var(--card-border);border-radius:999px;background:var(--cx-paper-2);color:var(--cx-ink);font:700 .68rem var(--cx-font);cursor:pointer}.activity-calendar-footer button:hover{border-color:var(--cx-gold);color:var(--cx-brand)}
+.activity-calendar-hint{margin:10px 0 0;color:var(--cx-muted);font-size:.66rem;line-height:1.7}
+.activity-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 9px}.activity-bulk,.activity-export{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.activity-count{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 13px;margin:10px 0 13px;border:1px solid var(--cx-line);border-radius:13px;background:var(--cx-paper-2);color:var(--cx-muted);font-size:.71rem;font-weight:800}
+.activity-count span:first-child{color:var(--cx-brand);font-size:.78rem}
+.activity-list{gap:9px}.activity-row{padding:15px 17px;border-radius:17px;background:var(--cx-paper);box-shadow:0 5px 16px rgba(0,0,0,.035);transition:border-color .16s,transform .16s,background .16s}.activity-row:hover{border-color:color-mix(in srgb,var(--cx-gold) 45%,var(--card-border));transform:translateY(-1px)}
+.activity-row.locked{border-inline-start:3px solid color-mix(in srgb,var(--cx-gold) 70%,transparent)}.activity-row.note{border-inline-start:4px solid var(--cx-gold)}
+.activity-sensitive,.activity-failure{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid var(--card-border);border-radius:999px;color:var(--cx-muted);font-size:.63rem;font-weight:800}.activity-failure{color:var(--cx-danger);border-color:color-mix(in srgb,var(--cx-danger) 35%,transparent);background:color-mix(in srgb,var(--cx-danger) 8%,transparent)}
+.activity-select{display:grid;place-items:center;min-width:34px;min-height:34px;border-radius:10px;cursor:pointer}.activity-select:hover{background:var(--cx-gold-soft)}.activity-select input{width:19px;height:19px;accent-color:var(--cx-brand-2)}
+.activity-action.add{color:#166534;background:#dcfce7}.activity-action.edit{color:#1e40af;background:#dbeafe}.activity-action.delete{color:#991b1b;background:#fee2e2}
+html[data-theme="dark"] select option,html.dark select option{background:#101a28!important;color:#e8eef6!important}
+html[data-theme="dark"] .activity-hero,html.dark .activity-hero{background:linear-gradient(125deg,rgba(59,138,214,.16),var(--cx-paper));border-color:rgba(216,180,95,.2)}
+html[data-theme="dark"] .activity-input,html.dark .activity-input,html[data-theme="dark"] .activity-select-trigger,html.dark .activity-select-trigger,html[data-theme="dark"] .activity-date-trigger,html.dark .activity-date-trigger{background:#0d1724;color:#e8eef6;border-color:rgba(156,203,244,.28)}
+html[data-theme="dark"] .activity-select-menu,html.dark .activity-select-menu,html[data-theme="dark"] .activity-calendar-pop,html.dark .activity-calendar-pop{background:#101a28;color:#e8eef6;border-color:#334356}
+html[data-theme="dark"] .activity-select-menu button,html.dark .activity-select-menu button,html[data-theme="dark"] .activity-day-button,html.dark .activity-day-button{color:#e8eef6}
+html[data-theme="dark"] .activity-select-menu button:hover,html[data-theme="dark"] .activity-select-menu button[aria-selected="true"],html.dark .activity-select-menu button:hover,html.dark .activity-select-menu button[aria-selected="true"]{background:#1d3550;color:#b9dcfa}
+html[data-theme="dark"] .activity-day-button.is-in-range,html.dark .activity-day-button.is-in-range{background:rgba(59,138,214,.18);color:#b9dcfa}
+html[data-theme="dark"] .activity-day-button.is-edge,html.dark .activity-day-button.is-edge{background:#2876b8;border-color:#74b8ed;color:white}
+html[data-theme="dark"] .activity-calendar-footer button,html.dark .activity-calendar-footer button{background:#162437;color:#dce8f4;border-color:#354457}
+html[data-theme="dark"] .activity-count,html.dark .activity-count{background:#101a28;border-color:#28384b}
+html[data-theme="dark"] .activity-row,html.dark .activity-row{background:#101a28;border-color:#26364a;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+html[data-theme="dark"] .activity-row.locked,html.dark .activity-row.locked{border-inline-start-color:#c9a14b}
+html[data-theme="dark"] .activity-action.add,html.dark .activity-action.add{background:rgba(55,207,160,.13);color:#82e6c2;border-color:rgba(55,207,160,.25)}
+html[data-theme="dark"] .activity-action.edit,html.dark .activity-action.edit{background:rgba(127,184,240,.14);color:#b9dcfa;border-color:rgba(127,184,240,.25)}
+html[data-theme="dark"] .activity-action.delete,html.dark .activity-action.delete{background:rgba(240,133,122,.14);color:#ffb2a8;border-color:rgba(240,133,122,.25)}
+/* تحسين جدول النتائج في الوضع الليلي: أسماء الدارسين والدرجات لا تحتفظ بألوان فاتحة */
+html[data-theme="dark"] .sx-rt,html.dark .sx-rt{background:var(--cx-paper);color:var(--cx-ink);border-color:var(--card-border)}
+html[data-theme="dark"] .sx-rt th,html[data-theme="dark"] .sx-rt td,html.dark .sx-rt th,html.dark .sx-rt td{color:var(--cx-ink)}
+html[data-theme="dark"] .sx-rt .nm,html.dark .sx-rt .nm{background:var(--cx-paper)!important;color:var(--cx-ink)}
+html[data-theme="dark"] .sx-rt tbody tr:nth-child(even) .nm,html.dark .sx-rt tbody tr:nth-child(even) .nm{background:var(--cx-paper-2)!important}
+html[data-theme="dark"] .rc.pass,html.dark .rc.pass{background:rgba(55,207,160,.16);color:#8ce8c5}
+html[data-theme="dark"] .rc.fail,html.dark .rc.fail{background:rgba(240,133,122,.16);color:#ffb5ad}
+html[data-theme="dark"] .rc.pend,html.dark .rc.pend{background:rgba(190,203,216,.12);color:#c8d5e2}
+html[data-theme="dark"] .rc.none,html[data-theme="dark"] .rc.na,html.dark .rc.none,html.dark .rc.na{color:#a9bac9}
+html[data-theme="dark"] .rc sup,html.dark .rc sup{color:#f3d078}
+html[data-theme="dark"] .sx-stat.warn b,html.dark .sx-stat.warn b{color:#f3d078}
+html[data-theme="dark"] .sx-rt tbody tr:nth-child(even) td,html.dark .sx-rt tbody tr:nth-child(even) td{background:rgba(255,255,255,.018)}
+html[data-theme="dark"] .sx-rt tbody tr:hover td,html.dark .sx-rt tbody tr:hover td{background:rgba(216,180,95,.07)}
+.wa-note{margin:10px 0 0;padding:10px 12px;border:1px dashed var(--cx-gold);border-radius:12px;background:var(--cx-gold-soft);color:var(--cx-muted);font-size:.74rem;line-height:1.8}
+.wa-fallback{max-width:500px}.wa-fallback p{color:var(--cx-muted);line-height:1.9}.wa-fallback-actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+@media(max-width:980px){.activity-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.activity-search-control{grid-column:span 2}}
+@media(max-width:680px){.activity-hero{align-items:flex-start;padding:18px;flex-direction:column}.activity-note-button{width:100%}.activity-filter-panel{padding:15px}.activity-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.activity-search-control{grid-column:1/-1}.activity-calendar-pop{width:min(100%,360px)}.activity-count{align-items:flex-start;flex-direction:column}.activity-toolbar{align-items:stretch}.activity-bulk,.activity-export{width:100%}.activity-bulk .btn,.activity-export .btn{flex:1}.activity-row{grid-template-columns:36px minmax(0,1fr) 34px;gap:9px;padding:12px}}
+@media(max-width:430px){.activity-filter-grid{grid-template-columns:1fr}.activity-search-control{grid-column:auto}.activity-calendar-pop{inset-inline:-4px;width:calc(100% + 8px);padding:12px}.activity-day-button,.activity-day-empty{min-height:33px}.activity-calendar-footer{gap:5px}.activity-calendar-footer button{font-size:.63rem;padding:6px 8px}}
+</style>
+
 </head>
 
 <body>
@@ -1981,24 +2056,70 @@ function openActivityNote(){
   var form=document.getElementById('activityNoteForm');if(!form)return;
   form.onsubmit=function(e){e.preventDefault();if(!isOwner())return;var target=document.getElementById('activityNoteTarget').value.trim(),details=document.getElementById('activityNoteDetails').value.trim();if(!target||!details)return;var btn=form.querySelector('[type=submit]');btn.disabled=true;logActivity('admin_note',target,details).then(function(ok){if(ok){closeModal();toast('تمت إضافة الملاحظة للسجل');}else{btn.disabled=false;toast('تعذرت إضافة الملاحظة — تحقق من اتصال Firebase');}});};
 }
+function activityMonthText(monthKey){
+  var p=String(monthKey||'').split('-'),y=+p[0],m=+p[1];if(!y||!m)return '';
+  return new Intl.DateTimeFormat('ar-EG',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,15)));
+}
+function activityDayText(dayKey){
+  if(!dayKey)return 'كل الفترات';var p=String(dayKey).split('-'),y=+p[0],m=+p[1],d=+p[2];
+  if(!y||!m||!d)return 'كل الفترات';return new Intl.DateTimeFormat('ar-EG',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(y,m-1,d)));
+}
+function activityCalendarHTML(){
+  if(!S.activityCalOpen)return '';
+  var mk=S.activityCalMonth||activityDay(Date.now()).slice(0,7),p=mk.split('-'),y=+p[0],m=+p[1];
+  if(!y||!m){mk=activityDay(Date.now()).slice(0,7);p=mk.split('-');y=+p[0];m=+p[1];S.activityCalMonth=mk;}
+  var first=new Date(Date.UTC(y,m-1,1)).getUTCDay(),days=new Date(Date.UTC(y,m,0)).getUTCDate(),week=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+  var grid=week.map(function(w){return '<span class="activity-weekday">'+w+'</span>';}).join('');
+  for(var i=0;i<first;i++)grid+='<span class="activity-day-empty" aria-hidden="true"></span>';
+  var start=S.activityFrom||'',finish=S.activityTo||'';
+  for(var d=1;d<=days;d++){
+    var key=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'),cls='activity-day-button';
+    if(key===start||key===finish)cls+=' is-edge';else if(start&&finish&&key>start&&key<finish)cls+=' is-in-range';
+    if(key===activityDay(Date.now()))cls+=' is-today';
+    grid+='<button type="button" class="'+cls+'" data-cal-day="'+key+'" aria-label="'+esc(activityDayText(key))+'">'+nf(d)+'</button>';
+  }
+  var total=first+days;for(var j=total;j<42;j++)grid+='<span class="activity-day-empty" aria-hidden="true"></span>';
+  return '<section class="activity-calendar-pop" id="activityCalendar" aria-label="اختيار فترة زمنية"><div class="activity-calendar-top"><button type="button" class="activity-cal-nav" data-cal-nav="-1" aria-label="الشهر السابق">‹</button><b>'+esc(activityMonthText(mk))+'</b><button type="button" class="activity-cal-nav" data-cal-nav="1" aria-label="الشهر التالي">›</button></div><div class="activity-calendar-grid">'+grid+'</div><div class="activity-calendar-footer"><button type="button" data-cal-preset="today">اليوم</button><button type="button" data-cal-preset="7">آخر ٧ أيام</button><button type="button" data-cal-preset="30">آخر ٣٠ يومًا</button><button type="button" data-cal-preset="clear">مسح التاريخ</button></div><p class="activity-calendar-hint">اختاري «من» ثم «إلى»؛ تقدر تختار يومًا واحدًا بترك تاريخ النهاية فارغًا.</p></section>';
+}
+function activityChooseDay(key){
+  var field=S.activityCalField||'from';
+  if(field==='from'){S.activityFrom=key;if(S.activityTo&&S.activityTo<key)S.activityTo='';}
+  else{if(S.activityFrom&&key<S.activityFrom){S.activityTo=S.activityFrom;S.activityFrom=key;}else S.activityTo=key;}
+  S.activityCalOpen=false;renderActivity();
+}
 function renderActivity(){
   if(!isOwner())return;
   var items=activityFilteredItems(),actions={};ACTIVITY.forEach(function(x){if(x.action)actions[x.action]=1;});
-  var actionOptions=Object.keys(actions).sort().map(function(a){return '<option value="'+esc(a)+'" '+(S.activityAction===a?'selected':'')+'>'+esc(activityLabel(a)[0])+'</option>';}).join('');
-  var html='<div class="activity-header"><div><div class="activity-eyebrow">إدارة ومراجعة</div><h2 style="margin:2px 0">سجل النشاطات</h2><div class="activity-counter">كل إجراء مهم، مع اسم الفاعل ووقته وتفاصيله</div></div><button class="btn primary" id="activityAddNote">＋ ملاحظة إدارية</button></div>'+
-    '<div class="activity-filters"><input class="sx-search" id="activitySearch" type="search" placeholder="ابحث بالفاعل أو الفعل أو التفاصيل…" value="'+esc(S.activityQ||'')+'"><label>نوع النشاط<select id="activityActionFilter"><option value="">كل الأنشطة</option>'+actionOptions+'</select></label><label>من تاريخ<input id="activityFrom" type="date" value="'+esc(S.activityFrom||'')+'"></label><label>إلى تاريخ<input id="activityTo" type="date" value="'+esc(S.activityTo||'')+'"></label><label>النتيجة<select id="activityOutcome"><option value="">كل النتائج</option><option value="success" '+(S.activityOutcome==='success'?'selected':'')+'>ناجح</option><option value="failure" '+(S.activityOutcome==='failure'?'selected':'')+'>فشل</option></select></label></div>'+
-    '<div class="activity-tools"><button class="btn sm" id="activitySelectVisible">تحديد غير المحمي المعروض</button><button class="btn sm" id="activityClearSelection">إلغاء التحديد</button><button class="btn sm" id="activityExportCsv">تصدير CSV</button><button class="btn sm" id="activityExportJson">تصدير JSON</button><button class="btn danger" id="activityDelete" disabled>🗑 حذف المحدد</button></div>'+
-    '<p class="activity-count">'+nf(items.length)+' سجل مطابق من آخر '+nf(ACTIVITY.length)+' سجل · الحد الأقصى ١٥٠٠ · سجلات الدخول والخروج وكلمات المرور محمية</p><div class="activity-list">';
+  var actionItems='<button type="button" role="option" data-activity-option="action" data-value="" aria-selected="'+(!S.activityAction)+'">كل الأنشطة</button>'+Object.keys(actions).sort().map(function(a){return '<button type="button" role="option" data-activity-option="action" data-value="'+esc(a)+'" aria-selected="'+(S.activityAction===a)+'">'+esc(activityLabel(a)[0])+'</button>';}).join('');
+  var resultItems='<button type="button" role="option" data-activity-option="outcome" data-value="" aria-selected="'+(!S.activityOutcome)+'">كل النتائج</button><button type="button" role="option" data-activity-option="outcome" data-value="success" aria-selected="'+(S.activityOutcome==='success')+'">ناجح</button><button type="button" role="option" data-activity-option="outcome" data-value="failure" aria-selected="'+(S.activityOutcome==='failure')+'">فشل</button>';
+  var actionName=S.activityAction?activityLabel(S.activityAction)[0]:'كل الأنشطة',outcomeName=S.activityOutcome==='success'?'ناجح':S.activityOutcome==='failure'?'فشل':'كل النتائج';
+  var html='<section class="activity-hero"><div><span class="activity-eyebrow">مساحة إدارة ومراجعة</span><h2>سجل النشاطات</h2><p>كل إضافة وتعديل وحذف، بفاعلها ووقتها وتفاصيلها.</p></div><button class="btn primary activity-note-button" id="activityAddNote">＋ ملاحظة إدارية</button></section>'+
+    '<section class="activity-filter-panel"><div class="activity-filter-heading"><div><b>فلترة السجل</b><small>ابحث وحدد الفترة أو نوع النشاط</small></div><button type="button" class="activity-reset" id="activityReset">إعادة ضبط</button></div><div class="activity-filter-grid">'+
+    '<label class="activity-control activity-search-control"><span>بحث سريع</span><input class="activity-input" id="activitySearch" type="search" placeholder="الفاعل، التفاصيل، الهدف…" value="'+esc(S.activityQ||'')+'"></label>'+
+    '<div class="activity-control"><span>نوع النشاط</span><div class="activity-select-wrap" data-filter-wrap="action"><button type="button" class="activity-select-trigger" data-select-trigger="action" aria-haspopup="listbox" aria-expanded="false"><span>'+esc(actionName)+'</span><i>⌄</i></button><div class="activity-select-menu" role="listbox" aria-label="نوع النشاط" hidden>'+actionItems+'</div></div></div>'+
+    '<div class="activity-control"><span>من تاريخ</span><button type="button" class="activity-date-trigger" data-cal-open="from"><span class="activity-calendar-icon">▦</span><b>'+esc(activityDayText(S.activityFrom))+'</b></button></div>'+
+    '<div class="activity-control"><span>إلى تاريخ</span><button type="button" class="activity-date-trigger" data-cal-open="to"><span class="activity-calendar-icon">▦</span><b>'+esc(activityDayText(S.activityTo))+'</b></button></div>'+
+    '<div class="activity-control"><span>النتيجة</span><div class="activity-select-wrap" data-filter-wrap="outcome"><button type="button" class="activity-select-trigger" data-select-trigger="outcome" aria-haspopup="listbox" aria-expanded="false"><span>'+esc(outcomeName)+'</span><i>⌄</i></button><div class="activity-select-menu" role="listbox" aria-label="النتيجة" hidden>'+resultItems+'</div></div></div></div>'+activityCalendarHTML()+'</section>'+
+    '<div class="activity-toolbar"><div class="activity-bulk"><button class="btn sm" id="activitySelectVisible">تحديد السجلات المعروضة</button><button class="btn sm" id="activityClearSelection">إلغاء التحديد</button><button class="btn danger" id="activityDelete" disabled>حذف المحدد <span id="activitySelectedCount"></span></button></div><div class="activity-export"><button class="btn sm" id="activityExportCsv">تصدير CSV</button><button class="btn sm" id="activityExportJson">تصدير JSON</button></div></div>'+
+    '<div class="activity-count"><span>'+nf(items.length)+' سجل مطابق</span><span>من آخر '+nf(ACTIVITY.length)+' سجل · الحد الأقصى ١٥٠٠</span><span>تستطيع الإدارة حذف أي سجل، ويُسجل النظام عملية الحذف</span></div><div class="activity-list">';
   if(!items.length)html+='<div class="activity-empty">📜 لا توجد نشاطات مطابقة للفلاتر الحالية.</div>';
   items.forEach(function(x){
-    var meta=activityLabel(x.action),photo=safePhoto(x.actorPhoto)||activityPhoto(x.actorId),locked=!!x.protected;
-    html+='<article class="activity-row '+(locked?'locked ':'')+(x.action==='admin_note'?'note':'')+'"><div class="activity-avatar">'+(photo?'<img src="'+esc(photo)+'" alt="">':esc((x.actorName||'?').charAt(0)))+'</div><div class="activity-main"><div class="activity-heading"><b>'+esc(x.actorName||'—')+'</b><span class="chip-role">'+esc(x.actorRole||'')+'</span><span class="activity-action '+meta[1]+'">'+esc(meta[0])+'</span>'+(x.outcome==='failure'?'<span class="activity-lock">⚠ فشل</span>':'')+(locked?'<span class="activity-lock" title="سجل محمي">🔒 محمي</span>':'')+'</div><div class="activity-target">'+esc(x.target||'—')+'</div>'+(x.details?'<div class="activity-details">'+esc(x.details)+'</div>':'')+'<div class="activity-time">'+activityDate(x.ts)+'</div></div>'+(locked?'':'<label class="activity-select" title="تحديد للحذف"><input type="checkbox" data-activity-key="'+esc(x._key)+'" aria-label="تحديد الحدث"></label>')+'</article>';
+    var meta=activityLabel(x.action),photo=safePhoto(x.actorPhoto)||activityPhoto(x.actorId),sensitive=!!x.protected;
+    html+='<article class="activity-row '+(sensitive?'locked ':'')+(x.action==='admin_note'?'note':'')+'"><div class="activity-avatar">'+(photo?'<img src="'+esc(photo)+'" alt="">':esc((x.actorName||'?').charAt(0)))+'</div><div class="activity-main"><div class="activity-heading"><b>'+esc(x.actorName||'—')+'</b><span class="chip-role">'+esc(x.actorRole||'')+'</span><span class="activity-action '+meta[1]+'">'+esc(meta[0])+'</span>'+(x.outcome==='failure'?'<span class="activity-failure">⚠ فشل</span>':'')+(sensitive?'<span class="activity-sensitive" title="حدث حساس لكنه قابل للحذف بواسطة إدارة النظام">حدث حساس</span>':'')+'</div><div class="activity-target">'+esc(x.target||'—')+'</div>'+(x.details?'<div class="activity-details">'+esc(x.details)+'</div>':'')+'<div class="activity-time">'+activityDate(x.ts)+'</div></div><label class="activity-select" title="تحديد للحذف"><input type="checkbox" data-activity-key="'+esc(x._key)+'" aria-label="تحديد حدث '+esc(activityLabel(x.action)[0])+'"></label></article>';
   });
   html+='</div>';view.innerHTML=html;
   var search=document.getElementById('activitySearch');if(search)search.oninput=function(){S.activityQ=this.value;var pos=this.selectionStart;renderActivity();var n=document.getElementById('activitySearch');n.focus();try{n.setSelectionRange(pos,pos);}catch(_e){}};
-  [['activityActionFilter','activityAction'],['activityFrom','activityFrom'],['activityTo','activityTo'],['activityOutcome','activityOutcome']].forEach(function(pair){var el=document.getElementById(pair[0]);if(el)el.onchange=function(){S[pair[1]]=el.value;renderActivity();};});
+  view.querySelectorAll('[data-select-trigger]').forEach(function(btn){btn.onclick=function(e){e.stopPropagation();var wrap=btn.closest('.activity-select-wrap'),menu=wrap.querySelector('.activity-select-menu'),open=menu.hidden;view.querySelectorAll('.activity-select-menu').forEach(function(m){m.hidden=true;});view.querySelectorAll('[data-select-trigger]').forEach(function(b){b.setAttribute('aria-expanded','false');});menu.hidden=!open;btn.setAttribute('aria-expanded',String(open));};});
+  view.querySelectorAll('[data-activity-option]').forEach(function(btn){btn.onclick=function(){var type=btn.getAttribute('data-activity-option');if(type==='action')S.activityAction=btn.getAttribute('data-value');else S.activityOutcome=btn.getAttribute('data-value');renderActivity();};});
+  view.addEventListener('click',function(e){if(!e.target.closest('.activity-select-wrap'))view.querySelectorAll('.activity-select-menu').forEach(function(m){m.hidden=true;});});
+  view.querySelectorAll('[data-cal-open]').forEach(function(btn){btn.onclick=function(){S.activityCalOpen=true;S.activityCalField=btn.getAttribute('data-cal-open');var selected=S[S.activityCalField==='from'?'activityFrom':'activityTo']||activityDay(Date.now());S.activityCalMonth=selected.slice(0,7);renderActivity();};});
+  view.querySelectorAll('[data-cal-nav]').forEach(function(btn){btn.onclick=function(){var p=(S.activityCalMonth||activityDay(Date.now()).slice(0,7)).split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1+(+btn.getAttribute('data-cal-nav')),1));S.activityCalMonth=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0');renderActivity();};});
+  view.querySelectorAll('[data-cal-day]').forEach(function(btn){btn.onclick=function(){activityChooseDay(btn.getAttribute('data-cal-day'));};});
+  view.querySelectorAll('[data-cal-preset]').forEach(function(btn){btn.onclick=function(){var preset=btn.getAttribute('data-cal-preset'),today=activityDay(Date.now());if(preset==='clear'){S.activityFrom='';S.activityTo='';}else if(preset==='today'){S.activityFrom=today;S.activityTo=today;}else{var delta=Number(preset)||7;var p=today.split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]-(delta-1)));S.activityFrom=d.toISOString().slice(0,10);S.activityTo=today;}S.activityCalOpen=false;renderActivity();};});
+  var reset=document.getElementById('activityReset');if(reset)reset.onclick=function(){S.activityQ='';S.activityAction='';S.activityFrom='';S.activityTo='';S.activityOutcome='';S.activityCalOpen=false;renderActivity();};
+  view.onkeydown=function(e){if(e.key==='Escape'&&S.activityCalOpen){S.activityCalOpen=false;renderActivity();}};
   var del=document.getElementById('activityDelete');
-  function refreshDelete(){if(del)del.disabled=!view.querySelector('[data-activity-key]:checked');}
+  function refreshDelete(){var selected=view.querySelectorAll('[data-activity-key]:checked').length;if(del){del.disabled=!selected;var count=document.getElementById('activitySelectedCount');if(count)count.textContent=selected?'('+nf(selected)+')':'';}}
   view.querySelectorAll('[data-activity-key]').forEach(function(c){c.addEventListener('change',refreshDelete);});
   var select=document.getElementById('activitySelectVisible');if(select)select.onclick=function(){view.querySelectorAll('[data-activity-key]').forEach(function(c){c.checked=true;});refreshDelete();};
   var clear=document.getElementById('activityClearSelection');if(clear)clear.onclick=function(){view.querySelectorAll('[data-activity-key]').forEach(function(c){c.checked=false;});refreshDelete();};
@@ -2008,10 +2129,10 @@ function renderActivity(){
   if(del)del.onclick=function(){
     var keys=Array.prototype.slice.call(view.querySelectorAll('[data-activity-key]:checked')).map(function(c){return c.getAttribute('data-activity-key');}).filter(Boolean);
     if(!keys.length)return;
-    ask('حذف النشاطات المحددة','سيتم حذف السجلات المحددة فقط. سجلات الدخول والخروج وكلمات المرور محمية ولا يمكن حذفها.','🗑 حذف').then(function(ok){
+    ask('تأكيد حذف السجلات','سيتم حذف '+nf(keys.length)+' سجلًا نهائيًا، بما فيها سجلات الدخول أو الخروج أو تغيير كلمة المرور إذا كانت ضمن اختيارك. ستُضاف ملاحظة تدقيق جديدة تسجل عملية الحذف.','🗑 حذف السجلات').then(function(ok){
       if(!ok||!isOwner()||!fbActivityRef)return;
-      var removed=keys.filter(function(k){var e=ACTIVITY.find(function(x){return x._key===k;});return e&&!e.protected;});
-      Promise.all(removed.map(function(k){return fbActivityRef.child(k).remove();})).then(function(){logActivity('delete_activity_log','سجل النشاطات','حذف '+nf(removed.length)+' سجل يدويًا',{protected:true});toast('تم حذف السجلات المحددة');});
+      var removed=keys.filter(function(k){return ACTIVITY.some(function(x){return x._key===k;});});
+      Promise.all(removed.map(function(k){return fbActivityRef.child(k).remove();})).then(function(){return logActivity('delete_activity_log','سجل النشاطات','حذف '+nf(removed.length)+' سجل يدويًا',{protected:true});}).then(function(){toast('تم حذف السجلات المحددة، وسُجلت العملية للتدقيق');}).catch(function(){toast('تعذر حذف بعض السجلات');});
     });
   };
 }
@@ -2024,6 +2145,21 @@ function renderTeam(){
  var ph=safePhoto(u.photo),allow=accountAllowed(u);
  return '<article class="staff-tile" '+(allow?'tabindex="0" data-card-user="'+esc(u.id)+'" aria-label="تعديل حساب '+esc(nmForCard(u))+'"':'')+'><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<details><summary>عرض كلمة المرور</summary><code>'+esc(u.pass||'')+'</code></details>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
  }).join('')+'</div>';
+}
+function whatsappDigits(raw){
+  var d=toEn(String(raw||'')).replace(/\D/g,'');if(d.slice(0,2)==='00')d=d.slice(2);
+  if(d.slice(0,2)==='20'){}else if(d.charAt(0)==='0')d='20'+d.slice(1);else if((d.length===9||d.length===10)&&/^[12]/.test(d))d='20'+d;
+  return /^\d{8,15}$/.test(d)&&d.charAt(0)!=='0'?d:'';
+}
+function appInviteURL(){return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)?'https://servantspreparation1.vercel.app':location.origin;}
+function createWhatsAppInvite(phone,account,password){
+  var user=displayPersonName(account.name||account.username||account.u||'');
+  var creator=displayPersonName(ME.name||ME.u||'إدارة النظام');
+  var message='السلام عليكم يا '+user+' 🌿\nتم إنشاء حسابك في نظام إعداد خدام بواسطة '+creator+' ('+(ME.role||'إدارة النظام')+').\nرابط النظام: '+appInviteURL()+'\nاسم المستخدم: '+(account.username||account.u||'')+'\nكلمة المرور الأولية: '+password+'\nالدور: '+(account.role||'خادم')+'\nاحتفظ ببيانات الدخول، وغيّر كلمة المرور عند أول فرصة.';
+  return 'https://wa.me/'+phone+'?text='+encodeURIComponent(message);
+}
+function showWhatsAppFallback(url,phone){
+  openModal('<div class="wa-fallback"><div class="account-title"><div><span class="editor-eyebrow">تم إنشاء الحساب بنجاح</span><h3>افتح رسالة WhatsApp</h3><p>الرسالة جاهزة على الرقم '+esc(phone)+'. راجعها قبل الإرسال.</p></div><button class="sx-x" data-act="closeModal" aria-label="إغلاق">×</button></div><p>لو المتصفح منع فتح نافذة تلقائيًا، اضغط الزر لإكمال الخطوة. لن تُرسل الرسالة حتى تضغط «إرسال» داخل WhatsApp.</p><div class="wa-fallback-actions"><button type="button" class="btn" data-act="closeModal">لاحقًا</button><a class="btn primary" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">فتح WhatsApp</a></div></div>');
 }
 function openStaffForm(id,self){
  self=!!self||!!(id&&ME&&id===ME.id);
@@ -2056,7 +2192,7 @@ function openStaffForm(id,self){
        +'</div></div>';
    }
  } else { pwSection=''; }
- var body='<form id="accountForm" class="account-editor"><div class="account-layout"><aside class="account-photo"><span class="editor-eyebrow">الصورة الشخصية</span><label for="accountFile" id="accountPreview" class="staff-avatar" title="اختيار صورة"></label><b id="photoStatus">أضف لمسة شخصية لحسابك</b><p>صورة دائرية تظهر على كارت الخادم.<br>رفع الصورة اختياري.</p><input hidden id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><label class="photo-pick" for="accountFile">＋ اختيار صورة</label><button type="button" id="removePhoto">إزالة الصورة</button><small>JPG أو PNG أو WEBP · حتى 10 MB</small></aside><div class="account-main"><section class="account-section"><div class="section-heading"><span>01</span><div><h4>المعلومات الأساسية</h4><p>الاسم وبيانات التواصل وتسجيل الدخول</p></div></div><div class="account-fields">'+fields('الاسم الظاهر','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+roleField+'</div></section>'+pwSection+'</div></div><p id="accountError" role="alert" aria-live="polite"></p><div class="account-footer"><small>احفظ عند الانتهاء من تعديل بياناتك</small><button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button><button type="submit" class="btn primary">'+(existing?'حفظ التغييرات':'إنشاء الحساب')+'</button></div></form>';
+ var body='<form id="accountForm" class="account-editor"><div class="account-layout"><aside class="account-photo"><span class="editor-eyebrow">الصورة الشخصية</span><label for="accountFile" id="accountPreview" class="staff-avatar" title="اختيار صورة"></label><b id="photoStatus">أضف لمسة شخصية لحسابك</b><p>صورة دائرية تظهر على كارت الخادم.<br>رفع الصورة اختياري.</p><input hidden id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><label class="photo-pick" for="accountFile">＋ اختيار صورة</label><button type="button" id="removePhoto">إزالة الصورة</button><small>JPG أو PNG أو WEBP · حتى 10 MB</small></aside><div class="account-main"><section class="account-section"><div class="section-heading"><span>01</span><div><h4>المعلومات الأساسية</h4><p>الاسم وبيانات التواصل وتسجيل الدخول</p></div></div><div class="account-fields">'+fields('الاسم الظاهر','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+roleField+'</div></section>'+pwSection+(!existing?'<div class="wa-note">لو أضفت رقم موبايل صحيح، بعد حفظ الحساب هيفتح WhatsApp برسالة جاهزة فيها رابط الدخول واسم المستخدم وكلمة المرور. راجع الرقم والرسالة واضغط «إرسال» بنفسك.</div>':'')+'</div></div><p id="accountError" role="alert" aria-live="polite"></p><div class="account-footer"><small>احفظ عند الانتهاء من تعديل بياناتك</small><button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button><button type="submit" class="btn primary">'+(existing?'حفظ التغييرات':'إنشاء الحساب')+'</button></div></form>';
  var title='<div class="account-title"><div><span class="editor-eyebrow">إعداد خدام · الحسابات</span><h3>'+heading+'</h3><p>كل بيانات الحساب في مكان واحد، بشكل أبسط.</p></div>'+(!self?'<button class="sx-x" data-act="closeModal" aria-label="إغلاق">×</button>':'')+'</div>';
  if(self){view.innerHTML='<section class="account-page">'+title+body+'</section>';document.getElementById('backAccount').onclick=function(){go(can('manageUsers')?'team':'results');};}
  else openModal('<div class="account-shell">'+title+body+'</div>');
@@ -2084,12 +2220,29 @@ function openStaffForm(id,self){
    if(pw.length<8)return fail('كلمة المرور الجديدة 8 أحرف على الأقل');
  }
  if(USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
- var next=Object.assign({},u,{name:name,username:un,u:un,phone:document.getElementById('acPhone').value.trim(),photo:photo});
+ var enteredPhone=document.getElementById('acPhone').value.trim(),waNumber=(!existing&&enteredPhone)?whatsappDigits(enteredPhone):'';
+ if(!existing&&enteredPhone&&!waNumber)return fail('رقم الهاتف غير صالح لفتح WhatsApp. اكتبه برمز الدولة أو بصيغة مصرية مثل 01012345678.');
+ var next=Object.assign({},u,{name:name,username:un,u:un,phone:enteredPhone,photo:photo});
  if(pw&&canPassword)next.pass=pw;
  if(!self){next.role=document.getElementById('acRole').value;if(!isOwner()&&next.role==='إدارة النظام')return fail('غير مسموح');}
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;err.textContent='جارٍ الحفظ…';
- fbUsersRef.child(u.id).set(next).then(function(){var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}var _fields=[];if(existing){[['الاسم','name'],['اسم المستخدم','username'],['الهاتف','phone'],['الرتبة','role'],['الصورة','photo']].forEach(function(pair){if(String(u[pair[1]]||'')!==String(next[pair[1]]||''))_fields.push(pair[0]);});}logActivity(existing?'edit_user':'add_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')',existing?('الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة')):('إنشاء حساب جديد · الرتبة: '+(next.role||'—'))+(pw&&canPassword?' · تم تعيين كلمة مرور جديدة':''));if(pw&&canPassword)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور',{protected:true});if(!self)closeModal();toast('تم حفظ الحساب والصورة');if(self)openStaffForm(ME.id,true);else renderTeam();}).catch(function(){btn.disabled=false;fail('تعذر الحفظ — تحقق من الاتصال والصلاحيات');});
+ var waPopup=null,waUrl='';
+ if(!existing&&waNumber){
+   waUrl=createWhatsAppInvite(waNumber,next,pw);
+   try{waPopup=window.open('about:blank','_blank');if(waPopup){waPopup.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>جاري حفظ الحساب</title><body style="font:16px sans-serif;background:#101a28;color:#eef4fa;padding:32px">جاري حفظ الحساب، سيتم فتح رسالة WhatsApp بعد نجاح الحفظ…</body></html>');waPopup.document.close();}}catch(_e){waPopup=null;}
+ }
+ fbUsersRef.child(u.id).set(next).then(function(){
+   var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
+   if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}
+   var _fields=[];if(existing){[['الاسم','name'],['اسم المستخدم','username'],['الهاتف','phone'],['الرتبة','role'],['الصورة','photo']].forEach(function(pair){if(String(u[pair[1]]||'')!==String(next[pair[1]]||''))_fields.push(pair[0]);});}
+   logActivity(existing?'edit_user':'add_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')',existing?('الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة')):('إنشاء حساب جديد · الرتبة: '+(next.role||'—'))+(pw&&canPassword?' · تم تعيين كلمة مرور جديدة':''));
+   if(pw&&canPassword)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور',{protected:true});
+   if(waUrl&&waPopup){try{waPopup.opener=null;waPopup.location.href=waUrl;}catch(_e){try{waPopup.close();}catch(_e2){}waPopup=null;}}
+   if(!self)closeModal();
+   if(!existing&&waUrl&&!waPopup){renderTeam();showWhatsAppFallback(waUrl,waNumber);toast('تم إنشاء الحساب؛ افتح رابط WhatsApp لإكمال الإرسال.');}
+   else{toast(!existing&&waUrl?'تم إنشاء الحساب — WhatsApp مفتوح والرسالة جاهزة، اضغط إرسال بعد مراجعتها.':'تم حفظ الحساب والصورة');if(self)openStaffForm(ME.id,true);else renderTeam();}
+ }).catch(function(){if(waPopup)try{waPopup.close();}catch(_e){}btn.disabled=false;fail('تعذر الحفظ — تحقق من الاتصال والصلاحيات');});
  };
 }
 function delStaff(id){
@@ -2217,7 +2370,7 @@ function readPhoto(file,cb,onError){
 
 /* ===== حالة العرض ===== */
 var view=$('#view');
-var S={fLevel:0,fJoin:'',q:'',subjLevel:1,gradeLevel:null,cust:null,resLevel:1,resMode:'table',resQ:'',pgl:null,activityQ:'',activityAction:'',activityFrom:'',activityTo:'',activityOutcome:''};
+var S={fLevel:0,fJoin:'',q:'',subjLevel:1,gradeLevel:null,cust:null,resLevel:1,resMode:'table',resQ:'',pgl:null,activityQ:'',activityAction:'',activityFrom:'',activityTo:'',activityOutcome:'',activityCalOpen:false,activityCalField:'from',activityCalMonth:''};
 
 /* ===== التنقل ===== */
 function route(noScroll){
