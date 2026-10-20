@@ -2329,6 +2329,43 @@ html[data-theme="dark"] .site-foot,html.dark .site-foot{
 /* أقسام فاضية أو غلاف بيلوّن نفسه = شفاف */
 html[data-theme="dark"] .content,html[data-theme="dark"] .page,html[data-theme="dark"] .shell,
 html.dark .content,html.dark .page,html.dark .shell{background:transparent!important}
+
+/* سجل النشاطات: توسيط المحتوى ومنع تمدد الجدول الذي كان يخفي عمود الحذف */
+#view>.activity-page{width:min(100%,1320px);margin:18px auto 0;align-items:center}
+.activity-page .activity-header{width:100%;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px}
+.activity-page .activity-header>div:first-child{width:100%;text-align:center}
+.activity-page .activity-header h2,.activity-page .activity-header p{margin-inline:auto}
+.activity-page .activity-counter{display:flex;align-items:center;justify-content:center;gap:7px;text-align:center}
+.activity-page .activity-toolbar{justify-content:center;text-align:center}
+.activity-page .activity-table-wrap{width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-inline:contain}
+.activity-page .activity-table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0}
+.activity-page .activity-table th,.activity-page .activity-table td{box-sizing:border-box;text-align:center;vertical-align:middle;min-width:0;padding:10px 8px}
+.activity-page .activity-table th:nth-child(1),.activity-page .activity-table td:nth-child(1){width:6%}
+.activity-page .activity-table th:nth-child(2),.activity-page .activity-table td:nth-child(2){width:17%}
+.activity-page .activity-table th:nth-child(3),.activity-page .activity-table td:nth-child(3){width:19%}
+.activity-page .activity-table th:nth-child(4),.activity-page .activity-table td:nth-child(4){width:48%}
+.activity-page .activity-table th:nth-child(5),.activity-page .activity-table td:nth-child(5){width:10%}
+.activity-page .activity-table td.activity-action{display:table-cell!important;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.activity-page .activity-table .activity-date,.activity-page .activity-table .activity-user,.activity-page .activity-table .activity-role,.activity-page .activity-table .activity-details{display:block;max-width:100%;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.activity-page .activity-table td.activity-action>b,.activity-page .activity-table td.activity-action>small{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.activity-page .activity-table .activity-check input{display:block;margin:0 auto}
+.activity-page .activity-table td:nth-child(5) .btn{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:38px;margin:0 auto;padding:6px 10px}
+@media(max-width:600px){
+ .activity-page .activity-table-wrap{overflow:visible}
+ .activity-page .activity-table{display:block;width:100%;table-layout:auto}
+ .activity-page .activity-table tbody{display:grid;width:100%;gap:10px}
+ .activity-page .activity-table tbody tr{display:grid;width:100%;box-sizing:border-box;grid-template-columns:32px minmax(0,1fr) 40px;grid-template-areas:"check date delete" "user user user" "action action action";gap:8px 10px;padding:12px}
+ .activity-page .activity-table tbody td{display:block;width:auto!important;max-width:100%;box-sizing:border-box;padding:0!important;text-align:center;min-width:0}
+ .activity-page .activity-table tbody td:nth-child(1){grid-area:check;align-self:center}
+ .activity-page .activity-table tbody td:nth-child(2){grid-area:date;align-self:center}
+ .activity-page .activity-table tbody td:nth-child(3){grid-area:user}
+ .activity-page .activity-table tbody td:nth-child(4){grid-area:action;display:block!important;white-space:normal}
+ .activity-page .activity-table tbody td:nth-child(5){grid-area:delete;justify-self:center;align-self:center}
+ .activity-page .activity-table tbody td.activity-empty{grid-column:1/-1}
+ .activity-page .activity-table .activity-date,.activity-page .activity-table .activity-user,.activity-page .activity-table .activity-role,.activity-page .activity-table .activity-details{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+ .activity-page .activity-table td.activity-action>b,.activity-page .activity-table td.activity-action>small{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+ .activity-page .activity-toolbar{gap:8px}
+}
 </style>
 </head>
 
