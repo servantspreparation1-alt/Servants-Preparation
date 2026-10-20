@@ -45,8 +45,9 @@
       try{
         if('caches' in window){
           var keys=await caches.keys();
-          if(keys.length){
-            await Promise.all(keys.map(function(k){ return caches.delete(k); }));
+          var oldKeys=keys.filter(function(k){ return k.indexOf('e3dad-talmaza-')===0 && k!=='e3dad-talmaza-v5.2.0'; });
+          if(oldKeys.length){
+            await Promise.all(oldKeys.map(function(k){ return caches.delete(k); }));
             cleaned=true;
           }
         }
@@ -54,8 +55,14 @@
       try{
         if('serviceWorker' in navigator){
           var regs=await navigator.serviceWorker.getRegistrations();
-          if(regs.length){
-            await Promise.all(regs.map(function(r){ return r.unregister(); }));
+          var ownSW=new URL('sw.js',location.href);
+          var ownRegs=regs.filter(function(r){
+            var worker=r.active||r.waiting||r.installing;
+            if(!worker||!worker.scriptURL) return false;
+            try{ var u=new URL(worker.scriptURL); return u.origin===ownSW.origin && u.pathname===ownSW.pathname; }catch(e){ return false; }
+          });
+          if(ownRegs.length){
+            await Promise.all(ownRegs.map(function(r){ return r.unregister(); }));
             cleaned=true;
           }
         }
@@ -2475,7 +2482,7 @@ html:not([data-theme="dark"]):not(.dark) .vz-box{box-shadow:0 40px 100px rgba(40
 </div>
 
 
-<script src="cloud-sync.js?v=3.3"></script>
+<script src="cloud-sync.js?v=3.4"></script>
 <script src="assets/js/core.js?v=3.3"></script>
 <script>
 try{console.info('%c☦ إعداد خدام للتلمذة — E3DAD COMPLETE v4.0 ☦ كل التصليحات + فحص وتنظيف شامل','color:#7a1257;font-weight:bold')}catch(e){}
@@ -2515,7 +2522,8 @@ function isSessionValid(){
     if(!at) return false;
     const remember = store.getItem(AUTH_KEY+'_remember');
     const maxMs = (remember === '0') ? SHORT_SESSION_MS : SEVEN_DAYS_MS;
-    return (Date.now() - at) <= maxMs;
+    const age = Date.now() - at;
+    return age >= 0 && age <= maxMs;
   }catch(e){ return false; }
 }
 /* فحص التنقل: هل اللي بيدوس على «لوحة التحكم / الشهادات» داخل فعلاً؟ (أي وضع لسه داخل مدته) */
@@ -2914,21 +2922,27 @@ function loadDB() {
   } catch (e) {}
   return { students: [], users: [], activityLog: [], templates: {}, settings: {} };
 }
-function saveDB() {
+function saveDB(options) {
   DB.users = cleanUsers(DB.users);
   DB.settings = DB.settings || {};
-  DB.settings.updatedAt = Date.now();
+  if(!(options&&options.preserveUpdatedAt))DB.settings.updatedAt = Date.now();
   E3.store.setItem(DB_KEY, JSON.stringify(DB));
-  /* ملاحظة: مفيش رفع للسحابة من صفحة الدخول — الرفع بيحصل من لوحة التحكم
-     لما يحصل تعديل حقيقي، عشان تسجيل الدخول ميكتبش بيانات على القاعدة. */
+}
+function queueAuditLogSync(){try{if(window.E3Cloud&&E3Cloud.queueActivityLogPush)E3Cloud.queueActivityLogPush()}catch(e){}}
+function recordFailedLogin(username,reason){
+  var entered=String(username||'').trim().slice(0,80)||'غير مكتوب';
+  logAs(null,'محاولة دخول فاشلة','محاولة دخول — الاسم المُدخل: '+entered,reason||'اسم المستخدم أو كلمة السر غير صحيحين');
+  try{saveDB({preserveUpdatedAt:true});queueAuditLogSync()}catch(e){try{console.warn('تعذر حفظ سجل محاولة الدخول',e)}catch(_){}}
 }
 function defaultSettings() {
   return { orgName:'معلم الأجيال للتلمذة', church:'كنيسة رئيس الملائكة ميخائيل بالأندلس', orgLogo:'', passMark:60, excellentMark:90, attendanceWarn:75, serviceHoursTarget:100, spiritualMeetingsTarget:10 };
 }
-function logAs(u, action) {
+function logAs(u, action, actorOverride, details) {
   DB.activityLog = DB.activityLog || [];
-  DB.activityLog.unshift({ date: new Date().toLocaleString('ar-EG'), user: (isLucasOwner(u) ? E3.SYSTEM_ADMIN_LABEL : (u.displayName || u.username) + ' (' + u.username + ')'), action });
-  DB.activityLog = DB.activityLog.slice(0, 1500);
+  var now=new Date(), owner=!!u&&isLucasOwner(u);
+  var actor=actorOverride||(u?(owner?E3.SYSTEM_ADMIN_LABEL:(u.displayName||u.username||'مستخدم')+' ('+(u.username||'')+')'):'غير معروف');
+  var roleNames={amin:'أمين إعداد الخدام',assistant:'مساعد أمين إعداد الخدام',year_supervisor:'أمين سنة',khadem:'خادم',follower:'خادم متابع'};
+  DB.activityLog.unshift({id:'act_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10),at:now.toISOString(),date:now.toLocaleString('ar-EG'),userId:u&&u.id||null,user:actor,actorRole:u?(owner?'إدارة السيستم':(roleNames[u.role]||u.role||'مستخدم')):(actorOverride?'غير مصادق عليه':'—'),action:String(action||'نشاط').slice(0,500),source:u?'user':'auth',details:String(details||'').slice(0,1000)});
 }
 function avatarHTML(u) { return avatarOf(u, esc); }
 
@@ -3515,6 +3529,7 @@ async function doLogin() {
   VZ.tone('start');
 
   if (window._lockUntil && Date.now() < window._lockUntil) {
+    recordFailedLogin(typed,'محاولة دخول أثناء القفل المؤقت');
     var left = Math.ceil((window._lockUntil - Date.now()) / 1000);
     return showError({
       title: '⏳ الدخول مقفول مؤقتًا',
@@ -3572,6 +3587,7 @@ async function doLogin() {
     VZ.dismissable();
     busy = false; setBusy(false);
     registerFail();
+    recordFailedLogin(typed,'اسم المستخدم غير موجود على هذا الجهاز/السيستم');
 
     var near = E3A.suggest(typed, (DB && DB.users) || []);
     var lines = ['مفيش حساب باسم <b>«' + _e(typed) + '»</b> على الجهاز/السيستم.'];
@@ -3626,6 +3642,7 @@ async function doLogin() {
 
   /* خطأ تقني (مثلاً verifyPassword مش موجودة) */
   if (res.err) {
+    recordFailedLogin(typed,'تعذر التحقق التقني من كلمة السر: '+String(res.err.message||'خطأ تقني').slice(0,120));
     VZ.line('bad', 'مشكلة في التحقق');
     VZ.finish(false, 'حصلت مشكلة تقنية', 'بصّ على الكونسول (F12)');
     VZ.dismissable();
@@ -3644,6 +3661,7 @@ async function doLogin() {
     VZ.dismissable();
     busy = false; setBusy(false);
     var locked = registerFail();
+    recordFailedLogin(typed,'كلمة السر غير صحيحة');
 
     var pwWrap = document.getElementById('gzPassWrap');
     if (pwWrap) { pwWrap.classList.add('bad'); pwWrap.classList.remove('good'); }
@@ -3686,6 +3704,7 @@ async function doLogin() {
 
   /* ---------- الحساب موقوف ---------- */
   if (acc.active === false && !isLucasOwner(acc)) {
+    recordFailedLogin(typed,'محاولة دخول بحساب موقوف');
     VZ.line('bad', 'الحساب موقوف من الإدارة');
     VZ.finish(false, 'الحساب موقوف', 'كلّم أمين إعداد الخدام لإعادة تفعيله');
     VZ.dismissable();
@@ -3741,7 +3760,8 @@ async function doLogin() {
 
   acc.lastLogin = new Date().toLocaleString('ar-EG');
   logAs(acc, 'تسجيل دخول');
-  saveDB();
+  saveDB({preserveUpdatedAt:true});
+  queueAuditLogSync();
   try { if (window.E3Cloud && E3Cloud.touchLogin) E3Cloud.touchLogin(acc.username, acc.lastLogin); } catch (e) {}
 
   window._fails = 0;
@@ -3988,7 +4008,7 @@ async function handleInstall() {
     : '💻📱 <b>على الكمبيوتر أو أندرويد (Chrome / Edge):</b> من قائمة المتصفح ⋮ اختر <b>«تثبيت التطبيق / Install app»</b> — أو زرار التثبيت الصغير في آخر شريط العنوان. بعد التثبيت بيشتغل زي أي أبليكيشن وبدون إنترنت.';
 }
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js?v=6.0', { updateViaCache: 'none' }).catch(() => {}); });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js?v=6.1', { updateViaCache: 'none' }).catch(() => {}); });
 }
 
 /* ================== تحسينات الموبايل والويب — ٧ أيام + منع الرجوع + سحب الآيفون ================== */
@@ -4381,12 +4401,12 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
   if ("caches" in window) {
     caches.keys().then(function(keys) {
       keys.forEach(function(k) {
-        if (k !== "e3dad-talmaza-v5.0.0") caches.delete(k).catch(function(){});
+        if (k.indexOf("e3dad-talmaza-") === 0 && k !== "e3dad-talmaza-v5.2.0") caches.delete(k).catch(function(){});
       });
     }).catch(function(){});
   }
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    navigator.serviceWorker.register("sw.js?v=6.0", { updateViaCache: "none" }).then(function(reg) {
+    navigator.serviceWorker.register("sw.js?v=6.1", { updateViaCache: "none" }).then(function(reg) {
       try { reg.update(); } catch (e) {}
     }).catch(function(){});
   }

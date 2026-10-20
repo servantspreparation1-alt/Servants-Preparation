@@ -117,6 +117,9 @@
   let timer = null;
   let pushing = false;
   let pending = false;
+  let queuedChanges = false;
+  let auditPushPending = false;
+  let auditPushTimer = null;
   let lastRemoteSig = "";
   const knownRemote = new Set();      /* أسماء المستخدمين اللي شفناها على السحابة */
 
@@ -152,6 +155,19 @@
     if (typeof v !== "string") return v;
     try { return JSON.parse(v); } catch (e) { return fallback; }
   };
+  function mergeActivityLogs(localLogs, remoteLogs) {
+    const merged = new Map();
+    const keyOf = (entry) => entry && entry.id
+      ? "id:" + String(entry.id)
+      : "legacy:" + JSON.stringify([entry && (entry.at || entry.date) || "", entry && entry.userId || "", entry && entry.user || "", entry && entry.action || "", entry && entry.details || ""]);
+    (Array.isArray(remoteLogs) ? remoteLogs : []).forEach((entry) => merged.set(keyOf(entry), entry));
+    (Array.isArray(localLogs) ? localLogs : []).forEach((entry) => merged.set(keyOf(entry), entry));
+    return Array.from(merged.values()).sort((a, b) => {
+      const atA = Date.parse((a && (a.at || a.date)) || "") || 0;
+      const atB = Date.parse((b && (b.at || b.date)) || "") || 0;
+      return atB - atA;
+    });
+  }
   const safeBase64 = () => (typeof btoa === "function" ? btoa(unescape(encodeURIComponent(getBase()))).slice(-12) : "x");
 
   /* --------------------- تحويل بين الشكلين --------------------- */
@@ -317,9 +333,15 @@
           knownRemote.delete(name);
         }
       });
+      const remoteActivityRaw = await j(base + "/val/activityLog.json");
+      const localActivityBefore = Array.isArray(db.activityLog) ? db.activityLog : [];
+      const mergedActivity = mergeActivityLogs(localActivityBefore, parseLoose(remoteActivityRaw, []));
+      const hadRemoteOnlyActivity = mergedActivity.length > localActivityBefore.length;
+      db.activityLog = mergedActivity;
+      writeLocal(db);
       const val = {
         students: JSON.stringify(db.students || []),
-        activityLog: JSON.stringify((db.activityLog || []).slice(0, 1500)),
+        activityLog: JSON.stringify(db.activityLog || []),
         attendanceSessions: JSON.stringify(db.attendanceSessions || []),
         tasks: JSON.stringify(db.tasks || []),
         templates: JSON.stringify(db.templates || {}),
@@ -343,19 +365,56 @@
       }
       knownRemote.clear();
       (users || []).forEach((u) => knownRemote.add(String(u.remoteKey || u.username || "").toLowerCase()));
+      queuedChanges = false;
+      if (hadRemoteOnlyActivity && onRemote) onRemote();
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
     } finally {
       pushing = false;
-      if (pending) { pending = false; setTimeout(push, 800); }
+      if (pending) { pending = false; queuedChanges = true; setTimeout(push, 800); }
     }
   }
 
   let pushTimer = null;
   function queuePush() {
+    queuedChanges = true;
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(() => { push(); }, 1200);
+    pushTimer = setTimeout(() => { if (navigator.onLine) push(); }, 1200);
+  }
+
+  /**
+   * مزامنة سجل النشاطات وحده من صفحة الدخول؛ لا ترفع نسخة DB كاملة من
+   * صفحة الدخول حتى لا تستبدل بيانات دراسة أحدث في نسخة الجهاز بالخطأ.
+   */
+  async function pushActivityLog() {
+    if (isOff()) return { ok: true, disabled: true };
+    const db = readLocal() || {};
+    const localLogs = Array.isArray(db.activityLog) ? db.activityLog : [];
+    try {
+      const url = getBase() + "/val/activityLog.json";
+      const remoteRaw = await j(url);
+      const remoteLogs = parseLoose(remoteRaw, []);
+      const logs = mergeActivityLogs(localLogs, parseLoose(remoteRaw, []));
+      const res = await doFetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(JSON.stringify(logs)),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      db.activityLog = logs;
+      writeLocal(db);
+      auditPushPending = false;
+      return { ok: true, count: logs.length };
+    } catch (e) {
+      auditPushPending = true;
+      return { ok: false, error: e && e.message || String(e) };
+    }
+  }
+  function queueActivityLogPush() {
+    auditPushPending = true;
+    clearTimeout(auditPushTimer);
+    auditPushTimer = setTimeout(() => { if (navigator.onLine) pushActivityLog(); }, 700);
   }
 
   async function sync() {
@@ -419,12 +478,12 @@
       }
       sync().catch(() => {});
       clearInterval(timer);
-      timer = setInterval(() => { if (navigator.onLine) sync().catch(() => {}); }, 25000);
-      window.addEventListener("online", () => { sync().catch(() => {}); });
-      window.addEventListener("focus", () => { if (navigator.onLine) sync().catch(() => {}); });
+      timer = setInterval(() => { if (navigator.onLine) { sync().catch(() => {}); if (queuedChanges) push(); if (auditPushPending) pushActivityLog(); } }, 25000);
+      window.addEventListener("online", () => { sync().catch(() => {}); if (queuedChanges) push(); if (auditPushPending) pushActivityLog(); });
+      window.addEventListener("focus", () => { if (navigator.onLine) { sync().catch(() => {}); if (queuedChanges) push(); if (auditPushPending) pushActivityLog(); } });
       console.info("[E3Cloud] مزامنة Firebase مفعّلة:", getBase());
     },
-    sync, pull, push, queuePush, syncNow, touchLogin,
+    sync, pull, push, queuePush, pushActivityLog, queueActivityLogPush, syncNow, touchLogin,
     pendingLocalUsers,
     /* ---- المصادقة (Firebase Auth) ---- */
     auth: {

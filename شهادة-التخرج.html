@@ -25,7 +25,8 @@
     var sid=kv(K), at=+(kv(K+'_at')||0);
     if(!sid || !at) return false;
     var max=(kv(K+'_remember')==='0') ? 12*3600000 : 7*DAY;
-    return (Date.now()-at)<=max;
+    var age=Date.now()-at;
+    return age>=0 && age<=max;
   }
   if(pass()){
     var s=document.getElementById('e3GateStyle');
@@ -57,8 +58,9 @@
       try{
         if('caches' in window){
           var keys=await caches.keys();
-          if(keys.length){
-            await Promise.all(keys.map(function(k){ return caches.delete(k); }));
+          var oldKeys=keys.filter(function(k){ return k.indexOf('e3dad-talmaza-')===0 && k!=='e3dad-talmaza-v5.2.0'; });
+          if(oldKeys.length){
+            await Promise.all(oldKeys.map(function(k){ return caches.delete(k); }));
             cleaned=true;
           }
         }
@@ -66,8 +68,14 @@
       try{
         if('serviceWorker' in navigator){
           var regs=await navigator.serviceWorker.getRegistrations();
-          if(regs.length){
-            await Promise.all(regs.map(function(r){ return r.unregister(); }));
+          var ownSW=new URL('sw.js',location.href);
+          var ownRegs=regs.filter(function(r){
+            var worker=r.active||r.waiting||r.installing;
+            if(!worker||!worker.scriptURL) return false;
+            try{ var u=new URL(worker.scriptURL); return u.origin===ownSW.origin && u.pathname===ownSW.pathname; }catch(e){ return false; }
+          });
+          if(ownRegs.length){
+            await Promise.all(ownRegs.map(function(r){ return r.unregister(); }));
             cleaned=true;
           }
         }
@@ -2657,12 +2665,12 @@ window.__SHAMAMSA_SKIN__="v2";try{console.log("%c☦ shamamsa skin v2 loaded","c
   if ("caches" in window) {
     caches.keys().then(function(keys) {
       keys.forEach(function(k) {
-        if (k !== "e3dad-talmaza-v5.0.0") caches.delete(k).catch(function(){});
+        if (k.indexOf("e3dad-talmaza-") === 0 && k !== "e3dad-talmaza-v5.2.0") caches.delete(k).catch(function(){});
       });
     }).catch(function(){});
   }
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    navigator.serviceWorker.register("sw.js?v=6.0", { updateViaCache: "none" }).then(function(reg) {
+    navigator.serviceWorker.register("sw.js?v=6.1", { updateViaCache: "none" }).then(function(reg) {
       try { reg.update(); } catch (e) {}
     }).catch(function(){});
   }
