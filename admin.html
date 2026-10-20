@@ -1355,6 +1355,73 @@ html[data-theme="dark"] .fb-sync[data-state="error"]{color:#fda4af!important}
   .sx-grade{border:1px solid #bbb!important;background:#fff!important;color:#111!important}
   .rc,.badge{border:1px solid #999!important;color:#111!important;background:#f5f5f5!important}
 }
+
+/* === PATCH v5.0 LIGHT REDESIGN + IMAGE UPLOAD === */
+:root{
+  --cx-paper:#ffffff;
+  --cx-paper-2:#fbf6e6;
+  --cx-bg:#fdfbf3;
+  --cx-line:#e9e1c4;
+  --cx-line2:#efe9d5;
+  --cx-ink:#162338;
+  --cx-muted:#6b7a90;
+}
+body{background:var(--cx-bg) !important}
+/* hero lighter overlay handling - keep existing but add uploader affordance */
+.hero-header .hero-logo, .logo-ring img{
+  cursor:pointer;transition:transform .2s, box-shadow .2s;
+}
+.hero-header .hero-logo:hover, .logo-ring:hover{
+  transform:scale(1.03); box-shadow:0 14px 32px rgba(0,0,0,.22);
+}
+.hero-logo-edit{
+  position:absolute;inset:auto 8px 8px auto;
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#e5c86b,#c8a227);
+  border:2px solid #fff;display:grid;place-items:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.2);cursor:pointer;font-size:14px;
+  z-index:2;
+}
+.logo-ring{position:relative}
+.logo-ring .hero-logo-edit{inset:auto -6px -6px auto;width:32px;height:32px}
+.uploader-inline{
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,#fffef7,#fdf7e2);
+  border:1.5px dashed #e1d9b8;border-radius:14px;padding:10px 12px;
+  margin-top:10px;cursor:pointer;transition:.2s;
+}
+.uploader-inline:hover{border-color:var(--cx-gold);background:#fffef2}
+.uploader-inline .up-mini{
+  width:42px;height:42px;border-radius:12px;overflow:hidden;
+  background:linear-gradient(135deg,#0e2f4d,#1a4a7a);display:grid;place-items:center;color:#fff;flex:0 0 42px;
+}
+.uploader-inline .up-mini img{width:100%;height:100%;object-fit:cover}
+.uploader-inline b{font-size:.84rem;color:var(--cx-brand)}
+.uploader-inline span{font-size:.72rem;color:var(--cx-muted)}
+/* modal redesign */
+.sx-mh{background:linear-gradient(90deg,#0e2f4d,#1a4a7a) !important;color:#fff !important;border-radius:16px 16px 0 0}
+.sx-mh h3{color:#fff !important}
+.sx-mh .sx-x{background:rgba(255,255,255,.14) !important;color:#fff !important;border-color:rgba(255,255,255,.35) !important}
+#modal .modal, #modalBox .modal, .modal{
+  border-radius:22px !important;overflow:hidden;border:1px solid #e9e1c4 !important;
+  box-shadow:0 24px 60px rgba(14,47,77,.20) !important;
+}
+.sx-fg{gap:10px}
+.sx-f input, .sx-f select, .sx-f textarea{
+  border-radius:14px !important;border:1.5px solid #d9dfe6 !important;
+  background:#fbfcfe !important;padding:12px 14px !important;transition:.2s !important;
+}
+.sx-f input:focus, .sx-f select:focus, .sx-f textarea:focus{
+  border-color:#c8a227 !important;box-shadow:0 0 0 4px rgba(200,162,39,.16) !important;background:#fff !important;
+}
+.sx-photo .sx-ph{position:relative;cursor:pointer}
+.sx-photo .sx-ph::after{
+  content:"📷";position:absolute;inset:auto 6px 6px auto;
+  width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#e5c86b,#c8a227);
+  display:grid;place-items:center;font-size:12px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15)
+}
+/* topbar brand logo uploader */
+.cx-nav .brand-logo{cursor:pointer;position:relative}
 </style>
 
 </head>
@@ -2451,6 +2518,147 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 } // end authenticated application
 })();
 
+</script>
+
+<script>
+// === IMAGE UPLOAD PATCH v5.0 ===
+(function(){
+  const LS_LOGO='e3dad_logo_all_v5';
+  const LS_STAFF='e3dad_staff_avatar_tmp';
+  function compress(file, maxW, q){ return new Promise((resolve, reject)=>{
+    const r=new FileReader(); r.onload=e=>{
+      const img=new Image(); img.onload=()=>{
+        const scale=Math.min(1, maxW/img.width);
+        const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(c.toDataURL('image/jpeg', q||0.82));
+      }; img.onerror=reject; img.src=e.target.result;
+    }; r.onerror=reject; r.readAsDataURL(file);
+  })}
+
+  function applyAllLogos(dataUrl){
+    if(!dataUrl) return;
+    // hero logos
+    document.querySelectorAll('.hero-header .hero-logo, .hero-logo, .logo-ring img, .brand-logo img, .cx-nav img').forEach(el=>{
+      if(el.tagName==='IMG'){ el.src=dataUrl; el.style.display=''; }
+    });
+    // any element that contains logo fallback
+    const heroImg=document.querySelector('.hero-logo'); if(heroImg && heroImg.tagName!=='IMG') {
+      // try to find img inside
+      const inner=heroImg.querySelector('img'); if(inner){ inner.src=dataUrl; }
+    }
+    localStorage.setItem(LS_LOGO, dataUrl);
+    // also update login preview if exists
+  }
+
+  function restore(){
+    try{
+      const saved=localStorage.getItem(LS_LOGO);
+      if(saved) applyAllLogos(saved);
+    }catch(e){}
+  }
+
+  function makeFileInput(id){
+    let inp=document.getElementById(id);
+    if(!inp){
+      inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.id=id; inp.style.display='none';
+      document.body.appendChild(inp);
+    }
+    return inp;
+  }
+
+  function wire(){
+    // add edit buttons to hero logo
+    const heroLogo=document.querySelector('.hero-header .hero-logo') || document.querySelector('.hero-logo') || document.querySelector('.logo-ring');
+    if(heroLogo && !heroLogo.querySelector('.hero-logo-edit')){
+      const wrap=heroLogo.parentElement;
+      if(wrap && getComputedStyle(wrap).position==='static') wrap.style.position='relative';
+      const btn=document.createElement('button');
+      btn.className='hero-logo-edit'; btn.type='button'; btn.innerHTML='✏️'; btn.title='تغيير الصورة';
+      btn.onclick=(e)=>{ e.stopPropagation(); logoInput.click(); };
+      // place near logo
+      if(heroLogo.classList.contains('logo-ring')){
+        heroLogo.appendChild(btn);
+      } else {
+        heroLogo.style.position='relative';
+        heroLogo.appendChild(btn);
+      }
+      heroLogo.style.cursor='pointer';
+      heroLogo.addEventListener('click', ()=> logoInput.click());
+    }
+
+    // add inline uploader in login card
+    const loginCard=document.querySelector('.login-card');
+    if(loginCard && !loginCard.querySelector('.uploader-inline')){
+      const u=document.createElement('div');
+      u.className='uploader-inline';
+      u.innerHTML = `<div class="up-mini" id="upMiniPrev">📷</div><div><b>ارفع شعار الخدمة / صورتك</b><span>اضغط هنا أو اسحب الصورة — هتظهر في كل الصفحات</span></div><button class="btn sm primary" type="button">اختيار</button>`;
+      u.onclick=()=> logoInput.click();
+      // insert after logo
+      const after=loginCard.querySelector('.logo-ring') || loginCard.firstElementChild;
+      if(after && after.nextSibling) loginCard.insertBefore(u, after.nextSibling);
+      else loginCard.appendChild(u);
+    }
+
+    // drag & drop on whole page
+    document.addEventListener('dragover', e=> e.preventDefault());
+    document.addEventListener('drop', async e=>{
+      e.preventDefault();
+      const f=e.dataTransfer.files[0];
+      if(f && f.type.startsWith('image/')){
+        const d=await compress(f, 900, .84);
+        applyAllLogos(d);
+        // update mini preview
+        const mini=document.getElementById('upMiniPrev');
+        if(mini) mini.innerHTML=`<img src="${d}" alt="">`;
+        try{ if(window.toast) toast('✅ اتحفظت الصورة وهتظهر في كل الصفحات'); }catch(e){}
+      }
+    });
+  }
+
+  const logoInput=makeFileInput('__logoUpload');
+  logoInput.addEventListener('change', async e=>{
+    const f=e.target.files[0]; if(!f) return;
+    if(!f.type.startsWith('image/')) return alert('اختار صورة فقط');
+    const d=await compress(f, 900, .84);
+    applyAllLogos(d);
+    const mini=document.getElementById('upMiniPrev');
+    if(mini) mini.innerHTML=`<img src="${d}" alt="">`;
+    if(window.toast) toast('✅ اتحفظت الصورة');
+    e.target.value='';
+  });
+
+  // enhance staff modal avatar
+  const staffObserver=new MutationObserver(()=>{
+    const ph=document.querySelector('#phPrev') || document.querySelector('.sx-ph span');
+    const fileInput=document.getElementById('phFile');
+    // if staff avatar exists, make it show saved draft
+    try{
+      const draft=localStorage.getItem(LS_STAFF);
+      if(draft && ph && !ph.querySelector('img')){
+        // will be handled by existing logic, but we can hook
+      }
+    }catch(e){}
+    if(fileInput && !fileInput.dataset.wired){
+      fileInput.dataset.wired='1';
+      fileInput.addEventListener('change', async e=>{
+        const f=e.target.files[0]; if(!f) return;
+        const d=await compress(f, 500, .84);
+        localStorage.setItem(LS_STAFF, d);
+        // preview will be updated by original handler, but ensure we keep it
+        setTimeout(()=>{
+          const img=ph && ph.querySelector('img');
+          if(img) img.src=d;
+        },200);
+      });
+    }
+  });
+  staffObserver.observe(document.body, {childList:true, subtree:true});
+
+  document.addEventListener('DOMContentLoaded', ()=>{ restore(); wire(); setTimeout(wire, 800); });
+  restore(); wire();
+})();
 </script>
 </body>
 </html>
