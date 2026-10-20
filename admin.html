@@ -1463,7 +1463,9 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 .sx-search{border-radius:999px !important;padding-inline-start:42px !important;background:var(--cx-paper) !important}
 </style>
 
-</head>
+<style>
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}.staff-tile{background:var(--cx-paper);border:1px solid var(--card-border);border-radius:20px;padding:18px;text-align:center;min-width:0}.staff-top{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px}.staff-top .chip-role{margin:0;white-space:normal}.staff-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;margin:18px auto 12px;display:grid;place-items:center;background:var(--cx-paper-2);color:var(--cx-ink);border:2px solid var(--cx-gold);font-size:28px}.staff-avatar img{width:100%;height:100%;object-fit:cover}.staff-tile h3{margin:8px 0;font-size:17px}.staff-un,.staff-tile p{color:var(--cx-muted);font-size:13px;overflow-wrap:anywhere}.staff-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:14px;border-top:1px solid var(--card-border)}.staff-tile details{font-size:12px;overflow-wrap:anywhere}.account-page{max-width:760px;margin:20px auto;padding:24px;border-radius:22px;background:var(--cx-paper);border:1px solid var(--card-border)}.account-title{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border);padding-bottom:12px;margin-bottom:20px}.account-title h3{margin:0;font-size:20px}.account-photo{display:flex;gap:20px;align-items:center;padding:16px;background:var(--cx-paper-2);border:1px dashed var(--cx-gold);border-radius:16px;margin-bottom:20px}.account-photo .staff-avatar{flex:0 0 80px;margin:0}.account-photo p{font-size:12px;color:var(--cx-muted)}.account-photo input{display:block;width:100%;max-width:100%;margin:8px 0;font-size:12px}.account-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.account-fields .sx-f{min-width:0}.account-editor input:not([type=file]),.account-editor select{box-sizing:border-box;width:100%;min-height:44px;background:var(--cx-paper-2)!important;color:var(--cx-ink)!important;border:1px solid var(--card-border);border-radius:10px;padding:10px}.account-editor input:focus{outline:2px solid var(--cx-gold);outline-offset:2px}.account-editor select option{background:var(--cx-paper);color:var(--cx-ink)}.account-footer{display:flex;gap:10px;padding-top:18px;border-top:1px solid var(--card-border);margin-top:20px}#accountError{color:#db6574;font-size:13px}@media(max-width:600px){.account-fields{grid-template-columns:1fr}.account-photo{flex-direction:column}.staff-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+</style></head>
 
 <body>
 
@@ -1600,7 +1602,7 @@ try{localStorage.removeItem(STAFF_KEY);}catch(_e){}
 var ROLES=['إدارة النظام','أمين خدمة إعداد خدام','مساعد أمين إعداد خدام','خادم'];
 var PERMS={
  'إدارة النظام':{manageUsers:1,manageStudents:1,manageSubjects:1,editGrades:1},
- 'أمين خدمة إعداد خدام':{manageStudents:1,manageSubjects:1,editGrades:1},
+ 'أمين خدمة إعداد خدام':{manageUsers:1,manageStudents:1,manageSubjects:1,editGrades:1},
  'مساعد أمين إعداد خدام':{manageStudents:1,editGrades:1},
  'خادم':{}
 };
@@ -1814,6 +1816,7 @@ function initFirebase(){
 }
 /* ===== نسخة احتياطية واستيراد ===== */
 function exportBackup(){
+  if(!isOwner()){toast('النسخة الكاملة لإدارة النظام فقط');return;}
   if(!can('manageUsers')){toast('🔒 النسخة الكاملة للإدارة فقط');return;}
   var data=JSON.stringify({app:'e3_khodam',v:1,exportedAt:new Date().toISOString(),db:db},null,2);
   var a=document.createElement('a');
@@ -1824,6 +1827,7 @@ function exportBackup(){
   toast('⬇️ تم تنزيل النسخة الاحتياطية');
 }
 function importBackup(file){
+  if(!isOwner()){toast('الاستيراد لإدارة النظام فقط');return;}
   if(!can('manageUsers')){toast('🔒 الاستيراد الكامل للإدارة فقط');return;}
   if(!file||!(/\.json$/i.test(file.name)||file.type==='application/json')){toast('اختار نسخة JSON صادرة من النظام');return;}
   var fr=new FileReader();
@@ -1849,6 +1853,7 @@ function initHeaderTools(){
     '<button type="button" class="btn sm" id="fbImport" data-need="manageUsers" title="استيراد نسخة احتياطية (JSON)">⬆️ <span>استيراد</span></button>'+
     '<input type="file" id="fbFile" accept=".json,application/json" style="display:none">'+
     '<span class="fb-user" id="fbUser" title="الحساب الحالي — الدور: '+esc(ME.role)+'"><b>👤 '+esc(ME.name||ME.u)+'</b><small>'+esc(ME.role)+'</small></span>'+
+    '<button type="button" class="btn sm" onclick="location.hash=&#39;profile&#39;">بياناتي</button>'+
     '<button type="button" class="btn sm" id="logoutBtn" title="خروج من الحساب">🚪 <span>خروج</span></button></div>';
   document.getElementById('fbExport').addEventListener('click',exportBackup);
   var f=document.getElementById('fbFile');
@@ -1882,78 +1887,55 @@ function pushUsers(){
   fbUsersRef.set(o||{}).then(function(){},function(){toast('⚠️ تعذّر حفظ حسابات الخدمة على السحابة — تحقق من صلاحيات Firebase');});
   return true;
 }
+document.addEventListener('click',function(e){var b=e.target.closest('[data-toggle-user]');if(!b)return;var u=USERS.find(function(x){return x.id===b.dataset.toggleUser;});if(!u||!accountAllowed(u)||u.role==='إدارة النظام'||u.id===ME.id)return;fbUsersRef.child(u.id).child('active').set(u.active===false).catch(function(){toast('تعذر الحفظ');});});
+function isOwner(){return ME&&ME.role==='إدارة النظام';}
+function accountAllowed(u){return u&&(u.id===ME.id||isOwner()||(can('manageUsers')&&u.role!=='إدارة النظام'));}
 function renderTeam(){
-  if(!can('manageUsers')){go(can('manageStudents')?'students':'results');return;}
-  var q=toEn(S.tq||'').trim().toLowerCase();
-  var list=USERS.filter(function(u){
-    if(!q)return true;
-    return ((u.name||'')+' '+(u.username||u.u||'')+' '+(u.phone||'')+' '+(u.role||'')).toLowerCase().indexOf(q)>-1;
-  });
-  var icon={'إدارة النظام':'👑','أمين خدمة إعداد خدام':'🛡️','مساعد أمين إعداد خدام':'🤝','خادم':'✝️'};
-  view.innerHTML=
-   '<div class="sx-bar"><input type="search" class="sx-search" id="sxTQ" placeholder="🔍 ابحث بالاسم أو اليوزر أو الموبايل" value="'+esc(S.tq||'')+'">'+
-   '<button class="btn primary" type="button" data-act="newStaff">➕ خادم جديد</button></div>'+
-   '<div class="sx-count">'+nf(USERS.length)+' حساب</div>'+
-   (list.length?'<div>'+list.map(function(u){
-      var nm=u.name||u.u||'';var wn=waNum(u.phone);
-      return '<div class="sx-staff">'+
-       '<span class="sx-sav">'+esc((nm||'؟').charAt(0))+'</span>'+
-       '<div class="sx-smeta"><b>'+esc(nm)+'</b><span class="chip-role'+(u.role==='إدارة النظام'?' gold':'')+'">'+(icon[u.role]||'📌')+' '+esc(u.role||'—')+'</span>'+
-       '<div class="sx-srow">'+
-       '<span>👤 اليوزر: <code dir="ltr">'+esc(u.username||u.u||'')+'</code></span>'+
-       '<span>🔑 الباسورد: <code dir="ltr">••••••••</code></span>'+
-       (u.phone?'<span>📱 '+esc(u.phone)+'</span>':'<span class="sx-mut">📱 مفيش رقم</span>')+
-       (u.phone?'<a class="wa'+(wn?'':' off')+'" '+(wn?'href="https://wa.me/'+wn+'" target="_blank" rel="noopener"':'aria-disabled="true" title="الرقم ده مش صالح للواتساب"')+'>'+(wn?'واتساب 💬':'رقم مش صالح ⚠️')+'</a>':'')+
-       '</div></div>'+
-       '<div class="sx-sact"><button class="btn sm" type="button" data-act="editStaff" data-id="'+esc(u.id)+'">✏️ تعديل</button>'+
-       '<button class="btn sm danger" type="button" data-act="delStaff" data-id="'+esc(u.id)+'">🗑 حذف</button></div></div>';
-    }).join('')+'</div>':
-   '<div class="sx-empty"><div class="big">🧑‍🏫</div><p>'+(q?'مفيش نتائج للبحث':'مفيش حسابات — اضيف أول حساب')+'</p>'+(q?'':'<button class="btn primary" type="button" data-act="newStaff">➕ إضافة حساب</button>')+'</div>');
+ if(!can('manageUsers'))return;
+ var q=(S.tq||'').toLowerCase();
+ var list=USERS.filter(function(u){return ((u.name||'')+' '+(u.username||u.u||'')+' '+(u.phone||'')).toLowerCase().includes(q);});
+ view.innerHTML='<div class="sx-bar"><input class="sx-search" id="sxTQ" type="search" placeholder="ابحث عن خادم…" value="'+esc(S.tq||'')+'"><button class="btn primary" data-act="newStaff">＋ خادم جديد</button></div><p class="sx-count">'+list.length+' حساب</p><div class="staff-grid">'+list.map(function(u){
+ var ph=safePhoto(u.photo),allow=accountAllowed(u);
+ return '<article class="staff-tile"><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<details><summary>عرض كلمة المرور</summary><code>'+esc(u.pass||'')+'</code></details>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
+ }).join('')+'</div>';
 }
-function openStaffForm(id){
-  if(!can('manageUsers'))return;
-  if(!fbUsersRef||!fbConnected){toast('🔒 إدارة حسابات الخدام متاحة عند الاتصال بالخادم فقط');return;}
-  var u=id?USERS.filter(function(x){return x.id===id;})[0]:null;
-  u=u||{id:uid(),name:'',username:'',pass:'',role:'خادم',phone:''};
-  var opts=ROLES.map(function(r){return '<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+r+'</option>';}).join('');
-  openModal(
-   '<div class="sx-mh"><h3>'+(id?'✏️ تعديل حساب خادم':'➕ حساب خادم جديد')+'</h3><button class="sx-x" type="button" data-act="closeModal" aria-label="إغلاق">✕</button></div>'+
-   '<form id="staffForm" novalidate><div class="sx-fg">'+
-   '<div class="sx-f full"><label>اسم الخادم <span class="req">*</span></label><input type="text" id="sfName" value="'+esc(u.name)+'" placeholder="مثال: أوناص ميخائيل"></div>'+
-   '<div class="sx-f full"><label>اسم المستخدم (اليوزر) <span class="req">*</span></label><input type="text" id="sfUser" dir="ltr" autocomplete="off" value="'+esc(u.username||u.u||'')+'" placeholder="username"></div>'+
-   '<div class="sx-f full"><label>كلمة السر <span class="req">*</span></label><input type="password" id="sfPass" dir="ltr" autocomplete="new-password" value="'+esc(u.pass||'')+'" placeholder="اضغط إظهار للمراجعة"><label class="sx-hint"><input id="sfEye" type="checkbox" style="width:auto"> إظهار كلمة السر مؤقتًا</label></div>'+
-   '<div class="sx-f full"><label>رقم الموبايل (واتساب)</label><input type="tel" id="sfPhone" dir="ltr" inputmode="numeric" value="'+esc(u.phone||'')+'" placeholder="01xxxxxxxxx"></div>'+
-   '<div class="sx-f full"><b>الصلاحية (الرول) <span class="req">*</span></b><select id="sfRole">'+opts+'</select></div>'+
-   '</div>'+
-   '<div class="sx-note" style="margin-top:8px">👑 إدارة النظام: كل الصلاحيات + إدارة حسابات الخدام &nbsp;•&nbsp; 🛡️ أمين خدمة إعداد خدام: الدارسون والمواد والدرجات &nbsp;•&nbsp; 🤝 مساعد أمين إعداد خدام: الدارسون والدرجات &nbsp;•&nbsp; ✝️ خادم: مشاهدة النتائج بس.</div>'+
-   '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap"><button class="btn primary" type="submit">💾 حفظ الحساب</button><button class="btn" type="button" data-act="closeModal">إلغاء</button></div>'+
-   '</form>');
-  var form=document.getElementById('staffForm');
-  var show=document.getElementById('sfEye');if(show)show.onchange=function(){var el=document.getElementById('sfPass');if(el)el.type=show.checked?'text':'password';};
-  form.addEventListener('submit',function(ev){
-    ev.preventDefault();
-    var name=document.getElementById('sfName').value.trim();
-    var un=document.getElementById('sfUser').value.trim();
-    var pw=document.getElementById('sfPass').value.replace(/^\s+|\s+$/g,'');
-    var ph=document.getElementById('sfPhone').value.trim();
-    var role=document.getElementById('sfRole').value;
-    if(!name){toast('اكتب اسم الخادم');return;}
-    if(!un){toast('اكتب اسم المستخدم (اليوزر)');return;}
-    if(!pw){toast('اكتب كلمة السر');return;}
-    var dup=USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').trim().toLowerCase()===un.toLowerCase();});
-    if(dup){toast('اليوزر «'+un+'» مستخدم بالفعل — اختار اسم تاني');return;}
-    if(ROLES.indexOf(role)<0){toast('صلاحية غير معروفة');return;}
-    if(u.role==='إدارة النظام'&&role!=='إدارة النظام'&&!USERS.some(function(x){return x.id!==u.id&&x.role==='إدارة النظام'&&x.active!==false;})){toast('لا يمكن تخفيض رتبة آخر مدير للنظام');return;}
-    u.name=name;u.u=un;u.username=un;u.pass=pw;u.role=role;u.phone=ph;
-    if(ME&&ME.id===u.id){ME.ph=passwordFingerprint(pw);writeSession();}
-    if(!USERS.some(function(x){return x.id===u.id;}))USERS.push(u);
-    pushUsers();
-    closeModal();toast(id?'اتحدث الحساب ✓':'اتضاف الحساب ✓ — اليوزر والباسورد اتحفظوا على قاعدة البيانات');
-    if(location.hash.indexOf('#team')===0)renderTeam();
-    syncMe();
-  });
+function openStaffForm(id,self){
+ var existing=USERS.find(function(x){return x.id===(self?ME.id:id);});
+ if(self&&!existing){toast('انتظر تحميل الحساب');return;}
+ if(!self&&!can('manageUsers'))return;
+ if(existing&&!accountAllowed(existing)){toast('حساب إدارة النظام محمي');return;}
+ if(!fbConnected){toast('تعديل الحساب يتطلب الاتصال بالخادم');return;}
+ var u=existing||{id:uid(),name:'',username:'',pass:'',role:'خادم',phone:''},photo=safePhoto(u.photo);
+ var canPassword=self||isOwner()||!existing;
+ var fields=function(label,key,value,type){return '<label class="sx-f">'+label+'<input id="ac'+key+'" type="'+(type||'text')+'" value="'+esc(value||'')+'" autocomplete="off"></label>';};
+ var body='<form id="accountForm" class="account-editor"><div class="account-photo"><div id="accountPreview" class="staff-avatar"></div><div><b>صورة الحساب · اختياري</b><p>اختر صورة من جهازك أو ضع رابط صورة HTTPS</p><input id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><input id="accountURL" type="url" placeholder="https://…"><button type="button" class="btn sm" id="removePhoto">إزالة الصورة</button></div></div><div class="account-fields">'+fields('الاسم','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+(canPassword?fields(existing?'كلمة مرور جديدة (اتركها فارغة دون تغيير)':'كلمة المرور','Pass','','password'):'<p>كلمة المرور مخفية؛ تغييرها متاح لصاحب الحساب وإدارة النظام فقط.</p>')+(self&&existing?fields('كلمة المرور الحالية لتأكيد تعديلك','Current','','password'):'')+(!self?'<label class="sx-f">الصلاحية<select id="acRole">'+ROLES.filter(function(r){return isOwner()||r!=='إدارة النظام';}).map(function(r){return '<option '+(r===u.role?'selected':'')+'>'+r+'</option>';}).join('')+'</select></label>':'')+'</div><p id="accountError" role="alert"></p><div class="account-footer"><button type="submit" class="btn primary">حفظ التغييرات</button><button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button></div></form>';
+ if(self){view.innerHTML='<section class="account-page"><h2>بياناتي</h2><p>عدّل اسمك وصورتك وكلمة المرور الخاصة بك.</p>'+body+'</section>';document.getElementById('backAccount').onclick=function(){go('results');};}
+ else openModal('<div class="account-title"><h3>'+(id?'تعديل حساب الخادم':'إضافة خادم جديد')+'</h3><button class="sx-x" data-act="closeModal">×</button></div>'+body);
+ function draw(){document.getElementById('accountPreview').innerHTML=photo?'<img src="'+esc(photo)+'" alt="معاينة الصورة">':'👤';}draw();
+ var pending=false;
+ document.getElementById('accountFile').onchange=function(){var f=this.files[0];if(!f)return;if(f.size>10*1024*1024){toast('الحد الأقصى 10 ميجابايت');return;}pending=true;readPhoto(f,function(d){photo=d;pending=false;draw();});};
+ document.getElementById('accountURL').onchange=function(){var ph=safePhoto(this.value);if(!ph&&this.value){toast('استخدم رابط HTTPS صالح');return;}photo=ph;draw();};
+ document.getElementById('removePhoto').onclick=function(){photo='';document.getElementById('accountFile').value='';document.getElementById('accountURL').value='';draw();};
+ document.getElementById('accountForm').onsubmit=function(e){
+ e.preventDefault();var err=document.getElementById('accountError');function fail(t){err.textContent=t;}
+ if(pending)return fail('انتظر تجهيز الصورة');
+ if(!accountAllowed(u)&&existing)return fail('غير مسموح');
+ if(self&&document.getElementById('acCurrent').value!==u.pass)return fail('كلمة المرور الحالية غير صحيحة');
+ var name=document.getElementById('acName').value.trim(),un=document.getElementById('acUser').value.trim(),pw=canPassword?document.getElementById('acPass').value:'';
+ if(!name||!un||(!existing&&!pw))return fail('الاسم واسم المستخدم وكلمة مرور الحساب الجديد مطلوبة');
+ if(pw&&pw.length<8)return fail('كلمة المرور الجديدة 8 أحرف على الأقل');
+ if(USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
+ var next=Object.assign({},u,{name:name,username:un,u:un,phone:document.getElementById('acPhone').value.trim(),photo:photo});
+ if(pw&&canPassword)next.pass=pw;
+ if(!self){next.role=document.getElementById('acRole').value;if(!isOwner()&&next.role==='إدارة النظام')return fail('غير مسموح');}
+ if(u.role==='إدارة النظام')next.role=u.role;
+ var btn=this.querySelector('[type=submit]');btn.disabled=true;err.textContent='جارٍ الحفظ…';
+ fbUsersRef.child(u.id).set(next).then(function(){var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}if(!self)closeModal();toast('تم حفظ الحساب والصورة');if(self)openStaffForm(ME.id,true);else renderTeam();}).catch(function(){btn.disabled=false;fail('تعذر الحفظ — تحقق من الاتصال والصلاحيات');});
+ };
 }
 function delStaff(id){
+  if(!isOwner())return;
+  var target=USERS.find(function(x){return x.id===id;});if(target&&target.role==='إدارة النظام'){toast('حساب إدارة النظام محمي');return;}
   if(!can('manageUsers'))return;
   if(!fbUsersRef||!fbConnected){toast('🔒 حذف حسابات الخدام متاح عند الاتصال بالخادم فقط');return;}
   var u=USERS.filter(function(x){return x.id===id;})[0];if(!u)return;
@@ -1972,7 +1954,7 @@ function $(s,r){return (r||document).querySelector(s);}
 function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-function safePhoto(src){var s=String(src||'').trim();return s.length<1500000&&/^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s)?s:'';}
+function safePhoto(src){var s=String(src||'').trim();if(/^https:\/\/[^\s<>"']+$/.test(s))return s;return s.length<1500000&&/^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(s)?s:'';}
 function normAr(s){return toEn(s).toLowerCase().replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/\s+/g,' ').trim();}
 function maskNid(n){var s=String(n||'');return can('manageStudents')?s:s.length>=6?s.slice(0,3)+'•••••••••'+s.slice(-2):'••••••••••••••';}
 
@@ -2079,6 +2061,7 @@ function route(noScroll){
   if(!ME)return;
   pendingRender=false;
   var h=(location.hash||'#students').slice(1),parts=h.split('/'),tab=parts[0];
+  if(tab==='profile'){openStaffForm(ME.id,true);return;}
   if(tab!=='students'&&tab!=='student'&&tab!=='subjects'&&tab!=='results'&&tab!=='team')tab=ME.role==='خادم'?'results':'students';
   if(ME.role==='خادم'&&tab!=='results'){location.replace('#results');return;}
   var active=tab==='student'?'students':tab;
@@ -2559,158 +2542,6 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 
 </script>
 
-<script>
-// === FIX v5.1 STAFF PHOTO + CARD PHOTO ===
-(function(){
-  // helper
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  function safePhoto(src){ var s=String(src||'').trim(); return s.length<1500000 && /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(s) ? s : ''; }
-  function readPhoto(file, cb){
-    var fr=new FileReader();
-    fr.onload=function(){
-      var im=new Image();
-      im.onload=function(){
-        var sz=256, c=document.createElement('canvas'); c.width=c.height=sz;
-        var m=Math.min(im.width, im.height), sx=(im.width-m)/2, sy=(im.height-m)/2;
-        c.getContext('2d').drawImage(im,sx,sy,m,m,0,0,sz,sz);
-        cb(c.toDataURL('image/jpeg', .82));
-      };
-      im.onerror=function(){ if(window.toast) toast('الصورة مش مقروءة'); };
-      im.src=fr.result;
-    };
-    fr.readAsDataURL(file);
-  }
 
-  // Patch USERS display to include photo
-  // Monkey-patch renderTeam
-  const origRenderTeam = window.renderTeam;
-  if(origRenderTeam){
-    window.renderTeam = function(){
-      // call original but we'll after enhance avatars
-      const ret = origRenderTeam.apply(this, arguments);
-      // enhance each .sx-sav to show photo if exists in USERS
-      try{
-        document.querySelectorAll('.sx-staff').forEach((el, idx)=>{
-          // find corresponding user by order? Better find by username in card
-          const codeEl = el.querySelector('.sx-srow code');
-          const uname = codeEl ? codeEl.textContent.trim() : '';
-          const user = (window.USERS||[]).find(u=> (u.username||u.u)===uname );
-          if(user && user.photo){
-            const ph=safePhoto(user.photo);
-            if(ph){
-              const av=el.querySelector('.sx-sav');
-              if(av){ av.innerHTML=`<img src="${ph}" alt="">`; av.classList.add('has-photo'); }
-            }
-          }
-        });
-      }catch(e){}
-      return ret;
-    };
-  }
-
-  // Patch openStaffForm to include photo uploader
-  const origOpen = window.openStaffForm;
-  if(origOpen){
-    window.openStaffForm = function(id){
-      // call original first
-      origOpen.call(this, id);
-      // now enhance modal
-      setTimeout(()=>{
-        const form=document.getElementById('staffForm');
-        if(!form || form.dataset.photoPatched) return;
-        form.dataset.photoPatched='1';
-        const modal=form.closest('.modal') || form.parentElement;
-        const user = id ? (window.USERS||[]).find(x=>x.id===id) : null;
-        // get current photo from user or blank for new
-        let photo = safePhoto(user && user.photo ? user.photo : '');
-
-        // create photo section at top of form
-        const fg=form.querySelector('.sx-fg');
-        if(fg){
-          const wrap=document.createElement('div');
-          wrap.className='sx-photo-staff';
-          wrap.innerHTML=`
-            <label class="sx-ph" for="sfPhotoFile" style="cursor:pointer;margin:0">
-              <span id="sfPhotoPrev" style="width:100%;height:100%;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--cx-paper-2)"></span>
-              <i>📷</i>
-            </label>
-            <input type="file" id="sfPhotoFile" accept="image/*" style="display:none">
-            <div class="hint">
-              <b>صورة الخادم (اختياري)</b>
-              دوس على الدائرة لرفع صورة — هتظهر في كارت الخادم. لو سيبتها فاضية هيظهر أول حرف من اسمه.
-              <div style="margin-top:8px;display:flex;gap:8px">
-                <button type="button" class="btn sm" id="sfPhotoPick">📷 اختيار صورة</button>
-                <button type="button" class="btn sm" id="sfPhotoClear">إزالة</button>
-              </div>
-            </div>
-          `;
-          // insert before first field
-          fg.parentElement.insertBefore(wrap, fg);
-
-          const prevEl=document.getElementById('sfPhotoPrev');
-          const fileEl=document.getElementById('sfPhotoFile');
-          const pickBtn=document.getElementById('sfPhotoPick');
-          const clearBtn=document.getElementById('sfPhotoClear');
-
-          function draw(){
-            if(photo){
-              prevEl.innerHTML=`<img src="${photo}" alt="" style="width:100%;height:100%;object-fit:cover">`;
-              clearBtn.style.display='';
-            } else {
-              prevEl.innerHTML='👤';
-              prevEl.style.fontSize='1.6rem';
-              clearBtn.style.display='none';
-            }
-          }
-          draw();
-          pickBtn.onclick=()=> fileEl.click();
-          // also click on circle
-          wrap.querySelector('.sx-ph').onclick=(e)=>{ e.preventDefault(); fileEl.click(); };
-          fileEl.addEventListener('change', e=>{
-            const f=e.target.files[0]; if(!f) return;
-            readPhoto(f, d=>{ photo=d; draw(); });
-          });
-          clearBtn.onclick=()=>{ photo=''; draw(); fileEl.value=''; };
-
-          // hijack form submit to include photo
-          form.addEventListener('submit', function(ev){
-            // we need to intercept before original handler? Original handler already bound.
-            // We'll set a temporary property on the user object via storing in window
-            window.__staffPhotoTmp = photo;
-          }, true); // capture phase
-
-          // Also patch the original submit logic to read our photo
-          // We monkey-patch by wrapping the form's submit listener: after original validates, it will pushUsers()
-          // So we hook pushUsers to inject photo
-          const origPush = window.pushUsers;
-          if(origPush && !origPush._patched){
-            window.pushUsers = function(){
-              // if we have temp photo, inject into the last edited user
-              try{
-                if(window.__staffPhotoTmp !== undefined){
-                  // find the user that was just edited - it is the one with matching username in form
-                  const unVal=(document.getElementById('sfUser')||{}).value||'';
-                  const target=(window.USERS||[]).find(u=> (u.username||u.u)===unVal.trim() );
-                  if(target){
-                    if(window.__staffPhotoTmp) target.photo=window.__staffPhotoTmp;
-                    else delete target.photo;
-                  }
-                  window.__staffPhotoTmp=undefined;
-                }
-              }catch(e){}
-              return origPush.apply(this, arguments);
-            };
-            window.pushUsers._patched=true;
-          }
-        }
-      }, 80);
-    };
-  }
-
-  // Also patch global avatar helper if exists
-  // For hero/logo image permanence - keep previous logic simple: allow drag drop to set logo
-  // Logo is handled by hero-logo logic already in original - no need extra
-})();
-</script>
 </body>
 </html>

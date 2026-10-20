@@ -1,5 +1,5 @@
 /* إعداد خدام للتلمذة — Service Worker v6.3 (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
-var CACHE = 'e3-sw-v6.3';
+var CACHE = 'e3-sw-v6.4-cards-profile';
 var SHELL = ['./', './index.html', './admin.html', './manifest.json'];
 
 self.addEventListener('install', function (e) {
