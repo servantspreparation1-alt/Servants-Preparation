@@ -2351,6 +2351,19 @@ html.dark .content,html.dark .page,html.dark .shell{background:transparent!impor
 .wcustom .sx-wbox{display:block}
 .sx-wrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 @media(max-width:560px){.sx-cr{grid-template-columns:1fr}.sx-cust .sx-cr{grid-template-columns:1fr}.sx-crit{grid-template-columns:1fr 78px auto 42px}}
+
+.sx-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.sx-card{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:26px 14px 16px;border-radius:24px;background:var(--cx-paper);border:1px solid var(--card-border);box-shadow:var(--cx-shadow-sm);cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
+.sx-card::before{content:"";position:absolute;inset:0 0 auto;height:62px;background:var(--cx-grad);opacity:.95}
+.sx-card::after{content:"";position:absolute;inset:0 0 auto;height:62px;background:var(--cx-cross-light) center/28px;opacity:.08}
+.sx-card:hover,.sx-card:focus-visible{transform:translateY(-4px);box-shadow:var(--cx-shadow);border-color:var(--cx-gold);outline:none}
+.sx-card .sx-av{position:relative;z-index:1}
+.sx-av.xl{width:78px;height:78px;flex:0 0 78px;font-size:1.9rem;border:3px solid #fff;box-shadow:0 0 0 2.5px var(--cx-gold),0 8px 20px rgba(var(--cx-brand-rgb),.25);margin-top:4px}
+.sx-cname{position:relative;font-weight:900;font-size:.98rem;color:var(--cx-ink);line-height:1.5;margin-top:8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sx-csub{font-size:.78rem;color:var(--cx-muted);font-weight:700}
+.sx-ctags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0 8px}
+.sx-cjoin{font-size:.7rem;color:var(--cx-muted);font-weight:800;margin-top:auto;padding-top:7px;border-top:1px dashed var(--cx-line);width:100%}
+@media(max-width:560px){.sx-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sx-card{padding:22px 8px 14px}.sx-av.xl{width:68px;height:68px;flex-basis:68px;font-size:1.6rem}.sx-cname{font-size:.88rem}}
 </style>
 
 </head>
@@ -2585,10 +2598,12 @@ function drawStudentList(){
     box.innerHTML='<div class="sx-empty"><div class="big">👥</div><p>لسه ما أضفتش أي دارس</p><button class="btn primary" type="button" data-act="newStu">➕ إضافة أول دارس</button></div>';return;
   }
   if(!list.length){box.innerHTML='<div class="sx-empty"><div class="big">🔍</div><p>مفيش نتائج</p></div>';return;}
-  box.innerHTML='<div class="sx-count">'+nf(list.length)+' دارس</div><div class="sx-list">'+list.map(function(s){
-    return '<div class="sx-row" data-open="'+s.id+'">'+avatar(s)+
-      '<div class="sx-grow"><div class="sx-name">'+esc(s.name)+'</div><div class="sx-sub">'+esc(s.phone||'بدون موبايل')+(s.joinYear?' • التحاق '+nf(s.joinYear):'')+'</div></div>'+
-      '<div class="sx-tags">'+levelBadge(s.level)+statusBadge(s.status)+'</div><span class="sx-go">‹</span></div>';
+  box.innerHTML='<div class="sx-count">'+nf(list.length)+' دارس</div><div class="sx-cards">'+list.map(function(s){
+    return '<div class="sx-card" data-open="'+s.id+'" tabindex="0">'+avatar(s,'xl')+
+      '<div class="sx-cname">'+esc(s.name)+'</div>'+
+      '<div class="sx-csub">'+esc(s.phone||'بدون موبايل')+'</div>'+
+      '<div class="sx-ctags">'+levelBadge(s.level)+statusBadge(s.status)+'</div>'+
+      (s.joinYear?'<div class="sx-cjoin">التحاق '+nf(s.joinYear)+'</div>':'')+'</div>';
   }).join('')+'</div>';
 }
 
@@ -2889,5 +2904,5 @@ route();
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d7f11429f6890f',t:'MTc5MjQ5ODQ2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4d837e1cb34e1d0',t:'MTc5MjUwMTM2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
