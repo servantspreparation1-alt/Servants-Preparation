@@ -2019,7 +2019,7 @@ function logActivity(action,target,details,opts){
   }catch(_e){return Promise.resolve(false);}
 }
 function activityLabel(action){
-  var m={login:['تسجيل دخول','edit'],login_failed:['محاولة دخول فاشلة','delete'],session_revoked:['إنهاء جلسة','edit'],logout:['تسجيل خروج','edit'],add_user:['إضافة حساب','add'],edit_user:['تعديل حساب','edit'],delete_user:['حذف حساب','delete'],delete_activity_log:['حذف من سجل النشاطات','delete'],activate_user:['تفعيل حساب','add'],deactivate_user:['إيقاف حساب','delete'],change_password:['تغيير كلمة المرور','edit'],add_student:['إضافة دارس','add'],edit_student:['تعديل دارس','edit'],delete_student:['حذف دارس','delete'],add_subject:['إضافة مادة','add'],edit_subject:['تعديل مادة','edit'],delete_subject:['حذف مادة','delete'],edit_grades:['تعديل درجات','edit'],export:['تصدير نسخة احتياطية','edit'],import:['استيراد نسخة احتياطية','edit'],retake:['إعادة امتحان','edit'],edit_attendance:['تعديل الحضور','edit'],admin_note:['ملاحظة إدارية','edit'],export_activity:['تصدير سجل النشاطات','edit']};
+  var m={login:['تسجيل دخول','edit'],login_failed:['محاولة دخول فاشلة','delete'],session_revoked:['إنهاء جلسة','edit'],logout:['تسجيل خروج','edit'],add_user:['إضافة حساب','add'],edit_user:['تعديل حساب','edit'],delete_user:['حذف حساب','delete'],delete_activity_log:['حذف من سجل النشاطات','delete'],activate_user:['تفعيل حساب','add'],deactivate_user:['إيقاف حساب','delete'],change_password:['تغيير كلمة المرور','edit'],add_student:['إضافة دارس','add'],edit_student:['تعديل دارس','edit'],delete_student:['حذف دارس','delete'],add_subject:['إضافة مادة','add'],edit_subject:['تعديل مادة','edit'],delete_subject:['حذف مادة','delete'],edit_grades:['تعديل درجات','edit'],export:['تصدير نسخة احتياطية','edit'],import:['استيراد نسخة احتياطية','edit'],retake:['إعادة امتحان','edit'],edit_attendance:['تعديل الحضور','edit'],admin_note:['ملاحظة إدارية','edit'],export_activity:['تصدير سجل النشاطات','edit'],send_user_credentials:['إرسال بيانات الدخول','edit']};
   return m[action]||[action||'نشاط آخر','edit'];
 }
 function activityDay(ts){
@@ -2157,6 +2157,23 @@ function createWhatsAppInvite(phone,account,password){
   var message='سلام ونعمة المسيح معك ✝️🌿\nأهلًا بك يا '+user+' في خدمة إعداد الخدام 🙏\nتم إنشاء حسابك في نظام إعداد خدام بواسطة '+creator+' ('+(ME.role||'إدارة النظام')+').\n\n📖 «وما سمعته مني بشهود كثيرين، أودعه أناسًا أمناء، يكونون أكفاء أن يعلّموا آخرين أيضًا.» (٢ تيموثاوس ٢:٢)\n\n🔗 رابط النظام: '+appInviteURL()+'\n👤 اسم المستخدم: '+(account.username||account.u||'')+'\n🔑 كلمة المرور الأولية: '+password+'\n🛡️ الدور: '+(account.role||'خادم')+'\n\nنصلي أن يكون النظام عونًا في خدمتنا وبنيان الكنيسة لمجد اسم ربنا يسوع المسيح. ☦️\nاحتفظ ببيانات الدخول، وننصحك بتغيير كلمة المرور بعد أول دخول.';
   return 'https://wa.me/'+phone+'?text='+encodeURIComponent(message);
 }
+function createStaffCredentialsMessage(account){
+  var name=displayPersonName(account.name||account.username||account.u||'الخادم');
+  var creator=displayPersonName(ME.name||ME.u||'إدارة النظام');
+  return 'سلام ونعمة المسيح معك يا '+name+' ✝️🌿\nدي بيانات دخولك المحفوظة في نظام إعداد خدام، أرسلها لك '+creator+' 🙏\n\n📖 «وما سمعته مني بشهود كثيرين، أودعه أناسًا أمناء، يكونون أكفاء أن يعلّموا آخرين أيضًا.» (٢ تيموثاوس ٢:٢)\n\n🔗 رابط النظام: '+appInviteURL()+'\n👤 الاسم الظاهر: '+(account.name||'')+'\n🔐 اسم المستخدم: '+(account.username||account.u||'')+'\n🔑 كلمة المرور: '+String(account.pass||'')+'\n🛡️ الدور: '+(account.role||'خادم')+'\n\nاحتفظ ببياناتك بأمان، ولا تشارك كلمة المرور مع أي شخص آخر. ☦️';
+}
+function sendStaffCredentials(id){
+  if(!isOwner())return;
+  var account=USERS.find(function(x){return x&&x.id===id;});if(!account)return;
+  var phone=whatsappDigits(account.phone);
+  if(!phone){toast('رقم الموبايل المحفوظ غير صالح لفتح WhatsApp؛ حدّث الرقم أولًا.');return;}
+  if(!account.pass){toast('لا توجد كلمة مرور محفوظة لهذا الحساب. عيّن كلمة مرور جديدة أولًا.');return;}
+  var url='https://wa.me/'+phone+'?text='+encodeURIComponent(createStaffCredentialsMessage(account));
+  var opened=false;function openChat(){if(opened)return;opened=true;location.assign(url);}
+  var timer=setTimeout(openChat,900);
+  try{logActivity('send_user_credentials','الحساب: '+(account.name||account.username||account.u),'فتح رسالة WhatsApp ببيانات الدخول المحفوظة').then(function(){clearTimeout(timer);openChat();});}
+  catch(_e){clearTimeout(timer);openChat();}
+}
 function openStaffForm(id,self){
  self=!!self||!!(id&&ME&&id===ME.id);
  var existing=USERS.find(function(x){return x.id===(self?ME.id:id);});
@@ -2188,7 +2205,7 @@ function openStaffForm(id,self){
        +'</div></div>';
    }
  } else { pwSection=''; }
- var body='<form id="accountForm" class="account-editor"><div class="account-layout"><aside class="account-photo"><span class="editor-eyebrow">الصورة الشخصية</span><label for="accountFile" id="accountPreview" class="staff-avatar" title="اختيار صورة"></label><b id="photoStatus">أضف لمسة شخصية لحسابك</b><p>صورة دائرية تظهر على كارت الخادم.<br>رفع الصورة اختياري.</p><input hidden id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><label class="photo-pick" for="accountFile">＋ اختيار صورة</label><button type="button" id="removePhoto">إزالة الصورة</button><small>JPG أو PNG أو WEBP · حتى 10 MB</small></aside><div class="account-main"><section class="account-section"><div class="section-heading"><span>01</span><div><h4>المعلومات الأساسية</h4><p>الاسم وبيانات التواصل وتسجيل الدخول</p></div></div><div class="account-fields">'+fields('الاسم الظاهر','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+roleField+'</div></section>'+pwSection+(!existing?'<div class="wa-note">لو أضفت رقم موبايل صحيح، بعد حفظ الحساب هينقلك WhatsApp مباشرةً لمحادثة الرقم برسالة جاهزة فيها رابط الدخول واسم المستخدم وكلمة المرور. الرسالة لا تُرسل إلا لما تضغط «إرسال» داخل WhatsApp.</div>':'')+'</div></div><p id="accountError" role="alert" aria-live="polite"></p><div class="account-footer"><small>احفظ عند الانتهاء من تعديل بياناتك</small><button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button><button type="submit" class="btn primary">'+(existing?'حفظ التغييرات':'إنشاء الحساب')+'</button></div></form>';
+ var body='<form id="accountForm" class="account-editor"><div class="account-layout"><aside class="account-photo"><span class="editor-eyebrow">الصورة الشخصية</span><label for="accountFile" id="accountPreview" class="staff-avatar" title="اختيار صورة"></label><b id="photoStatus">أضف لمسة شخصية لحسابك</b><p>صورة دائرية تظهر على كارت الخادم.<br>رفع الصورة اختياري.</p><input hidden id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><label class="photo-pick" for="accountFile">＋ اختيار صورة</label><button type="button" id="removePhoto">إزالة الصورة</button><small>JPG أو PNG أو WEBP · حتى 10 MB</small></aside><div class="account-main"><section class="account-section"><div class="section-heading"><span>01</span><div><h4>المعلومات الأساسية</h4><p>الاسم وبيانات التواصل وتسجيل الدخول</p></div></div><div class="account-fields">'+fields('الاسم الظاهر','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+roleField+'</div></section>'+pwSection+(!existing?'<div class="wa-note">لو أضفت رقم موبايل صحيح، بعد حفظ الحساب هينقلك WhatsApp مباشرةً لمحادثة الرقم برسالة جاهزة فيها رابط الدخول واسم المستخدم وكلمة المرور. الرسالة لا تُرسل إلا لما تضغط «إرسال» داخل WhatsApp.</div>':'')+'</div></div><p id="accountError" role="alert" aria-live="polite"></p><div class="account-footer"><small>احفظ عند الانتهاء من تعديل بياناتك</small>'+(!self&&existing&&isOwner()?'<button type="button" class="btn sm" id="sendStaffCredentials" title="فتح رسالة WhatsApp ببيانات الدخول المحفوظة">📨 إرسال بيانات الدخول</button>':'')+'<button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button><button type="submit" class="btn primary">'+(existing?'حفظ التغييرات':'إنشاء الحساب')+'</button></div></form>';
  var title='<div class="account-title"><div><span class="editor-eyebrow">إعداد خدام · الحسابات</span><h3>'+heading+'</h3><p>كل بيانات الحساب في مكان واحد، بشكل أبسط.</p></div>'+(!self?'<button class="sx-x" data-act="closeModal" aria-label="إغلاق">×</button>':'')+'</div>';
  if(self){view.innerHTML='<section class="account-page">'+title+body+'</section>';document.getElementById('backAccount').onclick=function(){go(can('manageUsers')?'team':'results');};}
  else openModal('<div class="account-shell">'+title+body+'</div>');
@@ -2197,6 +2214,7 @@ function openStaffForm(id,self){
  document.getElementById('accountFile').onchange=function(){var f=this.files[0];if(!f)return;if(f.size>10*1024*1024){toast('الحد الأقصى 10 ميجابايت');return;}pending=true;readPhoto(f,function(d){photo=d;pending=false;draw();document.getElementById('photoStatus').textContent='الصورة جاهزة · اضغط حفظ لتثبيتها';},function(){pending=false;});};
  
  document.getElementById('removePhoto').onclick=function(){photo='';document.getElementById('accountFile').value='';draw();};
+ var sendDataBtn=document.getElementById('sendStaffCredentials');if(sendDataBtn)sendDataBtn.onclick=function(){sendStaffCredentials(u.id);};
  var tpw=document.getElementById('acTogglePw');
  if(tpw)tpw.onclick=function(){var w=document.getElementById('acPwWrap');if(w)w.style.display=(w.style.display==='none'?'block':'none');};
  document.getElementById('accountForm').onsubmit=function(e){
