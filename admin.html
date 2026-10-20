@@ -2428,6 +2428,39 @@ html.dark #user-editor-mount .users-editor-inline .users-role-card,html.dark #us
 html.dark #user-editor-mount .users-editor-inline .users-role-card.active{background:#47283a;border-color:#d34b91}
 html.dark #user-editor-mount .users-editor-inline .users-perm-group{background:#29232a;border-color:#68465a}
 html.dark #user-editor-mount .users-editor-inline .users-perm-label{color:#f3e8ed}
+/* الوضع الداكن في التطبيق يُدار عبر data-theme، وليس class=dark فقط. */
+html[data-theme="dark"] #user-editor-mount,html.dark #user-editor-mount{background-color:#0b121a!important;background-image:radial-gradient(circle at 14px 14px,rgba(217,176,84,.09) 0 9px,transparent 10px),radial-gradient(circle at 42px 42px,rgba(124,192,245,.06) 0 10px,transparent 11px)}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline,html.dark #user-editor-mount .users-editor-inline{background:var(--cx-paper)!important;color:var(--cx-ink)!important;border-color:rgba(217,176,84,.42)!important;box-shadow:0 10px 28px rgba(0,0,0,.28)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline h2,html.dark #user-editor-mount .users-editor-inline h2{color:var(--cx-gold-2)!important;border-inline-start-color:var(--cx-gold)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .photo-up,html.dark #user-editor-mount .users-editor-inline .photo-up{border-bottom-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .field>label,html.dark #user-editor-mount .users-editor-inline .field>label{color:var(--cx-muted)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .field input:not([type=checkbox]):not([type=file]),html[data-theme="dark"] #user-editor-mount .users-editor-inline .field select,html.dark #user-editor-mount .users-editor-inline .field input:not([type=checkbox]):not([type=file]),html.dark #user-editor-mount .users-editor-inline .field select{background:var(--cx-paper-2)!important;color:var(--cx-ink)!important;border-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline input::placeholder,html.dark #user-editor-mount .users-editor-inline input::placeholder{color:#a9bac9!important;opacity:1}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .file-name,html.dark #user-editor-mount .users-editor-inline .file-name,html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-permissions-title p,html.dark #user-editor-mount .users-editor-inline .users-permissions-title p,html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-desc,html.dark #user-editor-mount .users-editor-inline .users-role-desc{color:var(--cx-muted)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .auth-live,html.dark #user-editor-mount .users-editor-inline .auth-live{background:var(--cx-paper-2)!important;color:var(--cx-muted)!important;border-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .auth-live b,html.dark #user-editor-mount .users-editor-inline .auth-live b{color:var(--cx-gold-2)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .auth-tol,html.dark #user-editor-mount .users-editor-inline .auth-tol{background:rgba(217,176,84,.12)!important;border-color:rgba(217,176,84,.38)!important;color:var(--cx-ink)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .auth-tol b,html.dark #user-editor-mount .users-editor-inline .auth-tol b{color:var(--cx-gold-2)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-permissions-title,html.dark #user-editor-mount .users-editor-inline .users-permissions-title{border-top-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-permissions-title h3,html.dark #user-editor-mount .users-editor-inline .users-permissions-title h3,html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-heading b,html.dark #user-editor-mount .users-editor-inline .users-perm-heading b{color:var(--cx-gold-2)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-card,html.dark #user-editor-mount .users-editor-inline .users-role-card{background:var(--cx-paper-2)!important;color:var(--cx-ink)!important;border-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-card.active,html.dark #user-editor-mount .users-editor-inline .users-role-card.active{background:rgba(var(--cx-brand-2-rgb),.20)!important;border-color:var(--cx-gold)!important;box-shadow:0 0 0 2px rgba(217,176,84,.12)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-ico,html.dark #user-editor-mount .users-editor-inline .users-role-ico,html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-icon,html.dark #user-editor-mount .users-editor-inline .users-perm-icon{background:rgba(217,176,84,.14)!important;color:var(--cx-gold-2)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-card.active .users-role-ico,html.dark #user-editor-mount .users-editor-inline .users-role-card.active .users-role-ico{background:var(--cx-brand-2)!important;color:#fff!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-card:disabled,html.dark #user-editor-mount .users-editor-inline .users-role-card:disabled{opacity:.78!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline #permGrid[style*="opacity"],html.dark #user-editor-mount .users-editor-inline #permGrid[style*="opacity"]{opacity:.82!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-role-title,html.dark #user-editor-mount .users-editor-inline .users-role-title{color:var(--cx-ink)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-group,html.dark #user-editor-mount .users-editor-inline .users-perm-group{background:rgba(255,255,255,.025)!important;border-color:rgba(217,176,84,.24)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-head,html.dark #user-editor-mount .users-editor-inline .users-perm-head{border-bottom-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-heading small,html.dark #user-editor-mount .users-editor-inline .users-perm-heading small{color:var(--cx-muted)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-count,html.dark #user-editor-mount .users-editor-inline .users-perm-count{background:rgba(var(--cx-brand-2-rgb),.16)!important;border-color:rgba(var(--cx-brand-3-rgb),.35)!important;color:var(--cx-brand-3)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-tools button,html.dark #user-editor-mount .users-editor-inline .users-perm-tools button{background:var(--cx-paper-2)!important;color:var(--cx-brand-3)!important;border-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-tools button:hover,html.dark #user-editor-mount .users-editor-inline .users-perm-tools button:hover{background:rgba(var(--cx-brand-2-rgb),.16)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-item,html.dark #user-editor-mount .users-editor-inline .users-perm-item{background:var(--cx-paper)!important;color:var(--cx-ink)!important;border-color:var(--cx-line)!important;box-shadow:none!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-item:hover,html.dark #user-editor-mount .users-editor-inline .users-perm-item:hover{background:var(--cx-paper-2)!important;border-color:var(--cx-brand-3)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .users-perm-label,html.dark #user-editor-mount .users-editor-inline .users-perm-label{color:var(--cx-ink)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .modal-actions,html.dark #user-editor-mount .users-editor-inline .modal-actions{border-top-color:var(--cx-line)!important}
+html[data-theme="dark"] #user-editor-mount .users-editor-inline .modal-actions .btn:not(.primary),html.dark #user-editor-mount .users-editor-inline .modal-actions .btn:not(.primary){background:var(--cx-paper-2)!important;color:var(--cx-ink)!important;border-color:var(--cx-line)!important}
 @media(max-width:900px){#user-editor-mount .users-editor-inline .users-role-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#user-editor-mount .users-editor-inline .users-perm-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){#user-editor-mount{padding:6px;border-radius:20px}#user-editor-mount .users-editor-inline{padding:17px 12px 14px!important;border-radius:18px!important}#user-editor-mount .users-editor-inline .form-grid{grid-template-columns:1fr;gap:11px}#user-editor-mount .users-editor-inline .users-role-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#user-editor-mount .users-editor-inline .users-role-card{min-height:94px;padding:8px 7px;grid-template-columns:26px 1fr;gap:2px 6px}#user-editor-mount .users-editor-inline .users-role-ico{width:26px;height:26px;font-size:16px}#user-editor-mount .users-editor-inline .users-perm-items{grid-template-columns:1fr}#user-editor-mount .users-editor-inline .users-perm-item{min-height:42px}#user-editor-mount .users-editor-inline .modal-actions{justify-content:stretch}#user-editor-mount .users-editor-inline .modal-actions .btn{flex:1;min-width:110px}}
 </style>
@@ -2620,9 +2653,9 @@ html.dark #user-editor-mount .users-editor-inline .users-perm-label{color:#f3e8e
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="cloud-sync.js?v=3.4"></script>
-<script src="assets/js/core.js?v=3.3"></script>
-<script src="assets/js/owner.js?v=3.3"></script>
+<script src="cloud-sync.js?v=3.5"></script>
+<script src="assets/js/core.js?v=4.0-rebuild-test"></script>
+<script src="assets/js/owner.js?v=4.0-rebuild-test"></script>
 <script>
 
 /* ============================================================
@@ -3083,6 +3116,17 @@ function defaultAssessments(){return[
  {id:uid(),title:'اختبار نصف الفترة',type:'اختبار',date:'',score:'',max:20},
  {id:uid(),title:'الاختبار النهائي',type:'امتحان نهائي',date:'',score:'',max:50}
 ]}
+const LESSON_TYPES={text:'نص تعليمي',video:'فيديو',pdf:'ملف PDF',link:'رابط تعليمي'};
+function normalizeLessons(list){
+ return (Array.isArray(list)?list:[]).filter(x=>x&&typeof x==='object').map((x,i)=>({
+  ...x,id:String(x.id||uid()),yearLevel:[1,2,3].includes(Number(x.yearLevel))?Number(x.yearLevel):1,
+  subjectName:String(x.subjectName||x.subject||''),title:String(x.title||''),
+  type:Object.prototype.hasOwnProperty.call(LESSON_TYPES,x.type)?x.type:'text',
+  description:String(x.description||''),contentText:String(x.contentText||''),resourceUrl:String(x.resourceUrl||''),
+  durationMinutes:Number.isFinite(Number(x.durationMinutes))?Math.max(0,Number(x.durationMinutes)):0,
+  position:Math.max(1,Number(x.position)||i+1),createdAt:String(x.createdAt||''),updatedAt:String(x.updatedAt||'')
+ }));
+}
 function loadDB(){
  try{
   const raw=E3.store.getItem(DB_KEY);
@@ -3104,10 +3148,11 @@ function loadDB(){
    d.activityLog.forEach(a=>{if(a&&typeof a==='object'&&!a.id)a.id=uid()});
    d.attendanceSessions=Array.isArray(d.attendanceSessions)?d.attendanceSessions:[];
    d.tasks=Array.isArray(d.tasks)?d.tasks:[];
+   d.lessons=normalizeLessons(d.lessons);
    return d;
   }
  }catch(e){try{window._e3LoadDBError=String(e&&e.message||e)}catch(_){}}
- return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
+ return {students:[], users:[], activityLog:[], attendanceSessions:[], tasks:[], lessons:[], templates:defaultTemplates(), settings:defaultSettings(), seeded:false};
 }
 function preserveLucasRecord(users){
  /* توحيد بيانات الحسابات قبل حفظها في قاعدة البيانات. */
@@ -3121,6 +3166,7 @@ const AUDIT_SECRET_KEYS = new Set(['passHash','passSealed','passSealedAt','passw
 const AUDIT_FIELD_LABELS = {
  name:'الاسم', displayName:'الاسم الظاهر', username:'اسم المستخدم', code:'الكود', phone:'الهاتف', whatsapp:'واتساب', email:'البريد الإلكتروني',
  nationalId:'الرقم القومي', address:'العنوان', status:'الحالة', gender:'النوع', birthDate:'تاريخ الميلاد', joinDate:'تاريخ الالتحاق', batch:'الدفعة',
+ lessons:'الدروس', subjectName:'المادة', contentText:'محتوى الدرس', resourceUrl:'رابط المادة التعليمية', durationMinutes:'مدة الدرس', position:'ترتيب الدرس', description:'الوصف', type:'نوع المحتوى',
  fixedNotes:'الملاحظات الثابتة', notes:'الملاحظات', enrollments:'السنوات والمحاولات', subjects:'المواد', assessments:'التقييمات والدرجات', score:'الدرجة', max:'الدرجة النهائية',
  activities:'الأنشطة', attendanceSessions:'جلسات الحضور', records:'سجلات الحضور', present:'الحضور', absent:'الغياب', tasks:'مهام المتابعة', title:'العنوان', assignee:'المسؤول', due:'الموعد',
  role:'الدور', permissions:'الصلاحيات', scopeYears:'نطاق السنوات', active:'حالة الحساب', settings:'الإعدادات', templates:'قوالب المناهج', authMeta:'بيانات حماية الحسابات', deletedUserIds:'حسابات محذوفة',
@@ -3170,10 +3216,11 @@ function auditEntityLabel(item,key,index){
   if(key==='users')return [item.displayName,item.username?'@'+item.username:''].filter(Boolean).join(' — ')||('حساب '+(item.id||index+1));
   if(key==='tasks')return item.title||('مهمة '+(item.id||index+1));
   if(key==='attendanceSessions')return item.title||item.topic||item.date||('جلسة '+(item.id||index+1));
+  if(key==='lessons')return item.title||('درس '+(item.id||index+1));
   return item.name||item.title||item.id||('سجل '+(index+1));
 }
 function auditCollectionSummary(key,before,after){
-  const labels={students:'الدارسين',users:'حسابات الخدام',attendanceSessions:'جلسات الحضور',tasks:'مهام المتابعة'};
+  const labels={students:'الدارسين',users:'حسابات الخدام',attendanceSessions:'جلسات الحضور',tasks:'مهام المتابعة',lessons:'الدروس'};
   const oldList=Array.isArray(before)?before:[],newList=Array.isArray(after)?after:[];
   const keyOf=(x,i)=>String(x&&((x.id!=null&&x.id!=='')?x.id:(x.username||x.code))||('row-'+i));
   const oldMap=new Map(oldList.map((x,i)=>[keyOf(x,i),{x,i}]));
@@ -3196,10 +3243,10 @@ function auditCollectionSummary(key,before,after){
 }
 function auditSummaries(before,after){
   const a=before||{},b=auditSnapshot(after||{}),out=[];
-  for(const key of ['students','users','attendanceSessions','tasks']){
+  for(const key of ['students','users','attendanceSessions','tasks','lessons']){
     const d=auditCollectionSummary(key,a[key],b[key]);if(d)out.push(d);
   }
-  const handled=new Set(['students','users','attendanceSessions','tasks','activityLog']);
+  const handled=new Set(['students','users','attendanceSessions','tasks','lessons','activityLog']);
   for(const key of new Set([...Object.keys(a),...Object.keys(b)])){
     if(handled.has(key))continue;
     if(auditJson(a[key])===auditJson(b[key]))continue;
@@ -3641,9 +3688,18 @@ function permCheckboxes(selected){
   </header><div class="users-perm-items">${g.keys.map(k=>{const entry=PERMISSIONS.find(x=>x[0]===k);if(!entry)return '';const [key,label]=entry;const disabled=key==='view_activity_log'&&!canGrantLog;return `<label class="users-perm-item"><input type="checkbox" class="perm-check" value="${key}" ${selected.includes(key)?'checked':''} ${disabled?'disabled':''}><span class="users-perm-item-icon">${(label.match(/^\S+/)||['☑️'])[0]}</span><span class="users-perm-label">${label.replace(/^\S+\s*/, '')}</span></label>`}).join('')}</div>
  </section>`).join('');
 }
-function openUserForm(userId){
+async function openUserForm(userId){
   const me=currentUser(); if(!hasPerm('manage_users'))return toast('إدارة الحسابات للأمين ومساعده فقط');
   const u=userId?(DB.users||[]).find(x=>x.id===userId):null;
+  if(userId&&!u)return toast('حساب الخادم غير موجود أو لم يعد متاحًا — حدّث القائمة وحاول مرة أخرى');
+  const existingEditor=document.querySelector('#user-editor-mount .users-editor-inline');
+  if(existingEditor){
+    const activeId=existingEditor.dataset.userEditorId||'',nextId=userId?String(userId):'';
+    if(activeId===nextId){existingEditor.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    const discard=await askConfirm({title:'تبديل نموذج الخادم',message:'فيه بيانات غير محفوظة في النموذج الحالي. هل تريد تجاهلها وفتح النموذج الآخر؟',ok:'تجاهل وافتح',cancel:'العودة للنموذج'});
+    if(!discard)return;
+  }
+  window._userPhoto=undefined; /* لا ترحّل صورة مسودة سابقة لحساب آخر */
   const editingOwner=!!(u&&isLucasOwner(u)), iAmOwner=isLucasOwner(me);
   const selPerms=u?effectivePerms(u):rolePerms('khadem');
   const tolDefault=u?(u.pwTolerant===true||(!editingOwner&&u.pwTolerant!==false)):true;
@@ -3722,6 +3778,7 @@ function openUserForm(userId){
     toast('تم حفظ حساب '+displayName+' ✅ بالدور: '+(ROLE_DEFS[role]?.label||''));
     if(auth)showOneTimeCredentials(displayName,merged.username,auth.canonical,{tolerant:auth.tolerant,id:merged.id});
   },'💾 حفظ الحساب', 'user-editor-mount');
+  const editorBox=document.querySelector('#user-editor-mount .users-editor-inline');if(editorBox)editorBox.dataset.userEditorId=userId?String(userId):'';
   window._refreshUserPermCounts=()=>{document.querySelectorAll('#permGrid .users-perm-group').forEach(group=>{const boxes=[...group.querySelectorAll('.perm-check')].filter(c=>!c.disabled);const count=boxes.filter(c=>c.checked).length;const badge=group.querySelector('[data-perm-count]');if(badge)badge.textContent=toArabicDigits(count)+' من '+toArabicDigits(boxes.length)})};
   window._permGroup=(groupId,checked)=>{const group=document.querySelector(`#permGrid [data-perm-group="${groupId}"]`);if(!group)return;group.querySelectorAll('.perm-check:not(:disabled)').forEach(c=>c.checked=!!checked);window._refreshUserPermCounts()};
   window._permAll=(checked)=>{document.querySelectorAll('#permGrid .perm-check:not(:disabled)').forEach(c=>c.checked=!!checked);window._refreshUserPermCounts()};
@@ -4320,14 +4377,111 @@ function printCertificate(studentId){
    <div style="font-size:11px;color:#a08b6d;margin-top:26px">شهادة داخلية من خدمة إعداد الخدام — تفاصيل الدرجات والمحاولات كاملة في التقرير الشامل للدارس بنظام «إعداد خدام للتلمذة»</div></div>`);
 }
 
-/* ---------- المناهج ---------- */
+/* ---------- المناهج والدروس ---------- */
+function templateSubjectName(t){return String(Array.isArray(t)?(t[0]||''):(t&&t.name||t||'')).trim()}
+function templateSubjectCategory(t){return String(Array.isArray(t)?(t[1]||'عام'):(t&&t.category||'عام')).trim()}
+function templateSubjectNames(year){return [...new Set((DB.templates[year]||[]).map(templateSubjectName).filter(Boolean))]}
+function curriculumLessonRows(){
+ const lessons=normalizeLessons(DB.lessons).filter(l=>canAccessYear(l.yearLevel)).sort((a,b)=>a.yearLevel-b.yearLevel||a.subjectName.localeCompare(b.subjectName,'ar')||a.position-b.position||a.title.localeCompare(b.title,'ar'));
+ if(!lessons.length)return '<tr><td colspan="6" class="empty">لا توجد دروس مضافة بعد. اضغط «درس جديد» لبدء بناء المنهج التعليمي.</td></tr>';
+ return lessons.map(l=>{
+  const safeUrl=lessonSafeUrl(l.resourceUrl);
+  const textPreview=`<div style="max-width:440px;white-space:pre-wrap;line-height:1.7">${esc((l.contentText||'').slice(0,180))}${(l.contentText||'').length>180?'…':''}</div>`;
+  const resourceLink=safeUrl?`<div style="margin-top:5px"><a href="${esc(safeUrl)}" target="_blank" rel="noopener noreferrer">${l.type==='text'?'فتح المادة المساندة':'فتح '+esc(LESSON_TYPES[l.type])} ↗</a></div>`:'';
+  const content=l.type==='text'?textPreview+resourceLink:(resourceLink||'—');
+  const actions=hasPerm('manage_curriculum')?`<button class="btn sm" onclick="openLessonForm(${esc(JSON.stringify(l.id))})">تعديل</button> ${isAdmin()?`<button class="btn sm danger" onclick="deleteCurriculumLesson(${esc(JSON.stringify(l.id))})">حذف</button>`:''}`:'—';
+  return `<tr data-lesson-year="${l.yearLevel}"><td>${esc(YEAR_NAMES[l.yearLevel]||'')}</td><td>${esc(l.subjectName||'—')}</td><td><b>${esc(l.title||'درس بلا عنوان')}</b>${l.description?`<div style="font-size:12px;color:var(--muted);margin-top:3px">${esc(l.description)}</div>`:''}</td><td><span class="badge b-blue">${esc(LESSON_TYPES[l.type]||LESSON_TYPES.text)}</span>${l.durationMinutes?` <span class="badge b-gray">${l.durationMinutes} دقيقة</span>`:''}</td><td>${content}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap">${actions}</div></td></tr>`;
+ }).join('');
+}
 function viewCurriculum(){
  return [1,2,3].map(y=>`<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><h3>${YEAR_NAMES[y]} — ${(DB.templates[y]||[]).length} مادة في القالب</h3><button class="btn sm primary" ${hasPerm('manage_curriculum')?'':'disabled'} onclick="addTemplateSubject(${y})">➕ مادة للقالب</button></div>
- <table><tr><th>المادة</th><th>التصنيف</th><th></th></tr>${(DB.templates[y]||[]).map((t,i)=>`<tr><td><b>${esc(t[0])}</b></td><td>${esc(t[1])}</td><td>${isAdmin()?`<button class="btn sm danger" onclick="DB.templates[${y}].splice(${i},1);saveDB();render()">حذف</button>`:''}</td></tr>`).join('')||'<tr><td colspan="3">لا توجد مواد</td></tr>'}</table>
- <p style="font-size:12px;color:var(--muted)">من ملف أي دارس: «تطبيق مواد المنهج» بيضيف مواد السنة دي لأي محاولة. التقييمات الافتراضية لكل مادة: حضور ومشاركة ١٠ + واجبات وأبحاث ٢٠ + اختبار نصفي ٢٠ + نهائي ٥٠ = ١٠٠ (قابلة للتعديل بالكامل لكل مادة).</p></div>`).join('')
- + `<div class="card" style="background:#fffbeb;border-color:#fde68a"><b>منهج مقترح مبني على البحث:</b> مناهج إعداد الخدام المعروفة بتجمع بين الكتاب المقدس والعقيدة والطقس وتاريخ الكنيسة + الجانب التربوي وعلم النفس ومراحل النمو + إعداد روحي (اعتراف وتناول وصلاة) + تدريب عملي ومؤتمرات وخلوات، بجانب ساعات خدمة ولقاءات إرشاد دورية. عدّل القوالب فوق زي ما يناسب كنيستك.</div>`;
+ <div class="table-scroll"><table><tr><th>المادة</th><th>التصنيف</th><th>إدارة</th></tr>${(DB.templates[y]||[]).map((t,i)=>{const name=templateSubjectName(t);return `<tr><td><b>${esc(name)}</b></td><td>${esc(templateSubjectCategory(t))}</td><td style="display:flex;gap:5px;flex-wrap:wrap">${hasPerm('manage_curriculum')?`<button class="btn sm" onclick="openLessonForm(null,${y},${esc(JSON.stringify(name))})">➕ درس</button>`:''}${isAdmin()?`<button class="btn sm danger" onclick="deleteTemplateSubject(${y},${i})">حذف المادة</button>`:''}</td></tr>`}).join('')||'<tr><td colspan="3">لا توجد مواد</td></tr>'}</table></div>
+ <p style="font-size:12px;color:var(--muted)">«تطبيق مواد المنهج» يضيف مواد السنة لأي محاولة. الدروس هنا محتوى تعليمي مستقل مرتبط بالسنة والمادة، ولا تتضمن بيانات شخصية للدارس.</p></div>`).join('')
+ + `<div class="card lesson-manager"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px"><div><h3>📖 دروس المنهج</h3><p style="color:var(--muted);font-size:13px;line-height:1.8;margin:0">سجّل عنوان الدرس ومادته ومحتواه التعليمي أو رابط مواده. الرقم القومي والهاتف والنوع وبيانات الدارس ليست حقولاً للدرس.</p></div><button class="btn primary" ${hasPerm('manage_curriculum')?'':'disabled'} onclick="openLessonForm()">➕ درس جديد</button></div>
+ <div class="form-grid" style="margin:12px 0"><div class="field"><label for="lessonListYear">تصفية بالسنة</label><select id="lessonListYear" onchange="filterCurriculumLessons()"><option value="0">كل السنوات</option><option value="1">${esc(YEAR_NAMES[1])}</option><option value="2">${esc(YEAR_NAMES[2])}</option><option value="3">${esc(YEAR_NAMES[3])}</option></select></div><div class="field"><label for="lessonListSearch">بحث في الدروس</label><input id="lessonListSearch" type="search" placeholder="العنوان أو المادة أو الوصف..." oninput="filterCurriculumLessons()"></div></div>
+ <div class="table-scroll"><table><thead><tr><th>السنة</th><th>المادة</th><th>عنوان الدرس والوصف</th><th>نوع المحتوى والمدة</th><th>المحتوى / الرابط</th><th>الإجراءات</th></tr></thead><tbody id="curriculumLessonsBody">${curriculumLessonRows()}</tbody></table></div></div>`
+ + `<div class="card" style="background:#fffbeb;border-color:#fde68a"><b>منهج مقترح مبني على البحث:</b> مناهج إعداد الخدام تجمع بين الكتاب المقدس والعقيدة والطقس وتاريخ الكنيسة، الجانب التربوي ومراحل النمو، الإعداد الروحي والتدريب العملي. عدّل القوالب والدروس بما يناسب كنيستك.</div>`;
 }
-function addTemplateSubject(y){ if(!hasPerm('manage_curriculum'))return toast('إدارة المناهج للأمين ومساعده'); openModal(`إضافة مادة — ${YEAR_NAMES[y]}`,`<div class="form-grid"><div class="field"><label>اسم المادة</label><input id="tName"></div><div class="field"><label>التصنيف</label><input id="tCat" placeholder="كتاب مقدس / عقيدة / طقس / تربوي..."></div></div>`,()=>{const n=$('#tName').value.trim(); if(!n)return toast('اكتب اسم المادة'); DB.templates[y].push([n,$('#tCat').value.trim()||'عام']); saveDB(); closeModal(); render(); toast('اتضافت للقالب ✅')}) }
+function filterCurriculumLessons(){
+ const year=Number(document.getElementById('lessonListYear')?.value||0),q=String(document.getElementById('lessonListSearch')?.value||'').trim().toLocaleLowerCase('ar');
+ document.querySelectorAll('#curriculumLessonsBody tr[data-lesson-year]').forEach(row=>{const yearOk=!year||Number(row.dataset.lessonYear)===year;const textOk=!q||row.textContent.toLocaleLowerCase('ar').includes(q);row.hidden=!(yearOk&&textOk)});
+}
+function lessonSafeUrl(raw){
+ const value=String(raw||'').trim();if(!value)return '';
+ try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:''}catch(e){return ''}
+}
+function refreshLessonSubjects(selected){
+ const year=Number(document.getElementById('lessonYear')?.value||1),select=document.getElementById('lessonSubject');if(!select)return;
+ const names=templateSubjectNames(year),current=selected||select.value;
+ const options=names.map(name=>`<option value="${esc(name)}" ${name===current?'selected':''}>${esc(name)}</option>`);
+ if(current&&!names.includes(current))options.unshift(`<option value="${esc(current)}" selected>${esc(current)} — مادة غير موجودة حاليًا في القالب</option>`);
+ select.innerHTML=options.join('')||'<option value="">لا توجد مواد لهذه السنة</option>';
+}
+function lessonNextPosition(year,subject){
+ return Math.max(0,...(DB.lessons||[]).filter(l=>Number(l.yearLevel)===Number(year)&&String(l.subjectName||'')===String(subject||'')).map(l=>Number(l.position)||0))+1;
+}
+function toggleLessonContentFields(){
+ const type=document.getElementById('lessonType')?.value||'text',text=document.getElementById('lessonTextField'),link=document.getElementById('lessonLinkField');
+ if(text)text.hidden=type!=='text';if(link)link.hidden=false;
+ const label=document.getElementById('lessonUrlLabel'),help=document.getElementById('lessonUrlHelp');
+ if(label)label.textContent=type==='text'?'رابط مادة مساندة (اختياري)':'رابط المحتوى / الملف *';
+ if(help)help.textContent=type==='text'?'أضف مرجعًا أو ملفًا مساعدًا إن وجد؛ يقبل روابط http/https فقط.':'للفيديو أو PDF أو الرابط الخارجي؛ يقبل روابط http/https فقط. لا يوجد رفع ملف مباشر.';
+}
+function openLessonForm(lessonId=null,yearArg=null,subjectArg=''){
+ if(!hasPerm('manage_curriculum'))return toast('إدارة المناهج للأمين ومساعده');
+ const lesson=lessonId?(DB.lessons||[]).find(x=>String(x.id)===String(lessonId)):null;
+ if(lessonId&&!lesson)return toast('الدرس غير موجود — حدّث الصفحة');
+ if(lesson&&!canAccessYear(lesson.yearLevel))return toast('هذا الدرس خارج نطاق السنوات المسموح لحسابك');
+ const years=[1,2,3].filter(canAccessYear);if(!years.length)return toast('لا توجد سنة دراسية ضمن نطاق حسابك');
+ const year=Number(lesson?.yearLevel||yearArg||years[0]);if(!years.includes(year))return toast('السنة دي خارج نطاقك');
+ const subject=String(lesson?.subjectName||subjectArg||templateSubjectNames(year)[0]||'');
+ const type=lesson?.type||'text';
+ const yearOptions=years.map(y=>`<option value="${y}" ${year===y?'selected':''}>${esc(YEAR_NAMES[y])}</option>`).join('');
+ const typeOptions=Object.entries(LESSON_TYPES).map(([key,label])=>`<option value="${key}" ${type===key?'selected':''}>${label}</option>`).join('');
+ openModal(lesson?'تعديل درس المنهج':'إضافة درس جديد',`<p style="color:var(--muted);font-size:13px;margin:0 0 12px;line-height:1.8">هذا النموذج خاص بالمحتوى التعليمي فقط؛ لا تُدخل فيه رقمًا قوميًّا أو هاتفًا أو نوعًا أو بيانات شخصية للدارسين.</p>
+ <div class="form-grid"><div class="field"><label for="lessonYear">السنة الدراسية *</label><select id="lessonYear" onchange="refreshLessonSubjects();document.getElementById('lessonOrder').value=lessonNextPosition(this.value,document.getElementById('lessonSubject').value)">${yearOptions}</select></div>
+ <div class="field"><label for="lessonSubject">المادة *</label><select id="lessonSubject">${templateSubjectNames(year).map(name=>`<option value="${esc(name)}" ${subject===name?'selected':''}>${esc(name)}</option>`).join('')||'<option value="">لا توجد مواد لهذه السنة</option>'}</select></div>
+ <div class="field full"><label for="lessonTitle">عنوان الدرس *</label><input id="lessonTitle" maxlength="160" value="${esc(lesson?.title||'')}" placeholder="مثال: مدخل إلى دراسة سفر التكوين"></div>
+ <div class="field"><label for="lessonType">نوع المحتوى *</label><select id="lessonType" onchange="toggleLessonContentFields()">${typeOptions}</select></div>
+ <div class="field"><label for="lessonDuration">المدة بالدقائق (اختياري)</label><input id="lessonDuration" type="number" min="1" max="600" step="1" value="${lesson?.durationMinutes||''}" placeholder="مثال: ٤٥"></div>
+ <div class="field"><label for="lessonOrder">ترتيب الدرس داخل المادة</label><input id="lessonOrder" type="number" min="1" max="9999" step="1" value="${lesson?.position||lessonNextPosition(year,subject)}"></div>
+ <div class="field full"><label for="lessonDescription">وصف مختصر / هدف تعليمي (اختياري)</label><textarea id="lessonDescription" maxlength="800" placeholder="ما الفكرة أو الهدف الذي يغطيه الدرس؟">${esc(lesson?.description||'')}</textarea></div>
+ <div class="field full lesson-text-content" id="lessonTextField"><label for="lessonContent">محتوى الدرس *</label><textarea id="lessonContent" maxlength="20000" placeholder="اكتب الشرح أو النقاط التعليمية هنا…">${esc(lesson?.contentText||'')}</textarea></div>
+ <div class="field full lesson-link-content" id="lessonLinkField"><label id="lessonUrlLabel" for="lessonUrl">${type==='text'?'رابط مادة مساندة (اختياري)':'رابط المحتوى / الملف *'}</label><input id="lessonUrl" type="url" maxlength="2000" value="${esc(lesson?.resourceUrl||'')}" placeholder="https://…"><small id="lessonUrlHelp" style="color:var(--muted)">${type==='text'?'أضف مرجعًا أو ملفًا مساعدًا إن وجد؛ يقبل روابط http/https فقط.':'للفيديو أو PDF أو الرابط الخارجي؛ يقبل روابط http/https فقط. لا يوجد رفع ملف مباشر.'}</small></div></div>`,()=>{
+  const title=document.getElementById('lessonTitle').value.trim(),selectedYear=Number(document.getElementById('lessonYear').value),selectedSubject=document.getElementById('lessonSubject').value.trim(),selectedType=document.getElementById('lessonType').value;
+  if(!title)return toast('اكتب عنوان الدرس');
+  if(!canAccessYear(selectedYear))return toast('السنة دي خارج نطاقك');
+  if(!selectedSubject||!templateSubjectNames(selectedYear).includes(selectedSubject))return toast('اختر مادة موجودة في قالب السنة');
+  if(!Object.prototype.hasOwnProperty.call(LESSON_TYPES,selectedType))return toast('نوع المحتوى غير صالح');
+  const durationRaw=document.getElementById('lessonDuration').value.trim(),duration=durationRaw===''?0:Number(durationRaw);
+  if(durationRaw!==''&&(!Number.isInteger(duration)||duration<1||duration>600))return toast('المدة يجب أن تكون من دقيقة إلى ٦٠٠ دقيقة');
+  const order=Number(document.getElementById('lessonOrder').value);if(!Number.isInteger(order)||order<1||order>9999)return toast('ترتيب الدرس يجب أن يكون بين ١ و٩٩٩٩');
+  const contentText=selectedType==='text'?document.getElementById('lessonContent').value.trim():'';
+  const rawUrl=document.getElementById('lessonUrl').value.trim(),resourceUrl=rawUrl?lessonSafeUrl(rawUrl):'';
+  if(selectedType==='text'&&!contentText)return toast('اكتب محتوى الدرس');
+  if(rawUrl&&!resourceUrl)return toast('أدخل رابطًا صالحًا يبدأ بـ http:// أو https://');
+  if(selectedType!=='text'&&!resourceUrl)return toast('أدخل رابطًا صالحًا يبدأ بـ http:// أو https://');
+  const now=new Date().toISOString(),data={yearLevel:selectedYear,subjectName:selectedSubject,title,description:document.getElementById('lessonDescription').value.trim(),type:selectedType,contentText,resourceUrl,durationMinutes:duration,position:order,updatedAt:now};
+  DB.lessons=Array.isArray(DB.lessons)?DB.lessons:[];
+  if(lesson){Object.assign(lesson,data)}else DB.lessons.push({id:uid(),...data,createdAt:now});
+  logActivity((lesson?'عدّل':'أضاف')+' درسًا: '+title+' — '+selectedSubject);saveDB();closeModal();render();toast(lesson?'تم تحديث الدرس ✅':'تمت إضافة الدرس ✅');
+ });
+ refreshLessonSubjects(subject);toggleLessonContentFields();
+}
+async function deleteCurriculumLesson(id){
+ if(!isAdmin())return toast('حذف الدروس للأمين فقط');const lesson=(DB.lessons||[]).find(x=>String(x.id)===String(id));if(!lesson)return;
+ if(!canAccessYear(lesson.yearLevel))return toast('هذا الدرس خارج نطاق السنوات المسموح لحسابك');
+ if(!await askConfirm({danger:true,icon:'🗑️',title:'حذف درس',ok:'نعم، احذف',message:'حذف درس «'+esc(lesson.title)+'» من مادة «'+esc(lesson.subjectName)+'»؟'}))return;
+ DB.lessons=DB.lessons.filter(x=>String(x.id)!==String(id));logActivity('حذف درس: '+lesson.title+' — '+lesson.subjectName);saveDB();render();toast('تم حذف الدرس');
+}
+async function deleteTemplateSubject(year,index){
+ if(!isAdmin())return toast('حذف مواد القالب للأمين فقط');const item=(DB.templates[year]||[])[index];if(!item)return;const name=templateSubjectName(item);
+ const linked=(DB.lessons||[]).filter(l=>Number(l.yearLevel)===Number(year)&&String(l.subjectName||'')===name);
+ if(linked.length)return toast(`لا يمكن حذف «${name}» لوجود ${linked.length} درس مرتبط بها. احذف الدروس أو انقلها أولًا.`);
+ if(!await askConfirm({danger:true,title:'حذف مادة من القالب',ok:'نعم، احذف',message:'حذف المادة «'+esc(name)+'» من '+YEAR_NAMES[year]+'؟'}))return;
+ DB.templates[year].splice(index,1);saveDB();render();toast('تم حذف المادة من القالب');
+}
+function addTemplateSubject(y){ if(!hasPerm('manage_curriculum'))return toast('إدارة المناهج للأمين ومساعده'); openModal(`إضافة مادة — ${YEAR_NAMES[y]}`,`<div class="form-grid"><div class="field"><label>اسم المادة</label><input id="tName"></div><div class="field"><label>التصنيف</label><input id="tCat" placeholder="كتاب مقدس / عقيدة / طقس / تربوي..."></div></div>`,()=>{const n=$('#tName').value.trim(); if(!n)return toast('اكتب اسم المادة'); if(templateSubjectNames(y).some(x=>x.toLocaleLowerCase('ar')===n.toLocaleLowerCase('ar')))return toast('المادة موجودة بالفعل في القالب'); DB.templates[y].push([n,$('#tCat').value.trim()||'عام']); saveDB(); closeModal(); render(); toast('اتضافت للقالب ✅')}) }
 
 /* ---------- التقارير ---------- */
 function viewReports(){
@@ -4469,7 +4623,7 @@ function rememberAutoBackup(){
   try{
     const key='e3dad_auto_backups_v1';
     const list=JSON.parse(localStorage.getItem(key)||'[]');
-    list.unshift({at:Date.now(), students:(DB.students||[]).length, users:(DB.users||[]).length, json:JSON.stringify(DB)});
+    list.unshift({at:Date.now(), students:(DB.students||[]).length, users:(DB.users||[]).length, lessons:(DB.lessons||[]).length, json:JSON.stringify(DB)});
     localStorage.setItem(key, JSON.stringify(list.slice(0,8)));
   }catch(e){}
 }
@@ -4479,7 +4633,7 @@ function listAutoBackups(){
 async function restoreAutoBackup(i){
   const list=listAutoBackups(); const item=list[i]; if(!item)return;
   if(!await askConfirm({title:'استعادة نسخة احتياطية',ok:'نعم، استعد',message:'استعادة النسخة المحفوظة على الجهاز بتاريخ '+new Date(item.at).toLocaleString('ar-EG')+'؟'}))return;
-  try{ DB=JSON.parse(item.json); DB.settings={...defaultSettings(),...(DB.settings||{})}; saveDB(); render(); toast('اترجعت النسخة الاحتياطية ✅'); }catch(e){toast('النسخة تالفة')}
+  try{ DB=JSON.parse(item.json); DB.settings={...defaultSettings(),...(DB.settings||{})}; DB.templates={...defaultTemplates(),...(DB.templates||{})}; DB.lessons=normalizeLessons(DB.lessons); saveDB(); render(); toast('اترجعت النسخة الاحتياطية ✅'); }catch(e){toast('النسخة تالفة')}
 }
 function printStudentReport(studentId,mode){
  const st=getStudent(studentId); if(!st)return toast('اختر دارساً'); if(!hasPerm('print_reports'))return toast('صلاحية الطباعة غير مفعّلة لحسابك'); if(!canAccessStudent(st))return toast('الدارس خارج نطاقك');
@@ -4563,6 +4717,8 @@ function exportFullXlsx(){
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(att.length?att:[{ملاحظة:'لا حضور'}]),'الحضور');
  const tasks=(DB.tasks||[]).map(x=>({العنوان:x.title||'',المسؤول:x.assignee||'',الحالة:x.status||'',الموعد:x.due||'',الدارس:x.studentName||''}));
  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(tasks.length?tasks:[{ملاحظة:'لا مهام'}]),'المتابعة');
+ const lessons=(DB.lessons||[]).map(l=>({السنة:YEAR_NAMES[l.yearLevel]||l.yearLevel||'',المادة:l.subjectName||'',الترتيب:l.position||'',العنوان:l.title||'',النوع:LESSON_TYPES[l.type]||l.type||'',المدة_بالدقائق:l.durationMinutes||'',الوصف:l.description||'',المحتوى:l.contentText||'',الرابط:l.resourceUrl||''}));
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(lessons.length?lessons:[{ملاحظة:'لا دروس'}]),'الدروس');
  XLSX.writeFile(wb,'نسخة-كاملة-'+today()+'.xlsx');
  rememberAutoBackup();
  toast('اتنزل شيت Excel متعدد الأوراق ✅');
@@ -4570,7 +4726,7 @@ function exportFullXlsx(){
 function previewBackupPdf(){
  const n=(DB.students||[]).length;
  const html=reportHead('ملخص النسخة الاحتياطية','جاهز للحفظ PDF أو الطباعة من داخل النظام')+
-  `<p>عدد الدارسين: <b>${n}</b> • الخدام: <b>${(DB.users||[]).length}</b> • جلسات الحضور: <b>${(DB.attendanceSessions||[]).length}</b> • مهام: <b>${(DB.tasks||[]).length}</b></p>`+
+  `<p>عدد الدارسين: <b>${n}</b> • الخدام: <b>${(DB.users||[]).length}</b> • الدروس: <b>${(DB.lessons||[]).length}</b> • جلسات الحضور: <b>${(DB.attendanceSessions||[]).length}</b> • مهام: <b>${(DB.tasks||[]).length}</b></p>`+
   `<table><tr><th>الكود</th><th>الاسم</th><th>الحالة</th><th>المتوسط</th></tr>${(DB.students||[]).map(st=>`<tr><td>${esc(st.code)}</td><td>${esc(st.name)}</td><td>${esc(st.status)}</td><td>${studentOverallAvg(st)??'—'}</td></tr>`).join('')||'<tr><td colspan="4">لا دارسين</td></tr>'}</table>`;
  showPrint(html,{title:'ملخص النسخة الاحتياطية',filename:'ملخص-نسخة-'+today()});
 }
@@ -4594,9 +4750,9 @@ function exportResultsCSV(){
  exportAoAToXlsx(aoa,'كل-النتائج-والمحاولات');
 }
 async function clearAll(){if(!(isAdmin()||isLucasOwner(currentUser())))return toast('لا تملك صلاحية تنفيذ هذا الإجراء.');
- if(!await askConfirm({danger:true,icon:'⚠️',title:'مسح كل البيانات',ok:'نعم، امسح',message:'متأكد؟ هيتم مسح كل بيانات الدارسين من هذا الجهاز ومن السحابة نهائياً.'}))return;
+ if(!await askConfirm({danger:true,icon:'⚠️',title:'مسح بيانات الدارسين',ok:'نعم، امسح',message:'سيتم مسح ملفات الدارسين والمهام وسجلات الحضور نهائيًا. تبقى حسابات الخدام والإعدادات وقوالب المناهج والدروس محفوظة.'}))return;
  if(!await askConfirm({danger:true,icon:'🛑',title:'تأكيد أخير',ok:'مسح نهائي',message:'المسح لا يمكن التراجع عنه إلا لو عندك نسخة احتياطية. هل أنت متأكد؟'}))return;
- logActivity('مسح شامل لبيانات الدارسين والمهام والحضور'); DB={students:[],users:DB.users||[],activityLog:DB.activityLog||[],attendanceSessions:[],tasks:[],templates:defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين (حسابات الخدام والإعدادات الأساسية كما هي)')}
+ logActivity('مسح بيانات الدارسين والمهام والحضور مع الاحتفاظ بالمناهج والدروس'); DB={students:[],users:DB.users||[],activityLog:DB.activityLog||[],attendanceSessions:[],tasks:[],lessons:normalizeLessons(DB.lessons),templates:DB.templates||defaultTemplates(),settings:{...defaultSettings(),orgName:DB.settings.orgName,church:DB.settings.church,orgLogo:DB.settings.orgLogo}};saveDB();go('dashboard');toast('تم مسح بيانات الدارسين — بقيت المناهج والدروس كما هي')}
 
 /* ---------- الإعدادات ---------- */
 function viewSettings(){if(!hasPerm('manage_settings'))return `<div class="card empty"><div class="big">🔒</div>إعدادات الخدمة لأمين إعداد الخدام فقط</div>`; const s=DB.settings;return `<div class="card" style="max-width:760px"><h3>☦ هوية الخدمة وإعدادات التقييم</h3>
@@ -4655,10 +4811,12 @@ function askConfirm(opts){
   });
 }
 function associateFormLabels(root){if(!root)return;root.querySelectorAll('.field').forEach(box=>{const label=box.querySelector('label:not([for])'),control=box.querySelector('input[id],select[id],textarea[id]');if(label&&control&&control.id)label.htmlFor=control.id})}
-function openModal(title,bodyHTML,onSave,saveLabel,inlineMountId){const bg=$('#modalBg'),box=$('#modalBox');if(box.parentElement!==bg)bg.appendChild(box);box.classList.remove('users-editor-inline');box.innerHTML=`<h2>${title}</h2><div class="sub">الحقول الأساسية بس هي المطلوبة — والباقي اختياري</div>${bodyHTML}<div class="modal-actions"><button class="btn primary" id="mSave">${saveLabel||'💾 حفظ'}</button><button class="btn" type="button" onclick="closeModal()">إلغاء</button></div>`;associateFormLabels(box);const mount=inlineMountId&&document.getElementById(inlineMountId);if(mount){mount.appendChild(box);box.classList.add('users-editor-inline');bg.classList.remove('open');document.body.classList.remove('no-scroll');box.scrollIntoView({behavior:'smooth',block:'start'})}else{bg.classList.add('open');document.body.classList.add('no-scroll')}const saveBtn=$('#mSave'),defaultLabel=saveBtn.textContent;let saving=false;saveBtn.onclick=async()=>{if(saving)return;saving=true;saveBtn.disabled=true;saveBtn.textContent='جارٍ الحفظ…';try{if(typeof onSave==='function')await onSave()}catch(err){console.error('Save failed:',err);toast('حدث خطأ أثناء الحفظ أو تحديث الشاشة — تحقّق من البيانات قبل إعادة المحاولة')}finally{if(bg.classList.contains('open')||box.classList.contains('users-editor-inline')){saving=false;saveBtn.disabled=false;saveBtn.textContent=defaultLabel}}}}
+function openModal(title,bodyHTML,onSave,saveLabel,inlineMountId){const bg=$('#modalBg'),box=$('#modalBox');if(box.parentElement!==bg)bg.appendChild(box);box.classList.remove('users-editor-inline');box.innerHTML=`<h2>${title}</h2><div class="sub">الحقول الأساسية بس هي المطلوبة — والباقي اختياري</div>${bodyHTML}<div class="modal-actions"><button class="btn primary" id="mSave">${saveLabel||'💾 حفظ'}</button><button class="btn" type="button" onclick="closeModal()">إلغاء</button></div>`;associateFormLabels(box);const mount=inlineMountId&&document.getElementById(inlineMountId);if(mount){mount.appendChild(box);box.classList.add('users-editor-inline');delete box.dataset.userEditorId;bg.classList.remove('open');document.body.classList.remove('no-scroll');box.scrollIntoView({behavior:'smooth',block:'start'})}else{bg.classList.add('open');document.body.classList.add('no-scroll')}const saveBtn=$('#mSave'),defaultLabel=saveBtn.textContent;let saving=false;saveBtn.onclick=async()=>{if(saving)return;saving=true;saveBtn.disabled=true;saveBtn.textContent='جارٍ الحفظ…';try{if(typeof onSave==='function')await onSave()}catch(err){console.error('Save failed:',err);toast('حدث خطأ أثناء الحفظ أو تحديث الشاشة — تحقّق من البيانات قبل إعادة المحاولة')}finally{if(bg.classList.contains('open')||box.classList.contains('users-editor-inline')){saving=false;saveBtn.disabled=false;saveBtn.textContent=defaultLabel}}}}
 function processDeferredRemoteRefresh(){
  if(!window._remoteRefreshPending)return;
  if($('#modalBg')?.classList.contains('open'))return;
+ /* النموذج مضمّن داخل الصفحة؛ لا تُحدّث DB فوق تعديلات لم تُحفظ بعد. */
+ if(document.querySelector('#user-editor-mount .users-editor-inline'))return;
  const a=document.activeElement;
  if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
  window._remoteRefreshPending=false;
@@ -4670,7 +4828,7 @@ function processDeferredRemoteRefresh(){
 document.addEventListener('focusout',()=>setTimeout(processDeferredRemoteRefresh,0),true);
 function closeModal(){
  const bg=$('#modalBg'),box=$('#modalBox');bg.classList.remove('open');box.classList.remove('wide');
- if(box.classList.contains('users-editor-inline')){box.classList.remove('users-editor-inline');box.innerHTML='';bg.appendChild(box)}
+ if(box.classList.contains('users-editor-inline')){window._userPhoto=undefined;delete box.dataset.userEditorId;box.classList.remove('users-editor-inline');box.innerHTML='';bg.appendChild(box)}
  var _sb=document.getElementById('sidebar');document.body.classList.toggle('no-scroll',!!(_sb&&_sb.classList.contains('open')));
  setTimeout(processDeferredRemoteRefresh,0);
 }
@@ -4940,7 +5098,7 @@ $('#importFile').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)
      importStudentsCSV(csv);
    }catch(_){toast('ملف Excel غير صالح')}}; r.readAsArrayBuffer(f); e.target.value=''; return;
  }
- const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); const priorLog=(DB.activityLog||[]).slice(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.users=DB.users||[]; DB.activityLog=priorLog; logActivity('استورد نسخة احتياطية كاملة واستبدل البيانات الحالية'); saveDB(); go('dashboard'); toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
+ const r=new FileReader(); r.onload=async()=>{try{const d=JSON.parse(r.result); if(!Array.isArray(d.students))throw 0; if(!await askConfirm({danger:true,title:'استيراد نسخة',ok:'نعم، استورد',message:'استيراد النسخة هيستبدل البيانات الحالية على الجهاز. هل أنت متأكد؟'}))return; rememberAutoBackup(); const priorLog=(DB.activityLog||[]).slice(); DB=d; DB.settings={...defaultSettings(),...(d.settings||{})}; DB.templates={...defaultTemplates(),...(d.templates||{})}; DB.lessons=normalizeLessons(d.lessons); DB.users=DB.users||[]; DB.activityLog=priorLog; logActivity('استورد نسخة احتياطية كاملة واستبدل البيانات الحالية'); saveDB(); go('dashboard'); toast('تم استيراد النسخة الاحتياطية ✅')}catch(_){toast('ملف غير صالح')}}; r.readAsText(f); e.target.value=''});
 window.addEventListener('online',()=>$('#offlineBar').classList.remove('show'));
 window.addEventListener('offline',()=>$('#offlineBar').classList.add('show'));
 if(!navigator.onLine)$('#offlineBar').classList.add('show');
@@ -4949,7 +5107,7 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null; toast('تم ت�
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js?v=6.1', { updateViaCache: 'none' }).catch(()=>{})}
 if(window.E3Cloud){E3Cloud.init({dbKey:DB_KEY,badge:true,onRemote:()=>{
   const a=document.activeElement, modal=$('#modalBg');
-  if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open'))){window._remoteRefreshPending=true;return;}
+  if((a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||(modal&&modal.classList.contains('open'))||document.querySelector('#user-editor-mount .users-editor-inline')){window._remoteRefreshPending=true;return;}
   DB=loadDB();
   _auditBaseline=auditSnapshot(DB); _auditPendingLogIds=[];
   if(!currentUser()){ensureDefaultAdminUser();}

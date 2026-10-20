@@ -2482,8 +2482,8 @@ html:not([data-theme="dark"]):not(.dark) .vz-box{box-shadow:0 40px 100px rgba(40
 </div>
 
 
-<script src="cloud-sync.js?v=3.4"></script>
-<script src="assets/js/core.js?v=3.3"></script>
+<script src="cloud-sync.js?v=3.5"></script>
+<script src="assets/js/core.js?v=4.0-rebuild-test"></script>
 <script>
 try{console.info('%c☦ إعداد خدام للتلمذة — E3DAD COMPLETE v4.0 ☦ كل التصليحات + فحص وتنظيف شامل','color:#7a1257;font-weight:bold')}catch(e){}
 const DB_KEY = E3.DB_KEY, SESSION_KEY = E3.SESSION_KEY, ADMIN_URL = 'admin.html';
@@ -3980,8 +3980,8 @@ async function askOwnerRecovery() {
   const code = prompt('اكتب كود الاستعادة السرّي:');
   if (code === null) return;
   if (!String(code).trim()) return showError('لازم تكتب كود الاستعادة');
-  const h = await hashPassword(String(code).trim(), 'owner-recovery');
-  if (h !== DB.settings.ownerRecoveryHash) {
+  const valid = await verifyPassword(String(code).trim(), 'owner-recovery', DB.settings.ownerRecoveryHash);
+  if (!valid) {
     window._recFails = (window._recFails || 0) + 1;
     if (window._recFails >= 3) { window._recFails = 0; return showError('٣ محاولات غلط للكود — كلّم أمين الخدمة.'); }
     return showError('كود الاستعادة غير صحيح ❌');

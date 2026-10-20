@@ -4,7 +4,7 @@
    • بتقرأ الحسابات من:
        {BASE}/users.json      (كل مستخدم كمفتاح باسم المستخدم)
      وبتقرأ البيانات من:
-       {BASE}/val/{students,activityLog,attendanceSessions,tasks,templates,settings}
+       {BASE}/val/{students,activityLog,attendanceSessions,tasks,templates,lessons,settings}
      وكل قيمة فيها نص JSON (زي ما النسخة الأصلية كانت بتخزّن).
    • pushUsers بيستخدم PATCH لكل حساب (مش بيستبدل القاعدة كلها).
    • لو الشبكة وقعت، البرنامج بيكمل شغل على localStorage وبيرفع أول ما يرجع.
@@ -148,6 +148,7 @@
     attendanceSessions: (db && db.attendanceSessions) || [],
     tasks: (db && db.tasks) || [],
     templates: (db && db.templates) || {},
+    lessons: (db && db.lessons) || [],
     settings: (db && db.settings) || {},
   });
   const parseLoose = (v, fallback) => {
@@ -250,6 +251,7 @@
       attendanceSessions: parseLoose(remoteVal.attendanceSessions, []),
       tasks: parseLoose(remoteVal.tasks, []),
       templates: parseLoose(remoteVal.templates, {}),
+      lessons: parseLoose(remoteVal.lessons, (local && local.lessons) || []),
       settings: parseLoose(remoteVal.settings, {}),
     };
     const localAt = (local && local.settings && local.settings.updatedAt) || 0;
@@ -262,6 +264,7 @@
       attendanceSessions: remote.attendanceSessions || [],
       tasks: remote.tasks || [],
       templates: (remote.templates && Object.keys(remote.templates).length) ? remote.templates : (local && local.templates) || {},
+      lessons: remote.lessons || (local && local.lessons) || [],
       settings: Object.assign({}, (local && local.settings) || {}, remote.settings || {}),
     };
   }
@@ -294,6 +297,7 @@
       merged.attendanceSessions = data.attendanceSessions;
       merged.tasks = data.tasks;
       merged.templates = data.templates;
+      merged.lessons = data.lessons;
       merged.settings = data.settings;
     }
 
@@ -345,6 +349,7 @@
         attendanceSessions: JSON.stringify(db.attendanceSessions || []),
         tasks: JSON.stringify(db.tasks || []),
         templates: JSON.stringify(db.templates || {}),
+        lessons: JSON.stringify(db.lessons || []),
         settings: JSON.stringify(db.settings || {}),
       };
       writes.push(doFetch(base + "/val.json", {
