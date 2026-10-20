@@ -2154,7 +2154,7 @@ function appInviteURL(){return /^(localhost|127\.0\.0\.1)$/.test(location.hostna
 function createWhatsAppInvite(phone,account,password){
   var user=displayPersonName(account.name||account.username||account.u||'');
   var creator=displayPersonName(ME.name||ME.u||'إدارة النظام');
-  var message='السلام عليكم يا '+user+' 🌿\nتم إنشاء حسابك في نظام إعداد خدام بواسطة '+creator+' ('+(ME.role||'إدارة النظام')+').\nرابط النظام: '+appInviteURL()+'\nاسم المستخدم: '+(account.username||account.u||'')+'\nكلمة المرور الأولية: '+password+'\nالدور: '+(account.role||'خادم')+'\nاحتفظ ببيانات الدخول، وغيّر كلمة المرور عند أول فرصة.';
+  var message='سلام ونعمة المسيح معك ✝️🌿\nأهلًا بك يا '+user+' في خدمة إعداد الخدام 🙏\nتم إنشاء حسابك في نظام إعداد خدام بواسطة '+creator+' ('+(ME.role||'إدارة النظام')+').\n\n📖 «وما سمعته مني بشهود كثيرين، أودعه أناسًا أمناء، يكونون أكفاء أن يعلّموا آخرين أيضًا.» (٢ تيموثاوس ٢:٢)\n\n🔗 رابط النظام: '+appInviteURL()+'\n👤 اسم المستخدم: '+(account.username||account.u||'')+'\n🔑 كلمة المرور الأولية: '+password+'\n🛡️ الدور: '+(account.role||'خادم')+'\n\nنصلي أن يكون النظام عونًا في خدمتنا وبنيان الكنيسة لمجد اسم ربنا يسوع المسيح. ☦️\nاحتفظ ببيانات الدخول، وننصحك بتغيير كلمة المرور بعد أول دخول.';
   return 'https://wa.me/'+phone+'?text='+encodeURIComponent(message);
 }
 function openStaffForm(id,self){
