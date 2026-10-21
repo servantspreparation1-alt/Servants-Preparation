@@ -2907,7 +2907,7 @@ document.addEventListener('change',function(e){
   if(gs&&gb)logActivity('edit_grades','الدارس: '+(gs.name||'—')+' · المادة: '+(gb.name||'—'),'تعديل درجة معيار '+(t.getAttribute('data-k')||'')+' إلى '+nf(n)+' من '+nf(m));
 });
 
-/* ===== E3DAD Backup Center v2.3.1 RoleGate (داخل نطاق التطبيق المصادق) ===== */
+/* ===== E3DAD Backup Center v2.4.1 MobileSave + SectionGate (داخل نطاق التطبيق المصادق) ===== */
 /* ============================================================
    E3DAD Backup Center v2.0 — نسخة احتياطية / استيراد / تصدير
    JSON + Excel (XLSX) + Word (DOCX) + PDF (Print)
@@ -2922,6 +2922,8 @@ document.addEventListener('change',function(e){
           description:'...', count:function(){}, collect:function(){},
           tables:function(){ return [{name:'الحضور',headers:[],rows:[]}]; },
           apply:function(data,mode){} // اختياري للاستيراد
+          ownerOnly:true,             // اختياري: لإدارة النظام فقط
+          allowed:function(){return can('manageUsers');} // اختياري: شرط مخصص
         });
       وستظهر فورًا في التصدير والاستيراد وكل الصيغ بدون تعديل هذا الملف.
    الأمان:
@@ -2933,7 +2935,7 @@ document.addEventListener('change',function(e){
    ============================================================ */
 (function(){
 'use strict';
-var BC_VERSION='2.3.1', APP_ID='e3_khodam', SCHEMA=2;
+var BC_VERSION='2.4.1', APP_ID='e3_khodam', SCHEMA=2;
 var BRAND={name:'إعداد خدام للتلمذة', org:'كنيسة رئيس الملائكة ميخائيل بالأندلس — معلم الأجيال', navy:'#0d2b4a', navy2:'#1e5b96', gold:'#c9a227', gold2:'#e6c766'};
 var MAX_IMPORT_BYTES=25*1024*1024;
 
@@ -2944,7 +2946,172 @@ function N(v){return typeof nf==='function'?nf(v):S(v);}
 function today(){return new Date().toISOString().slice(0,10);}
 function stamp(){return new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);}
 function logoURI(){try{var l=document.querySelector('link[rel="icon"][href^="data:image"]');return l?l.getAttribute('href'):'';}catch(e){return '';}}
-function download(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}
+/* ============================================================
+   E3DAD MobileSave v1.0 — طبقة تنزيل تعمل على الموبايل
+   ------------------------------------------------------------
+   المشكلة التي كانت موجودة:
+   a.click() مع blob داخل Promise بعد ثوانٍ من تجهيز الملف = المستخدم
+   فقد «تفاعل المستخدم» (transient activation)، فـ iOS Safari وبعض
+   متصفحات أندرويد ومتصفحات التطبيقات (واتساب/فيسبوك/إنستجرام)
+   تتجاهل التنزيل تمامًا. كذلك كانت الدالة تحذف رابط الـ Blob بعد
+   800ms فقط، ومدير التنزيل على الموبايل قد يحتاج وقتًا أطول.
+   الحل:
+   1) على الموبايل: نجمع الملفات ثم نعرض «لوحة حفظ» يضغط المستخدم
+      فيها بنفسه (تفاعل حقيقي) => التنزيل يعمل دائمًا.
+   2) زر «مشاركة» عبر Web Share API (يحفظ في الملفات/Drive/يشارك).
+   3) على الكمبيوتر: تنزيل تلقائي مباشر كما كان، لكن مع تأخير حذف
+      رابط الـ Blob حتى 3 دقائق.
+   4) كشف متصفحات التطبيقات وتنبيه المستخدم لفتح الرابط في
+      Chrome / Safari.
+   ============================================================ */
+var UA=(function(){try{return navigator.userAgent||'';}catch(e){return '';}})();
+var IS_IOS=/iP(hone|od|ad)/.test(UA)||(/Macintosh/.test(UA)&&(navigator.maxTouchPoints||0)>1);
+var IS_ANDROID=/Android/i.test(UA);
+var IS_MOBILE=IS_IOS||IS_ANDROID||/Mobile|IEMobile|Windows Phone|Opera Mini|BlackBerry/i.test(UA)||
+  !!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+function inAppName(){
+  if(/FBAN|FBAV|FB_IAB|Instagram|Messenger/i.test(UA))return 'فيسبوك / إنستجرام';
+  if(/WhatsApp/i.test(UA))return 'واتساب';
+  if(/Line\//i.test(UA))return 'لاين';
+  if(/MicroMessenger/i.test(UA))return 'وي تشات';
+  if(/Snapchat/i.test(UA))return 'سناب شات';
+  if(/Twitter/i.test(UA))return 'X (تويتر)';
+  if(/GSA\//i.test(UA))return 'تطبيق Google';
+  if(IS_IOS&&!/Safari\//.test(UA)&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(UA))return 'متصفح تطبيق على iOS';
+  if(IS_ANDROID&&/;\s*wv\)/i.test(UA))return 'متصفح مدمج داخل تطبيق';
+  return '';
+}
+function bytesFmt(n){n=Number(n)||0;if(n<1024)return n+' بايت';if(n<1048576)return Math.round(n/1024)+' كيلو';return (n/1048576).toFixed(1)+' ميجا';}
+
+/* طابور الملفات الجاهزة للحفظ */
+var SAVE_Q=[];
+function resetSaveQueue(){
+  SAVE_Q=[];
+  ['bcSavePanel','bcSavePill'].forEach(function(id){var el=document.getElementById(id);if(el)el.remove();});
+}
+function savePill(){
+  var n=SAVE_Q.length;if(!n)return;
+  var p=document.getElementById('bcSavePill');
+  if(!p){
+    p=document.createElement('button');p.id='bcSavePill';p.type='button';
+    p.style.cssText='position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-start:14px;z-index:4001;'+
+      'display:flex;align-items:center;gap:8px;padding:11px 16px;border:0;border-radius:999px;cursor:pointer;'+
+      'background:#c9a227;color:#0d2b4a;font:800 13px/1 inherit;box-shadow:0 10px 26px rgba(0,0,0,.32)';
+    p.addEventListener('click',function(){p.style.display='none';showSavePanel();});
+    document.body.appendChild(p);
+  }
+  p.textContent='📥 حفظ الملفات ('+n+')';
+  p.style.display='';
+}
+/* حفظ فعلي عبر <a download> — يجب أن يُنادى داخل ضغطة المستخدم */
+function nativeSave(blob,name){
+  var url;
+  try{url=URL.createObjectURL(blob);}catch(e){toastMsg('⚠️ تعذر تجهيز الملف للحفظ');return false;}
+  var a=document.createElement('a');
+  a.href=url;a.download=name||('ملف-إعداد-خدام-'+stamp());a.rel='noopener';
+  a.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(a);
+  var ok=true;
+  try{a.click();}catch(e){ok=false;}
+  /* لا نحذف الرابط سريعًا: مدير التنزيل على الموبايل قد يتأخر في القراءة */
+  setTimeout(function(){try{a.remove();}catch(e){}},10000);
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},180000);
+  return ok;
+}
+/* مشاركة الملف عبر ورقة المشاركة الأصلية (أفضل طريقة على iOS) */
+function shareEntry(i){
+  var it=SAVE_Q[i];if(!it)return;
+  var file=null;
+  try{file=new File([it.blob],it.name,{type:it.blob.type||'application/octet-stream'});}catch(e){file=null;}
+  if(file&&navigator.canShare&&navigator.share){
+    var okShare=false;try{okShare=navigator.canShare({files:[file]});}catch(e){okShare=false;}
+    if(okShare){
+      navigator.share({files:[file],title:it.name}).catch(function(){toastMsg('تم إلغاء المشاركة — استخدم زر «حفظ»');});
+      return;
+    }
+  }
+  if(navigator.share){
+    navigator.share({title:it.name,text:it.name}).catch(function(){});
+    return;
+  }
+  toastMsg('المشاركة غير مدعومة في المتصفح ده — اضغط «⬇️ حفظ»');
+}
+/* لوحة الحفظ — تظهر على الموبايل بعد تجهيز الملفات */
+function showSavePanel(){
+  if(!SAVE_Q.length)return;
+  var p=document.getElementById('bcSavePanel');
+  if(!p){
+    p=document.createElement('div');
+    p.id='bcSavePanel';p.setAttribute('dir','rtl');p.setAttribute('role','dialog');
+    p.style.cssText='position:fixed;inset-inline:0;bottom:0;z-index:4000;max-height:76vh;overflow:auto;'+
+      'padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px));'+
+      'background:var(--cx-paper,#fff);color:var(--cx-ink,#152232);'+
+      'border-top:3px solid #c9a227;border-radius:18px 18px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.35);'+
+      'font-family:inherit;-webkit-overflow-scrolling:touch';
+    document.body.appendChild(p);
+    p.addEventListener('click',function(e){
+      var t=e.target.closest?e.target.closest('[data-mob-act]'):null;if(!t)return;
+      var act=t.getAttribute('data-mob-act'),idx=Number(t.getAttribute('data-mob-idx'));
+      if(act==='save'){
+        nativeSave(SAVE_Q[idx].blob,SAVE_Q[idx].name);
+        t.textContent='✅ تم';
+        setTimeout(function(){t.textContent='⬇️ حفظ';},4000);
+      }else if(act==='share'){shareEntry(idx);}
+      else if(act==='all'){
+        var i=0;
+        (function next(){
+          if(i>=SAVE_Q.length)return;
+          nativeSave(SAVE_Q[i].blob,SAVE_Q[i].name);i++;
+          setTimeout(next,1500);
+        })();
+        toastMsg('⏳ جارٍ إرسال الملفات للتنزيل واحدًا بعد الآخر');
+      }else if(act==='close'){ p.remove(); savePill(); }
+    });
+  }
+  var app=inAppName();
+  var tip=app
+    ? '⚠️ انت فاتح النظام من داخل '+E(app)+' — المتصفح ده بيمنع التنزيل التلقائي. اضغط «⬇️ حفظ» تحت لكل ملف، ولو مازال مش نازل افتح الرابط من قائمة المتصفح ⋮ ← «فتح في Chrome/Safari».'
+    : (IS_IOS
+        ? '📱 على iPhone: التنزيل التلقائي متوقف — اضغط «⬇️ حفظ» لكل ملف (هيتحفظ في تطبيق «الملفات» ← التنزيلات)، أو اضغط «📤 مشاركة» للحفظ في تطبيق الملفات/iCloud.'
+        : '📱 اضغط «⬇️ حفظ» لكل ملف ليبدأ التنزيل على تليفونك (هتلاقيه في مجلد Download)، أو «📤 مشاركة» لإرساله على واتساب/Drive.');
+  var rows=SAVE_Q.map(function(it,i){
+    var chip='display:inline-flex;align-items:center;gap:6px;border:0;border-radius:10px;padding:10px 13px;'+
+      'font:800 12.5px/1 inherit;cursor:pointer;white-space:nowrap';
+    return '<div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--card-border,#e2e7ec);'+
+      'border-radius:14px;padding:10px;margin-bottom:8px;background:rgba(30,91,150,.05)">'+
+      '<div style="flex:1;min-width:0">'+
+        '<b style="display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+E(it.name)+'</b>'+
+        '<small style="color:#5d6d7d;font-size:11px">'+bytesFmt(it.blob.size)+'</small>'+
+      '</div>'+
+      '<button type="button" data-mob-act="save" data-mob-idx="'+i+'" style="'+chip+';background:#c9a227;color:#0d2b4a">⬇️ حفظ</button>'+
+      '<button type="button" data-mob-act="share" data-mob-idx="'+i+'" style="'+chip+';background:#1e5b96;color:#fff">📤 مشاركة</button>'+
+    '</div>';
+  }).join('');
+  p.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">'+
+      '<b style="font-size:15px">📥 ملفات جاهزة للحفظ ('+SAVE_Q.length+')</b>'+
+      '<button type="button" data-mob-act="close" style="border:0;background:transparent;font:800 20px/1 inherit;cursor:pointer;color:#5d6d7d">✕</button>'+
+    '</div>'+
+    '<div style="font-size:11.5px;line-height:1.8;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.5);'+
+      'border-radius:12px;padding:9px 11px;margin-bottom:10px">'+E(tip)+'</div>'+
+    rows+
+    (SAVE_Q.length>1?'<button type="button" data-mob-act="all" style="width:100%;margin-top:2px;border:0;border-radius:12px;'+
+      'padding:12px;background:#0d2b4a;color:#fff;font:800 13px/1 inherit;cursor:pointer">⬇️ حفظ كل الملفات بالترتيب</button>':'')+
+    '<p style="margin:10px 0 0;font-size:11px;color:#5d6d7d">لو مفيش حاجة نزلت خالص: افتح النظام في Chrome (أندرويد) أو Safari (آيفون) بدل المتصفح المدمج جوه التطبيقات.</p>';
+}
+
+/* نقطة التنزيل الموحّدة في كل المركز */
+function download(blob,name,opts){
+  opts=opts||{};
+  if(!blob||!blob.size){return;}
+  name=name||('ملف-إعداد-خدام-'+stamp());
+  if(IS_MOBILE){
+    SAVE_Q.push({blob:blob,name:name});
+    if(opts.quiet){savePill();toastMsg('📥 '+name+' جاهز — من زر «حفظ الملفات» أسفل الشاشة');}
+    else{showSavePanel();toastMsg('📥 الملف جاهز — اضغط «⬇️ حفظ»');}
+    return;
+  }
+  nativeSave(blob,name);
+}
 function toastMsg(m){if(typeof toast==='function'){toast(m);return;} var t=document.getElementById('toast'); if(t){t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);} }
 function critName(k){if(typeof CRIT==='undefined')return k;for(var i=0;i<CRIT.length;i++)if(CRIT[i].k===k)return CRIT[i].n;return k;}
 function levelName(l){if(typeof LEVELS!=='undefined'&&LEVELS[l-1])return LEVELS[l-1];return 'السنة '+S(l);}
@@ -3008,6 +3175,23 @@ function registerSection(def){
   BACKUP_REGISTRY.push(def);
 }
 function sectionById(id){for(var i=0;i<BACKUP_REGISTRY.length;i++)if(BACKUP_REGISTRY[i].id===id)return BACKUP_REGISTRY[i];return null;}
+/* ============================================================
+   بوابة صلاحية الأقسام (SectionGate)
+   أي قسم يقدر يعلن:
+     ownerOnly:true            => يظهر لإدارة النظام فقط
+     allowed:function(){...}   => شرط مخصص (يُقيَّم وقت العرض والتصدير)
+   الافتراضي: مسموح. والفشل في التقييم = ممنوع (fail-closed).
+   ============================================================ */
+function sectionAllowed(sec){
+  if(!sec)return false;
+  try{
+    if(sec.ownerOnly&&!(typeof isOwner==='function'&&isOwner()))return false;
+    if(typeof sec.allowed==='function'&&!sec.allowed())return false;
+  }catch(e){return false;}
+  return true;
+}
+function visibleSections(){return BACKUP_REGISTRY.filter(sectionAllowed);}
+function allowedIds(ids){return (ids||[]).filter(function(id){return sectionAllowed(sectionById(id));});}
 
 /* ----- جامعات البيانات ----- */
 function collectStudents(){return JSON.parse(JSON.stringify(db.students||[]));}
@@ -3079,10 +3263,13 @@ function statsData(){
   var byLevel={},pass=0,fail=0,pend=0,none=0;
   (db.students||[]).forEach(function(s){byLevel[levelName(s.level)]=(byLevel[levelName(s.level)]||0)+1;});
   resultsRows().forEach(function(r){if(r[6]==='ناجح')pass++;else if(r[6]==='راسب')fail++;else if(String(r[6]).indexOf('جار')===0)pend++;else none++;});
-  return {students:(db.students||[]).length,subjects:(db.subjects||[]).length,
+  var out={students:(db.students||[]).length,subjects:(db.subjects||[]).length,
     users:(typeof USERS!=='undefined'?USERS.length:0),confessors:collectConfessors().length,
-    attempts:attemptsRows().length,activity:(typeof ACTIVITY!=='undefined'?ACTIVITY.length:0),
+    attempts:attemptsRows().length,
     pass:pass,fail:fail,pending:pend,notEvaluated:none,byLevel:byLevel,exportedAt:new Date().toISOString()};
+  /* عدد سجلات النشاطات لا يظهر إلا لإدارة النظام (نفس قاعدة قسم سجل النشاطات) */
+  if(sectionAllowed(sectionById('activity')))out.activity=(typeof ACTIVITY!=='undefined'?ACTIVITY.length:0);
+  return out;
 }
 function extraKeys(){
   var owned={students:1,subjects:1};
@@ -3124,13 +3311,22 @@ registerSection({id:'users',icon:'👥',label:'إدارة الخدام والح�
   tables:function(){return [{name:'الخدام',headers:['الاسم','اسم المستخدم','الموبايل','الدور','الحالة'],
     rows:collectUsers(false).map(function(u){return [u.name,u.username,u.phone,u.role,u.active?'نشط':'موقوف'];})}];},
   apply:function(){/* لا تُستبدل الحسابات تلقائيًا حمايةً للنظام — انظر ملاحظات الاستيراد */}});
-registerSection({id:'activity',icon:'🧾',label:'سجل النشاطات',description:'سجل التدقيق (من/ماذا/متى) كما هو متاح حاليًا على هذا الجهاز — قسم أرشيفي للتقارير.',
+registerSection({id:'activity',ownerOnly:true,icon:'🧾',label:'سجل النشاطات',description:'سجل التدقيق (من/ماذا/متى) كما هو متاح حاليًا على هذا الجهاز — قسم أرشيفي للتقارير.',
   count:function(){return (typeof ACTIVITY!=='undefined'?ACTIVITY.length:0);},collect:function(){return collectActivity();},
+  /* سجل النشاطات يُقرأ من Firebase لإدارة النظام فقط — فلا يُبنى ولا يُصدَّر لغيره */
+  guard:true,
   tables:function(){return [{name:'سجل النشاطات',headers:['التاريخ','الفاعل','الدور','النشاط','الهدف','التفاصيل','النتيجة'],
     rows:collectActivity().map(function(x){return [x.date,x.actorName,x.actorRole,x.action,x.target,x.details,x.outcome];})}];}});
 registerSection({id:'stats',icon:'📊',label:'الإحصائيات والغلاف',description:'ملخص النظام وأعداد كل قسم وتوزيع الدارسين على السنوات ونتائجهم.',
   count:function(){return 1;},collect:function(){return statsData();},
-  tables:function(){var s=statsData();return [{name:'ملخص النظام',headers:['البند','القيمة'],rows:[['إجمالي الدارسين',s.students],['إجمالي المواد',s.subjects],['حسابات الخدام',s.users],['آباء الاعتراف',s.confessors],['المحاولات السابقة',s.attempts],['سجلات النشاطات المتاحة',s.activity],['نتائج ناجحة',s.pass],['نتائج راسبة',s.fail],['نتائج جارية',s.pending]].concat(Object.keys(s.byLevel).map(function(k){return ['دارسو '+k,s.byLevel[k]];}))}];}});
+  tables:function(){
+    var s=statsData(),rws=[['إجمالي الدارسين',s.students],['إجمالي المواد',s.subjects],['حسابات الخدام',s.users],['آباء الاعتراف',s.confessors],['المحاولات السابقة',s.attempts]];
+    /* صف سجل النشاطات لإدارة النظام فقط */
+    if(sectionAllowed(sectionById('activity')))rws.push(['سجلات النشاطات المتاحة',s.activity]);
+    rws=rws.concat([['نتائج ناجحة',s.pass],['نتائج راسبة',s.fail],['نتائج جارية',s.pending]]);
+    rws=rws.concat(Object.keys(s.byLevel).map(function(k){return ['دارسو '+k,s.byLevel[k]];}));
+    return [{name:'ملخص النظام',headers:['البند','القيمة'],rows:rws}];
+  }});
 
 /* قسم تلقائي لأي بيانات مستقبلية داخل db */
 BACKUP_REGISTRY.push({id:'__extra',icon:'🧩',label:'بيانات إضافية (اكتشاف تلقائي)',description:'أي أقسام جديدة تُضاف مستقبلًا داخل بيانات النظام تُكتشف وتُصدَّر هنا تلقائيًا.',
@@ -3144,19 +3340,20 @@ BACKUP_REGISTRY.push({id:'__extra',icon:'🧩',label:'بيانات إضافية 
 function buildBackup(selected,opts){
   opts=opts||{};
   var data={},counts={};
+  selected=allowedIds(selected); /* فلترة صلاحيات: قسم ممنوع للدور لا يُبنى أصلًا */
   BACKUP_REGISTRY.forEach(function(sec){
-    if(selected.indexOf(sec.id)<0)return;
+    if(selected.indexOf(sec.id)<0||!sectionAllowed(sec))return;
     var key=sec.id==='__extra'?'extra':sec.id;
     try{data[key]=sec.collect(opts);counts[key]=(typeof sec.count==='function')?sec.count():0;}catch(e){data[key]=null;counts[key]=0;}
   });
   return {app:APP_ID,appName:BRAND.name,org:BRAND.org,schema:SCHEMA,backupCenter:BC_VERSION,
     exportedAt:new Date().toISOString(),exportedAtLocal:new Date().toLocaleString('ar-EG'),
     exportedBy:(typeof ME!=='undefined'&&ME)?{name:ME.name||ME.u||'',role:ME.role||''}:null,
-    meta:(typeof localMeta!=='undefined')?localMeta:null,sections:selected,counts:counts,data:data};
+    meta:(typeof localMeta!=='undefined')?localMeta:null,sections:allowedIds(selected),counts:counts,data:data};
 }
 function allTables(selected){
   var out=[];BACKUP_REGISTRY.forEach(function(sec){
-    if(selected.indexOf(sec.id)<0||!sec.tables)return;
+    if(selected.indexOf(sec.id)<0||!sec.tables||!sectionAllowed(sec))return;
     sec.tables().forEach(function(t){out.push(t);});
   });return out;
 }
@@ -3186,6 +3383,7 @@ function excelExtraTables(selected){
   return out;
 }
 function buildExcelBlob(backup,selected){
+  selected=allowedIds(selected);
   return loadExcelJS().then(function(){ return buildExcelJS(backup,selected); })
     .catch(function(){ return buildExcelBlobLegacy(backup,selected); });
 }
@@ -3266,6 +3464,7 @@ function buildExcelJS(backup,selected){
   return wb.xlsx.writeBuffer().then(function(buf){return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});});
 }
 function buildExcelBlobLegacy(backup,selected){
+  selected=allowedIds(selected);
   return loadXLSX().then(function(){
     var wb=XLSX.utils.book_new(); wb.Workbook={Views:[{RTL:true}]};
     var cover=[
@@ -3302,6 +3501,7 @@ function exportExcel(backup,selected){return buildExcelBlob(backup,selected).the
 
 /* ---------- تقارير Word / PDF: ترويسة فاتحة بالهوية تُطبع بوضوح دائمًا ---------- */
 function reportInner(backup,selected){
+  selected=allowedIds(selected); /* بوابة الصلاحيات: وثائق PDF */
   var logo=logoURI();
   var tables=splitTables(allTables(selected),7);
   var secs=tables.map(function(tb){
@@ -3355,7 +3555,8 @@ function buildPDFBlob(backup,selected){
             /* صفحة التقرير وحدها + حشوة مريحة */
             var st=doc.createElement('style');st.textContent='body{padding:28px;background:#fff}';doc.head.appendChild(st);
             var target=doc.body;
-            window.html2canvas(target,{scale:1.6,useCORS:true,backgroundColor:'#ffffff',logging:false,width:target.scrollWidth,height:target.scrollHeight,windowWidth:1120}).then(function(canvas){
+            var pdfScale=IS_MOBILE?1.05:1.6, pdfW=IS_MOBILE?900:1120;
+            window.html2canvas(target,{scale:pdfScale,useCORS:true,backgroundColor:'#ffffff',logging:false,width:target.scrollWidth,height:target.scrollHeight,windowWidth:pdfW}).then(function(canvas){
               cleanup();
               try{
                 var jsPDF=window.jspdf.jsPDF;
@@ -3368,7 +3569,8 @@ function buildPDFBlob(backup,selected){
                   var c=document.createElement('canvas');c.width=canvas.width;c.height=h;
                   var cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.drawImage(canvas,0,rendered,canvas.width,h,0,0,c.width,h);
                   if(page>0)pdf.addPage();
-                  pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
+                  pdf.addImage(c.toDataURL('image/jpeg',IS_MOBILE?0.82:0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
+                  c.width=c.height=0; /* تحرير ذاكرة الكانفس على الموبايل */
                   rendered+=h;page++;
                 }
                 resolve(pdf.output('blob'));
@@ -3383,7 +3585,15 @@ function buildPDFBlob(backup,selected){
     });
   });
 }
-function exportPDF(backup,selected){return buildPDFBlob(backup,selected).then(function(b){download(b,'تقرير-إعداد-خدام-'+today()+'.pdf');});}
+function exportPDF(backup,selected){
+  return buildPDFBlob(backup,selected).then(function(b){download(b,'تقرير-إعداد-خدام-'+today()+'.pdf');})
+    .catch(function(err){
+      /* بديل لا يفقد التقرير: نسخة طباعة HTML تُفتح ويُحفظ منها PDF من الموبايل */
+      var html='\ufeff'+reportHTML(backup,selected,true);
+      download(new Blob([html],{type:'text/html;charset=utf-8'}),'تقرير-إعداد-خدام-'+today()+'-للطباعة.html');
+      toastMsg('📄 تعذر توليد PDF على الجهاز — نزّلنا نسخة طباعة: افتحها ثم «مشاركة/طباعة ← حفظ كـ PDF»');
+    });
+}
 function printPDF(backup,selected){
   var w=window.open('','_blank'); if(!w){toastMsg('اسمح بالنوافذ المنبثقة للطباعة');return;}
   w.document.open();w.document.write(reportHTML(backup,selected,true));w.document.close();
@@ -3392,6 +3602,7 @@ function printPDF(backup,selected){
 
 /* ---------- Word ---------- */
 function buildWordBlob(backup,selected){
+  selected=allowedIds(selected); /* بوابة الصلاحيات: وثيقة Word */
   return loadDOCX().then(function(){
     var D=window.docx, tables=splitTables(allTables(selected),7);
     var borders={top:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'},bottom:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'},left:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'},right:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'},insideHorizontal:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'},insideVertical:{style:D.BorderStyle.SINGLE,size:4,color:'D9DEE3'}};
@@ -3456,6 +3667,7 @@ function exportJSON(backup){return buildJSONBlob(backup).then(function(r){downlo
 
 /* ---------- ZIP: كل الصيغ المحددة في تنزيل واحد ---------- */
 function buildZip(backup,selected,fmts){
+  selected=allowedIds(selected); /* بوابة الصلاحيات: محتويات الحزمة */
   return loadJSZip().then(function(){
     var zip=new JSZip(), folder=zip.folder('نسخة-إعداد-خدام-'+today()), failures=[];
     var readme='✝ '+BRAND.name+'\n'+BRAND.org+'\n\nحزمة نسخة احتياطية شاملة — '+backup.exportedAtLocal+'\n'+
@@ -3482,7 +3694,9 @@ function buildZip(backup,selected,fmts){
     });
     return chain.then(function(){
       if(failures.length)folder.file('تنبيهات-التوليد.txt','حدثت الملاحظات التالية أثناء توليد الحزمة:\n\n'+failures.join('\n'));
-      return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}).then(function(blob){return {blob:blob,failures:failures};});
+      /* على الموبايل: ضغط أخف + streamFiles لتقليل استهلاك الذاكرة ومنع إغلاق الصفحة */
+      var zipOpts={type:'blob',compression:'DEFLATE',compressionOptions:{level:IS_MOBILE?3:6},streamFiles:!!IS_MOBILE};
+      return zip.generateAsync(zipOpts).then(function(blob){return {blob:blob,failures:failures};});
     });
   });
 }
@@ -3498,10 +3712,10 @@ function applyById(key,data,mode){
 }
 function safetySnapshot(reason){
   try{if(typeof autoBackup==='function')autoBackup();}catch(e){}
-  var b=buildBackup(BACKUP_REGISTRY.map(function(s){return s.id;}),{includePasswords:false});
+  var b=buildBackup(defaultSelected(),{includePasswords:false});
   return sha256(JSON.stringify(b.data||{})).then(function(h){
     b.checksum={algorithm:'SHA-256',of:'data',value:h};b.safetyReason=reason||'قبل الاستيراد';
-    download(new Blob([JSON.stringify(b,null,2)],{type:'application/json'}),'نسخة-أمان-قبل-الاستيراد-'+stamp()+'.json');
+    download(new Blob([JSON.stringify(b,null,2)],{type:'application/json'}),'نسخة-أمان-قبل-الاستيراد-'+stamp()+'.json',{quiet:true});
   });
 }
 function validateImported(payload){
@@ -3511,7 +3725,7 @@ function validateImported(payload){
          ((payload&&(payload.students||payload.subjects))?payload:null));
   if(!nd){errors.push('الملف لا يحتوي أقسام بيانات معروفة (دارسون/مواد).');return {data:null,warnings:warnings,errors:errors};}
   var out={};
-  BACKUP_REGISTRY.forEach(function(sec){
+  visibleSections().forEach(function(sec){
     var key=sec.id==='__extra'?'extra':sec.id;
     if(nd[key]!=null)out[key]=nd[key];
   });
@@ -3550,6 +3764,7 @@ function applyImported(data,mode,selected){
     selected.forEach(function(id){
       if(id==='students'||id==='subjects'||id==='users')return;
       var sec=sectionById(id),key=id==='__extra'?'extra':id;
+      if(!sectionAllowed(sec))return; /* قسم ممنوع للدور الحالي (سجل النشاطات) */
       if(sec&&sec.apply&&data[key]!=null)sec.apply(data[key],mode);
     });
     if(data.extra)Object.keys(data.extra).forEach(function(k){if(k!=='students'&&k!=='subjects')db[k]=data.extra[k];});
@@ -3590,7 +3805,7 @@ function levelFromName(v){var t=S(v);if(typeof LEVELS!=='undefined'){for(var i=0
    واجهة المركز
    ============================================================ */
 var BC={tab:'export',selected:null,formats:{json:true,xlsx:true,docx:true,pdf:true},includePasswords:false,pending:null};
-function defaultSelected(){return BACKUP_REGISTRY.map(function(s){return s.id;});}
+function defaultSelected(){return visibleSections().map(function(s){return s.id;});}
 var BC_ALLOWED_ROLES=['إدارة النظام','أمين خدمة إعداد خدام'];
 function bcAllowed(){
   try{return !!(typeof ME!=='undefined'&&ME&&BC_ALLOWED_ROLES.indexOf(ME.role)>=0);}catch(e){return false;}
@@ -3604,7 +3819,10 @@ function openBackupCenter(tab){
 }
 function secChecked(id){return BC.selected.indexOf(id)>=0;}
 function renderBC(){
-  var secs=BACKUP_REGISTRY.map(function(sec){
+  /* تنقية أي اختيار قديم غير مسموح للدور الحالي (مثال: سجل النشاطات) */
+  BC.selected=allowedIds(BC.selected&&BC.selected.length?BC.selected:defaultSelected());
+  if(!BC.selected.length)BC.selected=defaultSelected(); /* لو الدور فقد كل أقسامه المختارة */
+  var secs=visibleSections().map(function(sec){
     var c=0;try{c=sec.count?sec.count():0;}catch(e){}
     return '<label class="bc-sec"><input type="checkbox" data-bc-sec="'+E(sec.id)+'" '+(secChecked(sec.id)?'checked':'')+'>'+
       '<span><b>'+sec.icon+' '+E(sec.label)+'</b><small>'+E(sec.description||'')+'</small></span><span class="bc-count">'+N(c)+'</span></label>';
@@ -3633,9 +3851,14 @@ function renderBC(){
   var helpBody=
     '<div class="bc-panel"><h4>إزاي تستخدم المركز؟</h4><p style="line-height:1.9">• <b>JSON</b> هو ملف الاسترجاع الحقيقي الوحيد الكامل.<br>• <b>Excel</b> للمراجعة والفرز والتعديل الجماعي، ويمكن إعادة استيراد ورقتي «الدارسون» و«الدرجات التفصيلية».<br>• <b>Word وPDF</b> تقارير رسمية للإدارة والطباعة والأرشفة، ولا تُستورد.<br>• حسابات الخدام تُدار على Firebase منفصلة؛ لذلك لا تُستبدل تلقائيًا عند الاستيراد حمايةً من قفل النظام، وتظهر بياناتها في التقارير بدون كلمات مرور.</p></div>'+
     '<div class="bc-panel"><h4>التوسّع التلقائي مستقبلًا</h4><p style="line-height:1.9">أي قسم جديد داخل بيانات النظام يُكتشف تلقائيًا، وأي ميزة تسجّل نفسها عبر <code dir="ltr">window.E3DADBackup.registerSection(...)</code> ستظهر في التصدير والاستيراد وكل الصيغ بدون تعديل المركز.</p></div>';
+  var mobApp=inAppName();
+  var mobBanner=IS_MOBILE?'<div class="bc-note" style="border-color:#c9a227;background:rgba(201,162,39,.12);line-height:1.9">'+
+      (mobApp?'⚠️ <b>انت فاتح النظام من داخل '+E(mobApp)+'</b> — المتصفحات المدمجة جوه التطبيقات بتمنع التنزيل التلقائي. بعد تجهيز الملفات هتظهر <b>لوحة الحفظ</b>: اضغط «⬇️ حفظ» لكل ملف، أو «📤 مشاركة». ولو مازال مش نازل: قائمة ⋮ ← «فتح في Chrome / Safari».':
+        '📱 <b>انت على موبايل:</b> الملفات مش بتنزل تلقائيًا (خصوصًا على iPhone). بعد التجهيز هتظهر <b>لوحة حفظ</b> اضغط منها «⬇️ حفظ» أو «📤 مشاركة».')+
+      '</div>':'';
   var body='<div class="bc-wrap"><div class="bc-hero"><h3>✝ مركز النسخة الاحتياطية والاستيراد والتصدير</h3>'+
     '<p>'+E(BRAND.org)+'<br>كل بيانات النظام في مكان واحد — اختر الأقسام والصيغ بحرّيتك، والباقي علينا.</p></div>'+
-    '<div class="bc-tabs"><button data-bc-tab="export" class="'+(BC.tab==='export'?'active':'')+'">⬇️ تصدير / تنزيل</button>'+
+    mobBanner+'<div class="bc-tabs"><button data-bc-tab="export" class="'+(BC.tab==='export'?'active':'')+'">⬇️ تصدير / تنزيل</button>'+
     '<button data-bc-tab="import" class="'+(BC.tab==='import'?'active':'')+'">⬆️ استيراد / استرجاع</button>'+
     '<button data-bc-tab="help" class="'+(BC.tab==='help'?'active':'')+'">❓ شرح وأمان</button></div>'+
     (BC.tab==='export'?exportBody:BC.tab==='import'?importBody:helpBody)+'</div>';
@@ -3668,39 +3891,50 @@ function bindBC(){
 }
 function doExport(mode){
   mode=mode||'zip';
+  resetSaveQueue();
   if(!BC.selected.length){toastMsg('اختر قسمًا واحدًا على الأقل');return;}
   var fmts=Object.keys(BC.formats).filter(function(k){return BC.formats[k];});
   if(!fmts.length){toastMsg('اختر صيغة واحدة على الأقل');return;}
   var btn=document.getElementById('bcDoExport');
   var run=function(){
     var backup=buildBackup(BC.selected,{includePasswords:BC.includePasswords});
-    if(btn){btn.disabled=true;btn.textContent='⏳ جارٍ تجهيز الحزمة…';}
+    if(btn){btn.disabled=true;btn.textContent=IS_MOBILE?'⏳ جارٍ تجهيز الملفات… (ممكن تاخد دقيقة)':'⏳ جارٍ تجهيز الحزمة…';}
     setProgress(20);
-    var done=function(msg){ setProgress(100); if(btn){btn.disabled=false;btn.textContent='⬇️ تنزيل ZIP الآن';}
+    var done=function(msg){ setProgress(100); if(btn){btn.disabled=false;btn.textContent='🗜️ تنزيل ZIP الآن';}
       if(typeof logActivity==='function')logActivity('export','مركز النسخ الاحتياطي','تصدير أقسام: '+sectionLabels(BC.selected)+' بصيغ: '+fmts.join('، ')+(fmts.length>1?' داخل ZIP واحد':'')+(BC.includePasswords?' (تضمن كلمات مرور داخل JSON)':''));
       toastMsg(msg); };
-    var fail=function(err){ if(btn){btn.disabled=false;btn.textContent='⬇️ تنزيل ZIP الآن';} setProgress(0); toastMsg('⚠️ '+(err&&err.message?err.message:'حدث خطأ أثناء التصدير — جرّب صيغة واحدة')); };
+    var fail=function(err){ if(btn){btn.disabled=false;btn.textContent='🗜️ تنزيل ZIP الآن';} setProgress(0); toastMsg('⚠️ '+(err&&err.message?err.message:'حدث خطأ أثناء التصدير — جرّب صيغة واحدة')); };
     if(mode==='files'){
-      /* تنزيل عادي: كل ملف لوحده بالتسلسل */
+      /* تنزيل عادي: كل ملف لوحده بالتسلسل (على الموبايل: في لوحة الحفظ) */
       var chain=Promise.resolve(), idx=0;
       fmts.forEach(function(f){ chain=chain.then(function(){ idx++; setProgress(15+Math.round(idx/fmts.length*75));
         return (f==='json'?exportJSON(backup):f==='xlsx'?exportExcel(backup,BC.selected):f==='docx'?exportWord(backup,BC.selected):exportPDF(backup,BC.selected))
           .catch(function(e){ toastMsg('⚠️ تعثرت صيغة '+f+' — أكملنا الباقي'); });
       });});
-      chain.then(function(){done('⬇️ تم تنزيل كل ملف لوحده');}).catch(fail); return;
+      chain.then(function(){done(IS_MOBILE?'📥 الملفات جاهزة — اضغط حفظ في اللوحة':'⬇️ تم تنزيل كل ملف لوحده');}).catch(fail); return;
     }
     if(fmts.length===1){
       var f=fmts[0], pr=f==='json'?exportJSON(backup):f==='xlsx'?exportExcel(backup,BC.selected):f==='docx'?exportWord(backup,BC.selected):exportPDF(backup,BC.selected);
-      pr.then(function(){done('⬇️ تم تنزيل الملف بنجاح');}).catch(fail); return;
+      pr.then(function(){done(IS_MOBILE?'📥 الملف جاهز — اضغط «⬇️ حفظ» في اللوحة':'⬇️ تم تنزيل الملف بنجاح');}).catch(fail); return;
     }
     buildZip(backup,BC.selected,fmts).then(function(res){
       download(res.blob,'نسخة-شاملة-إعداد-خدام-'+today()+'.zip');
-      done(res.failures&&res.failures.length?'🗜️ تم تنزيل ZIP — راجع ملف «تنبيهات-التوليد» داخله لملاحظة صغيرة':'🗜️ تم تنزيل كل الصيغ مرة واحدة داخل ملف ZIP');
+      if(IS_MOBILE&&!(res.failures&&res.failures.length))return done('📥 حزمة ZIP جاهزة — اضغط «⬇️ حفظ» في اللوحة');
+      done(res.failures&&res.failures.length?'🗜️ تم تجهيز ZIP — راجع ملف «تنبيهات-التوليد» داخله لملاحظة صغيرة':'🗜️ تم تجهيز الحزمة بنجاح');
     }).catch(fail);
   };
-  if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
-    ask('تضمين كلمات المرور؟','اخترت تضمين كلمات مرور حسابات الخدام داخل ملف JSON. احفظ الملف في مكان آمن جدًا ولا تشاركه.','متابعة التصدير').then(function(ok){if(ok)run();});
-  }else run();
+  var start=function(){
+    if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
+      ask('تضمين كلمات المرور؟','اخترت تضمين كلمات مرور حسابات الخدام داخل ملف JSON. احفظ الملف في مكان آمن جدًا ولا تشاركه.','متابعة التصدير').then(function(ok){if(ok)run();});
+    }else run();
+  };
+  /* على الموبايل: تحذير قبل تجهيز حزمة ثقيلة (قد تُغلق الصفحة لضيق الذاكرة) */
+  if(IS_MOBILE&&mode==='zip'&&fmts.length>2&&typeof ask==='function'){
+    ask('حزمة كبيرة على الموبايل','اخترت '+fmts.length+' صيغ داخل ملف ZIP واحد. تجهيز كل الصيغ مع بعض على الموبايل ممكن يكون بطيء أو يقفل الصفحة لو البيانات كبيرة. الأفضل: صيغة أو اتنين في كل مرة، أو «تنزيل عادي» (كل ملف لوحده بنفس اختياراتك).','كمّل بـ ZIP','تنزيل عادي')
+      .then(function(ok){ if(ok)start(); else doExport('files'); });
+    return;
+  }
+  start();
 }
 
 /* ---------- معاينة الاستيراد ---------- */
@@ -3733,7 +3967,7 @@ function handleImportFile(file){
 function renderImportPreview(file,pending){
   var box=document.getElementById('bcImportPreview');if(!box)return;
   var data=pending.data||{},rows=[];
-  BACKUP_REGISTRY.forEach(function(sec){
+  visibleSections().forEach(function(sec){
     var key=sec.id==='__extra'?'extra':sec.id, val=data[key];
     if(val==null)return;
     var c=Array.isArray(val)?val.length:(typeof val==='object'?Object.keys(val).length:1);
@@ -3842,8 +4076,10 @@ setTimeout(wireHeaderButtons,600);setTimeout(wireHeaderButtons,1800);
 
 /* واجهة برمجية عامة للتوسّع والتوافق مع الكود القديم */
 window.E3DADBackup={version:BC_VERSION,registerSection:registerSection,open:openBackupCenter,build:buildBackup,
+  save:download,isMobile:IS_MOBILE,inAppBrowser:inAppName,
   exportJSON:function(){return exportJSON(buildBackup(defaultSelected(),{includePasswords:false}));},
-  registry:function(){return BACKUP_REGISTRY.slice();}};
+  registry:function(){return visibleSections();},
+  sectionAllowed:sectionAllowed};
 window.exportBackup=function(){openBackupCenter('export');};
 })();
 
