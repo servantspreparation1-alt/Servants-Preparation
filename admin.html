@@ -2907,7 +2907,7 @@ document.addEventListener('change',function(e){
   if(gs&&gb)logActivity('edit_grades','الدارس: '+(gs.name||'—')+' · المادة: '+(gb.name||'—'),'تعديل درجة معيار '+(t.getAttribute('data-k')||'')+' إلى '+nf(n)+' من '+nf(m));
 });
 
-/* ===== E3DAD Backup Center v2.1.0 ZIP (داخل نطاق التطبيق المصادق) ===== */
+/* ===== E3DAD Backup Center v2.2.0 ZIP Isolated-PDF (داخل نطاق التطبيق المصادق) ===== */
 /* ============================================================
    E3DAD Backup Center v2.0 — نسخة احتياطية / استيراد / تصدير
    JSON + Excel (XLSX) + Word (DOCX) + PDF (Print)
@@ -2933,7 +2933,7 @@ document.addEventListener('change',function(e){
    ============================================================ */
 (function(){
 'use strict';
-var BC_VERSION='2.1.0', APP_ID='e3_khodam', SCHEMA=2;
+var BC_VERSION='2.2.0', APP_ID='e3_khodam', SCHEMA=2;
 var BRAND={name:'إعداد خدام للتلمذة', org:'كنيسة رئيس الملائكة ميخائيل بالأندلس — معلم الأجيال', navy:'#0d2b4a', navy2:'#1e5b96', gold:'#c9a227', gold2:'#e6c766'};
 var MAX_IMPORT_BYTES=25*1024*1024;
 
@@ -3232,32 +3232,51 @@ function reportHTML(backup,selected,forPrint){
     (forPrint?'@media print{header,.meta th,section th{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{page-break-inside:auto}tr{page-break-inside:avoid}}':'')+
     '</style></head><body>'+reportInner(backup,selected)+'</body></html>';
 }
-/* PDF حقيقي كملف: تصيير التقرير المهيكل بالمتصفح (عربي سليم) ثم تجميعه صفحات A4 أفقية */
+/* PDF حقيقي كملف: يُصيَّر التقرير داخل iframe معزول تمامًا عن CSS التطبيق
+   (حتى لا تتعثر مكتبة التصيير في دوال ألوان حديثة مثل color-mix الخاصة بتصميم النظام) */
 function buildPDFBlob(backup,selected){
   return loadPDFLibs().then(function(){
-    var host=document.createElement('div');
-    host.setAttribute('dir','rtl');
-    host.style.cssText='position:absolute;left:-12000px;top:0;width:1080px;background:#fff;padding:28px;z-index:-1';
-    host.innerHTML='<style>'+REPORT_CSS+'</style>'+reportInner(backup,selected);
-    document.body.appendChild(host);
-    function cleanup(){try{host.remove();}catch(e){}}
-    return window.html2canvas(host,{scale:1.6,useCORS:true,backgroundColor:'#ffffff',logging:false}).then(function(canvas){
-      cleanup();
-      var jsPDF=window.jspdf.jsPDF;
-      var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
-      var pageW=297,pageH=210,margin=10,imgW=pageW-margin*2,usableH=pageH-margin*2;
-      var sliceH=Math.floor(canvas.width*usableH/imgW); /* ارتفاع الشريحة بالبكسل المقابل لصفحة */
-      var rendered=0,page=0;
-      while(rendered<canvas.height){
-        var h=Math.min(sliceH,canvas.height-rendered);
-        var c=document.createElement('canvas');c.width=canvas.width;c.height=h;
-        var ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(canvas,0,rendered,canvas.width,h,0,0,c.width,h);
-        if(page>0)pdf.addPage();
-        pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
-        rendered+=h;page++;
-      }
-      return pdf.output('blob');
-    },function(err){cleanup();throw err;});
+    return new Promise(function(resolve,reject){
+      var iframe=document.createElement('iframe');
+      iframe.setAttribute('title','pdf-render');
+      iframe.style.cssText='position:absolute;left:-12000px;top:0;width:1120px;height:900px;border:0;background:#fff';
+      document.body.appendChild(iframe);
+      var cleaned=false;
+      function cleanup(){if(cleaned)return;cleaned=true;try{iframe.remove();}catch(e){}}
+      iframe.onload=function(){
+        setTimeout(function(){
+          try{
+            var doc=iframe.contentDocument;
+            if(!doc||!doc.body)throw new Error('تعذر تجهيز صفحة التقرير');
+            /* صفحة التقرير وحدها + حشوة مريحة */
+            var st=doc.createElement('style');st.textContent='body{padding:28px;background:#fff}';doc.head.appendChild(st);
+            var target=doc.body;
+            window.html2canvas(target,{scale:1.6,useCORS:true,backgroundColor:'#ffffff',logging:false,width:target.scrollWidth,height:target.scrollHeight,windowWidth:1120}).then(function(canvas){
+              cleanup();
+              try{
+                var jsPDF=window.jspdf.jsPDF;
+                var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+                var pageW=297,pageH=210,margin=10,imgW=pageW-margin*2,usableH=pageH-margin*2;
+                var sliceH=Math.floor(canvas.width*usableH/imgW);
+                var rendered=0,page=0;
+                while(rendered<canvas.height){
+                  var h=Math.min(sliceH,canvas.height-rendered);
+                  var c=document.createElement('canvas');c.width=canvas.width;c.height=h;
+                  var cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.drawImage(canvas,0,rendered,canvas.width,h,0,0,c.width,h);
+                  if(page>0)pdf.addPage();
+                  pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
+                  rendered+=h;page++;
+                }
+                resolve(pdf.output('blob'));
+              }catch(e2){reject(e2);}
+            },function(err){cleanup();reject(err);});
+          }catch(err){cleanup();reject(err);}
+        },450); /* مهلة للشعار والخطوط */
+      };
+      iframe.onerror=function(){cleanup();reject(new Error('تعذر تحميل صفحة تقرير PDF'));};
+      iframe.srcdoc=reportHTML(backup,selected,true);
+      setTimeout(function(){if(!cleaned&&!iframe.contentDocument){/* srcdoc قد لا يطلق onload في متصفحات نادرة */ try{iframe.onload&&iframe.onload();}catch(e){}}},1800);
+    });
   });
 }
 function exportPDF(backup,selected){return buildPDFBlob(backup,selected).then(function(b){download(b,'تقرير-إعداد-خدام-'+today()+'.pdf');});}
@@ -3312,7 +3331,7 @@ function exportJSON(backup){return buildJSONBlob(backup).then(function(r){downlo
 /* ---------- ZIP: كل الصيغ المحددة في تنزيل واحد ---------- */
 function buildZip(backup,selected,fmts){
   return loadJSZip().then(function(){
-    var zip=new JSZip(), folder=zip.folder('نسخة-إعداد-خدام-'+today());
+    var zip=new JSZip(), folder=zip.folder('نسخة-إعداد-خدام-'+today()), failures=[];
     var readme='✝ '+BRAND.name+'\n'+BRAND.org+'\n\nحزمة نسخة احتياطية شاملة — '+backup.exportedAtLocal+'\n'+
       'تم بواسطة: '+(backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):'')+'\n'+
       'الأقسام المضمنة: '+sectionLabels(selected)+'\n\n'+
@@ -3324,15 +3343,21 @@ function buildZip(backup,selected,fmts){
       'تنبيه سرية: هذه البيانات مخصصة لخدمة إعداد الخدام فقط، فاحفظ الحزمة في مكان آمن.\n';
     folder.file('اقرأني-محتويات-الحزمة.txt',readme);
     var chain=Promise.resolve();
+    function attempt(name,fn){ chain=chain.then(function(){ return fn().catch(function(e){ failures.push(name+': '+((e&&e.message)||e)); }); }); }
     fmts.forEach(function(f){
-      chain=chain.then(function(){
-        if(f==='json')return buildJSONBlob(backup).then(function(r){folder.file('01-نسخة-استرجاع-كاملة-'+today()+'.json',r.blob);});
-        if(f==='xlsx')return buildExcelBlob(backup,selected).then(function(b){folder.file('02-جداول-Excel-'+today()+'.xlsx',b);});
-        if(f==='docx')return buildWordBlob(backup,selected).then(function(b){folder.file('03-تقرير-Word-'+today()+(b.type==='application/msword'?'.doc':'.docx'),b);});
-        if(f==='pdf')return buildPDFBlob(backup,selected).then(function(b){folder.file('04-تقرير-PDF-'+today()+'.pdf',b);});
-      });
+      if(f==='json')attempt('JSON',function(){return buildJSONBlob(backup).then(function(r){folder.file('01-نسخة-استرجاع-كاملة-'+today()+'.json',r.blob);});});
+      else if(f==='xlsx')attempt('Excel',function(){return buildExcelBlob(backup,selected).then(function(b){folder.file('02-جداول-Excel-'+today()+'.xlsx',b);});});
+      else if(f==='docx')attempt('Word',function(){return buildWordBlob(backup,selected).then(function(b){folder.file('03-تقرير-Word-'+today()+(b.type==='application/msword'?'.doc':'.docx'),b);});});
+      else if(f==='pdf')attempt('PDF',function(){return buildPDFBlob(backup,selected).then(function(b){folder.file('04-تقرير-PDF-'+today()+'.pdf',b);}).catch(function(e){
+        /* بديل لا يفقد التقرير أبدًا: نسخة طباعة HTML بالهوية داخل الحزمة */
+        failures.push('PDF: '+((e&&e.message)||e)+' — تم تضمين نسخة طباعة بديلة');
+        folder.file('04-تقرير-للطباعة-كPDF.html','<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head><body><p style="font-family:Tahoma">افتح هذا الملف في المتصفح ثم اطبع واختر «حفظ كـ PDF».</p></body></html>'.replace('</body>',reportInner(backup,selected)+'</body>').replace('<head><meta charset="utf-8"></head>','<head><meta charset="utf-8"><style>@page{size:A4 landscape;margin:12mm}'+REPORT_CSS+'</style></head>'));
+      });});
     });
-    return chain.then(function(){return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});});
+    return chain.then(function(){
+      if(failures.length)folder.file('تنبيهات-التوليد.txt','حدثت الملاحظات التالية أثناء توليد الحزمة:\n\n'+failures.join('\n'));
+      return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}).then(function(blob){return {blob:blob,failures:failures};});
+    });
   });
 }
 
@@ -3519,9 +3544,9 @@ function doExport(){
       var f=fmts[0], pr=f==='json'?exportJSON(backup):f==='xlsx'?exportExcel(backup,BC.selected):f==='docx'?exportWord(backup,BC.selected):exportPDF(backup,BC.selected);
       pr.then(function(){done('⬇️ تم تنزيل الملف بنجاح');}).catch(fail); return;
     }
-    buildZip(backup,BC.selected,fmts).then(function(blob){
-      download(blob,'نسخة-شاملة-إعداد-خدام-'+today()+'.zip');
-      done('🗜️ تم تنزيل كل الصيغ مرة واحدة داخل ملف ZIP');
+    buildZip(backup,BC.selected,fmts).then(function(res){
+      download(res.blob,'نسخة-شاملة-إعداد-خدام-'+today()+'.zip');
+      done(res.failures&&res.failures.length?'🗜️ تم تنزيل ZIP — راجع ملف «تنبيهات-التوليد» داخله لملاحظة صغيرة':'🗜️ تم تنزيل كل الصيغ مرة واحدة داخل ملف ZIP');
     }).catch(fail);
   };
   if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
@@ -3664,5 +3689,5 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 
 
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df3cd4dfbe1b37',t:'MTc5MjU3NDk2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df408538ffedb4',t:'MTc5MjU3NTExNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
