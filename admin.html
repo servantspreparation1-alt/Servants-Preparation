@@ -1547,6 +1547,49 @@ html[data-theme="dark"] .sx-rt tbody tr:hover td,html.dark .sx-rt tbody tr:hover
 @media(max-width:430px){.activity-filter-grid{grid-template-columns:1fr}.activity-search-control{grid-column:auto}.activity-calendar-pop{inset-inline:-4px;width:calc(100% + 8px);padding:12px}.activity-day-button,.activity-day-empty{min-height:33px}.activity-calendar-footer{gap:5px}.activity-calendar-footer button{font-size:.63rem;padding:6px 8px}}
 </style>
 
+<style>
+/* ============================================================
+   مركز النسخة الاحتياطية والاستيراد والتصدير — E3DAD Backup Center v2.0
+   ============================================================ */
+.bc-wrap{max-width:860px;margin:0 auto}
+.bc-hero{background:linear-gradient(150deg,#174a7d,#0d2b4a);color:#fff;border-radius:18px;padding:20px 22px;margin-bottom:14px;border-bottom:4px solid #c9a227}
+.bc-hero h3{margin:0 0 6px;font-size:22px;color:#f4e0ae!important}
+.bc-hero p{margin:0;opacity:.92;line-height:1.8;font-size:13px}
+.bc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.bc-tabs button{border:1px solid var(--cx-line,#dfe3e6);background:var(--cx-paper,#fff);border-radius:999px;padding:9px 16px;font-family:inherit;font-weight:800;cursor:pointer;color:inherit}
+.bc-tabs button.active{background:#0d2b4a;color:#fff;border-color:#0d2b4a}
+.bc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.bc-sec{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:14px;padding:12px;cursor:pointer;background:var(--cx-paper,#fff);transition:.15s}
+.bc-sec:has(input:checked){border-color:#c9a227;background:rgba(201,162,39,.08);box-shadow:0 4px 14px rgba(13,43,74,.08)}
+.bc-sec input{width:20px;height:20px;accent-color:#0d2b4a;margin-top:2px;flex:0 0 auto}
+.bc-sec b{display:block;font-size:14px}.bc-sec small{display:block;color:var(--cx-muted,#5d6d7d);line-height:1.7;margin-top:2px}
+.bc-sec .bc-count{margin-inline-start:auto;background:#0d2b4a;color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+.bc-panel{border:1px solid var(--cx-line,#dfe3e6);border-radius:16px;padding:16px;margin-top:12px;background:var(--cx-paper,#fff)}
+.bc-panel h4{margin:0 0 10px;color:#0d2b4a}
+html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
+.bc-fmts{display:flex;gap:8px;flex-wrap:wrap}
+.bc-fmt{display:flex;align-items:center;gap:8px;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:800}
+.bc-fmt:has(input:checked){border-color:#1e5b96;background:rgba(30,91,150,.08)}
+.bc-fmt input{width:18px;height:18px;accent-color:#1e5b96}
+.bc-fmt small{display:block;font-weight:400;color:var(--cx-muted,#5d6d7d)}
+.bc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.bc-note{background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.45);border-radius:12px;padding:10px 12px;line-height:1.8;font-size:13px;margin-top:12px}
+.bc-danger{background:rgba(179,64,63,.08);border-color:rgba(179,64,63,.35)}
+.bc-ok{background:rgba(15,122,90,.08);border:1px solid rgba(15,122,90,.3);border-radius:12px;padding:10px 12px;line-height:1.8;font-size:13px;margin-top:12px}
+.bc-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.bc-table th,.bc-table td{border:1px solid var(--cx-line,#dfe3e6);padding:8px;text-align:right}
+.bc-table th{background:#0d2b4a;color:#fff}
+.bc-drop{border:2px dashed rgba(30,91,150,.45);border-radius:16px;padding:26px;text-align:center;cursor:pointer;line-height:1.9}
+.bc-drop:hover,.bc-drop.over{background:rgba(30,91,150,.07)}
+.bc-progress{height:10px;background:var(--cx-line,#e5e7eb);border-radius:99px;overflow:hidden;margin-top:12px;display:none}
+.bc-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1e5b96,#c9a227);transition:width .3s}
+.bc-radio{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:12px;padding:10px 12px;cursor:pointer;flex:1;min-width:220px}
+.bc-radio:has(input:checked){border-color:#1e5b96;background:rgba(30,91,150,.07)}
+.bc-radio small{display:block;color:var(--cx-muted,#5d6d7d);line-height:1.7}
+@media(max-width:640px){.bc-grid{grid-template-columns:1fr}.bc-hero{padding:16px}}
+@media print{.bc-no-print{display:none!important}}
+
+</style>
 </head>
 
 <body>
@@ -2864,64 +2907,7 @@ document.addEventListener('change',function(e){
   if(gs&&gb)logActivity('edit_grades','الدارس: '+(gs.name||'—')+' · المادة: '+(gb.name||'—'),'تعديل درجة معيار '+(t.getAttribute('data-k')||'')+' إلى '+nf(n)+' من '+nf(m));
 });
 
-initHeaderTools();
-initFirebase();
-route();
-applyPerms();
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js?v=1').catch(function(){});});}
-} // end authenticated application
-})();
-
-</script>
-
-
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<!-- ===== E3DAD Backup Center v2.0 (JSON/Excel/Word/PDF + Import) ===== -->
-<style>
-/* ============================================================
-   مركز النسخة الاحتياطية والاستيراد والتصدير — E3DAD Backup Center v2.0
-   ============================================================ */
-.bc-wrap{max-width:860px;margin:0 auto}
-.bc-hero{background:linear-gradient(150deg,#174a7d,#0d2b4a);color:#fff;border-radius:18px;padding:20px 22px;margin-bottom:14px;border-bottom:4px solid #c9a227}
-.bc-hero h3{margin:0 0 6px;font-size:22px;color:#f4e0ae!important}
-.bc-hero p{margin:0;opacity:.92;line-height:1.8;font-size:13px}
-.bc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.bc-tabs button{border:1px solid var(--cx-line,#dfe3e6);background:var(--cx-paper,#fff);border-radius:999px;padding:9px 16px;font-family:inherit;font-weight:800;cursor:pointer;color:inherit}
-.bc-tabs button.active{background:#0d2b4a;color:#fff;border-color:#0d2b4a}
-.bc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
-.bc-sec{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:14px;padding:12px;cursor:pointer;background:var(--cx-paper,#fff);transition:.15s}
-.bc-sec:has(input:checked){border-color:#c9a227;background:rgba(201,162,39,.08);box-shadow:0 4px 14px rgba(13,43,74,.08)}
-.bc-sec input{width:20px;height:20px;accent-color:#0d2b4a;margin-top:2px;flex:0 0 auto}
-.bc-sec b{display:block;font-size:14px}.bc-sec small{display:block;color:var(--cx-muted,#5d6d7d);line-height:1.7;margin-top:2px}
-.bc-sec .bc-count{margin-inline-start:auto;background:#0d2b4a;color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap}
-.bc-panel{border:1px solid var(--cx-line,#dfe3e6);border-radius:16px;padding:16px;margin-top:12px;background:var(--cx-paper,#fff)}
-.bc-panel h4{margin:0 0 10px;color:#0d2b4a}
-html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
-.bc-fmts{display:flex;gap:8px;flex-wrap:wrap}
-.bc-fmt{display:flex;align-items:center;gap:8px;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:800}
-.bc-fmt:has(input:checked){border-color:#1e5b96;background:rgba(30,91,150,.08)}
-.bc-fmt input{width:18px;height:18px;accent-color:#1e5b96}
-.bc-fmt small{display:block;font-weight:400;color:var(--cx-muted,#5d6d7d)}
-.bc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
-.bc-note{background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.45);border-radius:12px;padding:10px 12px;line-height:1.8;font-size:13px;margin-top:12px}
-.bc-danger{background:rgba(179,64,63,.08);border-color:rgba(179,64,63,.35)}
-.bc-ok{background:rgba(15,122,90,.08);border:1px solid rgba(15,122,90,.3);border-radius:12px;padding:10px 12px;line-height:1.8;font-size:13px;margin-top:12px}
-.bc-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.bc-table th,.bc-table td{border:1px solid var(--cx-line,#dfe3e6);padding:8px;text-align:right}
-.bc-table th{background:#0d2b4a;color:#fff}
-.bc-drop{border:2px dashed rgba(30,91,150,.45);border-radius:16px;padding:26px;text-align:center;cursor:pointer;line-height:1.9}
-.bc-drop:hover,.bc-drop.over{background:rgba(30,91,150,.07)}
-.bc-progress{height:10px;background:var(--cx-line,#e5e7eb);border-radius:99px;overflow:hidden;margin-top:12px;display:none}
-.bc-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1e5b96,#c9a227);transition:width .3s}
-.bc-radio{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--cx-line,#dfe3e6);border-radius:12px;padding:10px 12px;cursor:pointer;flex:1;min-width:220px}
-.bc-radio:has(input:checked){border-color:#1e5b96;background:rgba(30,91,150,.07)}
-.bc-radio small{display:block;color:var(--cx-muted,#5d6d7d);line-height:1.7}
-@media(max-width:640px){.bc-grid{grid-template-columns:1fr}.bc-hero{padding:16px}}
-@media print{.bc-no-print{display:none!important}}
-
-</style>
-<script>
+/* ===== E3DAD Backup Center v2.1.0 ZIP (داخل نطاق التطبيق المصادق) ===== */
 /* ============================================================
    E3DAD Backup Center v2.0 — نسخة احتياطية / استيراد / تصدير
    JSON + Excel (XLSX) + Word (DOCX) + PDF (Print)
@@ -2947,7 +2933,7 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
    ============================================================ */
 (function(){
 'use strict';
-var BC_VERSION='2.0.0', APP_ID='e3_khodam', SCHEMA=2;
+var BC_VERSION='2.1.0', APP_ID='e3_khodam', SCHEMA=2;
 var BRAND={name:'إعداد خدام للتلمذة', org:'كنيسة رئيس الملائكة ميخائيل بالأندلس — معلم الأجيال', navy:'#0d2b4a', navy2:'#1e5b96', gold:'#c9a227', gold2:'#e6c766'};
 var MAX_IMPORT_BYTES=25*1024*1024;
 
@@ -2959,7 +2945,7 @@ function today(){return new Date().toISOString().slice(0,10);}
 function stamp(){return new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);}
 function logoURI(){try{var l=document.querySelector('link[rel="icon"][href^="data:image"]');return l?l.getAttribute('href'):'';}catch(e){return '';}}
 function download(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);}
-function toastMsg(m){if(typeof toast==='function')toast(m);else alert(m);}
+function toastMsg(m){if(typeof toast==='function'){toast(m);return;} var t=document.getElementById('toast'); if(t){t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2600);} }
 function critName(k){if(typeof CRIT==='undefined')return k;for(var i=0;i<CRIT.length;i++)if(CRIT[i].k===k)return CRIT[i].n;return k;}
 function levelName(l){if(typeof LEVELS!=='undefined'&&LEVELS[l-1])return LEVELS[l-1];return 'السنة '+S(l);}
 function statusText(st){return st==='repeat'?'إعادة':st==='new'?'جديد':S(st);}
@@ -3002,6 +2988,14 @@ function loadLib(key,url,check){
 }
 function loadXLSX(){return loadLib('xlsx','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',function(){return !!window.XLSX;});}
 function loadDOCX(){return loadLib('docx','https://unpkg.com/docx@8.5.0/build/index.umd.min.js',function(){return !!(window.docx&&window.docx.Document);});}
+function loadJSZip(){return loadLib('jszip','https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',function(){return !!window.JSZip;});}
+function loadPDFLibs(){return loadLib('html2canvas','https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',function(){return !!window.html2canvas;}).then(function(){return loadLib('jspdf','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',function(){return !!(window.jspdf&&window.jspdf.jsPDF);});});}
+function sectionLabel(id){if(id==='__extra')return 'بيانات إضافية (اكتشاف تلقائي)';var s=sectionById(id);return s?(s.icon+' '+s.label):id;}
+function sectionLabels(ids){return ids.map(sectionLabel).join('، ');}
+function reportName(v){var s=S(v); if(typeof displayPersonName==='function'){try{s=displayPersonName(s);}catch(e){}} return s.replace(/<[^>]*>/g,'').trim();}
+/* تقسيم الجداول العريضة: العمود الأول ثابت + مجموعات أعمدة، حتى لا يخرج أي جدول خارج الصفحة */
+function splitTable(t,maxCols){maxCols=maxCols||7; if(!t.headers||t.headers.length<=maxCols)return [t]; var out=[]; for(var i=1;i<t.headers.length;i+=maxCols-1){var idx=[0]; for(var j=i;j<Math.min(i+maxCols-1,t.headers.length);j++)idx.push(j); out.push({name:t.name+(out.length?' — تابع ('+(out.length+1)+')':''),headers:idx.map(function(k){return t.headers[k];}),rows:t.rows.map(function(r){return idx.map(function(k){return r[k];});})});} return out;}
+function splitTables(list,maxCols){var o=[];(list||[]).forEach(function(x){splitTable(x,maxCols).forEach(function(y){o.push(y);});});return o;}
 
 /* ============================================================
    سجلّ الأقسام — قلب النظام القابل للتوسّع
@@ -3167,98 +3161,178 @@ function allTables(selected){
 }
 
 /* ---------- Excel ---------- */
-function exportExcel(backup,selected){
+function buildExcelBlob(backup,selected){
   return loadXLSX().then(function(){
     var wb=XLSX.utils.book_new(); wb.Workbook={Views:[{RTL:true}]};
-    var cover=[['✝ '+BRAND.name],['BRAND.org placeholder'],['تاريخ التصدير',backup.exportedAtLocal],['تم بواسطة',backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):''],['إصدار مركز النسخ',BC_VERSION],['الأقسام المضمنة',selected.join('، ')],[''],['تنبيه','هذا الملف تقرير منظم. للاسترجاع الكامل للنظام استخدم ملف JSON من نفس المركز.']];
-    cover[1]=[BRAND.org];
-    var ws=XLSX.utils.aoa_to_sheet(cover); ws['!cols']=[{wch:28},{wch:90}]; XLSX.utils.book_append_sheet(wb,ws,'غلاف النظام');
-    allTables(selected).forEach(function(t){
-      var aoa=[t.headers].concat(t.rows.map(function(r){return r.map(cellSafe);}));
-      var sh=XLSX.utils.aoa_to_sheet(aoa);
-      sh['!cols']=t.headers.map(function(h,i){var m=S(h).length; t.rows.forEach(function(r){m=Math.max(m,Math.min(48,S(r[i]).length));}); return {wch:Math.max(12,m+2)};});
-      if(t.rows.length)sh['!autofilter']={ref:sh['!ref']};
-      XLSX.utils.book_append_sheet(wb,sh,S(t.name).slice(0,31)||'بيانات');
+    var cover=[
+      ['✝ '+BRAND.name],
+      [BRAND.org],
+      [],
+      ['البند','التفاصيل'],
+      ['تاريخ التصدير',backup.exportedAtLocal],
+      ['تم بواسطة',backup.exportedBy?(reportName(backup.exportedBy.name)+' — '+backup.exportedBy.role):''],
+      ['إصدار مركز النسخ الاحتياطي',BC_VERSION],
+      ['بصمة بيانات JSON المرافقة','انظر ملف JSON داخل نفس الحزمة (SHA-256)'],
+      [],
+      ['القسم','عدد السجلات']
+    ];
+    selected.forEach(function(id){
+      var key=id==='__extra'?'extra':id;
+      cover.push([sectionLabel(id), backup.counts&&backup.counts[key]!=null?backup.counts[key]:'']);
     });
-    XLSX.writeFile(wb,'نسخة-نظام-إعداد-خدام-'+today()+'.xlsx');
+    cover.push([],['تنبيه','هذا الملف تقرير منظم للمراجعة والطباعة. الاسترجاع الكامل للنظام يكون من ملف JSON المرافق داخل نفس ملف ZIP.'],['سرية','بيانات هذا الملف سرية ومخصصة لخدمة إعداد الخدام فقط.']);
+    var ws=XLSX.utils.aoa_to_sheet(cover); ws['!cols']=[{wch:34},{wch:95}];
+    XLSX.utils.book_append_sheet(wb,ws,'غلاف النظام');
+    allTables(selected).forEach(function(tb){
+      var aoa=[tb.headers].concat(tb.rows.map(function(r){return r.map(function(c){return cellSafe(reportName(c)===S(c)?c:reportName(c));});}));
+      var sh=XLSX.utils.aoa_to_sheet(aoa);
+      sh['!cols']=tb.headers.map(function(h,i){var m=S(h).length; tb.rows.forEach(function(r){m=Math.max(m,Math.min(48,S(r[i]).length));}); return {wch:Math.max(12,m+2)};});
+      if(tb.rows.length)sh['!autofilter']={ref:sh['!ref']};
+      XLSX.utils.book_append_sheet(wb,sh,S(tb.name).slice(0,31)||'بيانات');
+    });
+    var out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    return new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   });
 }
+function exportExcel(backup,selected){return buildExcelBlob(backup,selected).then(function(b){download(b,'نسخة-نظام-إعداد-خدام-'+today()+'.xlsx');});}
 
-/* ---------- Word / طباعة PDF: مستند HTML مهيكل واحد ---------- */
-function reportHTML(backup,selected,forPrint){
+/* ---------- تقارير Word / PDF: ترويسة فاتحة بالهوية تُطبع بوضوح دائمًا ---------- */
+function reportInner(backup,selected){
   var logo=logoURI();
-  var secs=allTables(selected).map(function(t){
-    var head=t.headers.map(function(h){return '<th>'+E(h)+'</th>';}).join('');
-    var body=t.rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+E(c)+'</td>';}).join('')+'</tr>';}).join('');
-    return '<section><h2>'+E(t.name)+' <small>('+N(t.rows.length)+' صف)</small></h2><table><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+t.headers.length+'">لا توجد بيانات</td></tr>')+'</tbody></table></section>';
+  var tables=splitTables(allTables(selected),7);
+  var secs=tables.map(function(tb){
+    var head=tb.headers.map(function(h){return '<th>'+E(h)+'</th>';}).join('');
+    var body=tb.rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+E(reportName(c))+'</td>';}).join('')+'</tr>';}).join('');
+    return '<section><h2>'+E(tb.name)+' <small>('+N(tb.rows.length)+' صف)</small></h2><table><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+tb.headers.length+'">لا توجد بيانات</td></tr>')+'</tbody></table></section>';
   }).join('');
-  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير '+E(BRAND.name)+'</title><style>'+
-    '@page{size:A4 landscape;margin:14mm}*{box-sizing:border-box}body{font-family:Tajawal,Cairo,"Segoe UI",Tahoma,Arial,sans-serif;color:#152232;margin:0}'+
-    'header{background:linear-gradient(150deg,#174a7d,#0d2b4a);color:#fff;padding:22px 26px;border-bottom:5px solid #c9a227;border-radius:0 0 14px 14px}'+
-    'header .row{display:flex;align-items:center;gap:16px}header img{width:72px;height:72px;border-radius:16px;background:#fff;object-fit:cover}'+
-    'h1{margin:0;font-size:26px;color:#f4e0ae}header p{margin:4px 0 0;opacity:.92;line-height:1.8}'+
-    '.meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.meta span{background:#f7f0da;border:1px solid #e6c766;border-radius:999px;padding:5px 12px;font-size:12px}'+
-    'section{page-break-inside:auto;margin:22px 0}h2{color:#0d2b4a;border-bottom:2px solid #c9a227;padding-bottom:6px;font-size:18px}h2 small{color:#5d6d7d;font-size:12px}'+
-    'table{width:100%;border-collapse:collapse;font-size:12px}th{background:#0d2b4a;color:#fff;padding:8px;border:1px solid #0d2b4a;text-align:right}td{padding:7px 8px;border:1px solid #dfe3e6;vertical-align:top}tbody tr:nth-child(even){background:#f8f6ee}'+
-    'footer{margin-top:26px;border-top:2px solid #c9a227;padding-top:10px;color:#5d6d7d;font-size:12px;line-height:1.8}'+
-    (forPrint?'@media print{header{-webkit-print-color-adjust:exact;print-color-adjust:exact}th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}':'')+
-    '</style></head><body><header><div class="row">'+(logo?'<img src="'+logo+'" alt="">':'<div style="font-size:44px">✝</div>')+
-    '<div><h1>✝ '+E(BRAND.name)+'</h1><p>'+E(BRAND.org)+'<br>تقرير شامل من مركز النسخة الاحتياطية والتصدير</p></div></div></header>'+
-    '<div class="meta"><span>📅 '+E(backup.exportedAtLocal)+'</span><span>👤 '+E(backup.exportedBy?backup.exportedBy.name+' — '+backup.exportedBy.role:'')+'</span>'+
-    '<span>🎓 دارسون: '+N(backup.counts.students||0)+'</span><span>📚 مواد: '+N(backup.counts.subjects||0)+'</span><span>الأقسام: '+E(selected.join('، '))+'</span></div>'+
+  var metaRows=[
+    ['تاريخ التصدير',backup.exportedAtLocal],
+    ['تم بواسطة',backup.exportedBy?(reportName(backup.exportedBy.name)+' — '+backup.exportedBy.role):''],
+    ['إجمالي الدارسين',N(backup.counts.students||0)],
+    ['إجمالي المواد',N(backup.counts.subjects||0)],
+    ['الأقسام المضمنة',sectionLabels(selected)]
+  ].map(function(r){return '<tr><th>'+E(r[0])+'</th><td>'+E(r[1])+'</td></tr>';}).join('');
+  return '<header><table class="headtab"><tr><td class="logoCell">'+(logo?'<img src="'+logo+'" alt="">':'<span class="cross">✝</span>')+'</td>'+
+    '<td><h1>✝ '+E(BRAND.name)+'</h1><p>'+E(BRAND.org)+'<br>تقرير شامل من مركز النسخة الاحتياطية والتصدير</p></td></tr></table></header>'+
+    '<table class="meta">'+metaRows+'</table>'+
     (secs||'<p>لم يتم اختيار أي قسم.</p>')+
-    '<footer>وُثّق هذا التقرير آليًا من نظام '+E(BRAND.name)+' بتاريخ '+E(backup.exportedAtLocal)+'. البيانات الواردة فيه سرية وتُستخدم لأغراض خدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف JSON الصادر من نفس المركز.</footer></body></html>';
+    '<footer>وُثّق هذا التقرير آليًا من نظام '+E(BRAND.name)+' بتاريخ '+E(backup.exportedAtLocal)+'. البيانات سرية وتُستخدم لأغراض خدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف JSON المرافق داخل نفس ملف ZIP.</footer>';
 }
-function exportPDF(backup,selected){
-  var w=window.open('','_blank');
-  if(!w){toastMsg('اسمح بالنوافذ المنبثقة لتنزيل PDF');return Promise.resolve();}
+var REPORT_CSS='*{box-sizing:border-box}body{font-family:Tajawal,Cairo,"Segoe UI",Tahoma,Arial,sans-serif;color:#152232;margin:0;background:#fff}'+
+  'header{background:#f7f2e6;border:2px solid #c9a227;border-radius:14px;padding:18px 22px;margin-bottom:14px}'+
+  '.headtab{width:100%;border-collapse:collapse}.headtab td{border:none;padding:0;vertical-align:middle}.logoCell{width:92px;text-align:center}'+
+  'header img{width:78px;height:78px;border-radius:16px;object-fit:cover}.cross{font-size:46px;color:#0d2b4a}'+
+  'h1{margin:0 0 6px;font-size:27px;color:#0d2b4a}header p{margin:0;color:#34495e;line-height:1.9;font-size:14px}'+
+  '.meta{width:100%;border-collapse:collapse;margin:0 0 8px;font-size:13px}.meta th{width:180px;background:#0d2b4a;color:#fff;text-align:right;padding:8px 10px;border:1px solid #0d2b4a}.meta td{padding:8px 10px;border:1px solid #dfe3e6;background:#fffdf6}'+
+  'section{margin:22px 0}h2{color:#0d2b4a;border-bottom:2.5px solid #c9a227;padding-bottom:6px;font-size:18px;margin:0 0 10px}h2 small{color:#5d6d7d;font-size:12px}'+
+  'section table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}section th{background:#0d2b4a;color:#fff;padding:8px 7px;border:1px solid #0d2b4a;text-align:right;word-break:break-word}section td{padding:7px;border:1px solid #d9dee3;vertical-align:top;word-break:break-word;overflow-wrap:anywhere;line-height:1.6}section tbody tr:nth-child(even) td{background:#f8f6ee}'+
+  'footer{margin-top:26px;border-top:2.5px solid #c9a227;padding-top:10px;color:#5d6d7d;font-size:12px;line-height:1.8}';
+function reportHTML(backup,selected,forPrint){
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير '+E(BRAND.name)+'</title><style>@page{size:A4 landscape;margin:12mm}'+REPORT_CSS+
+    (forPrint?'@media print{header,.meta th,section th{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{page-break-inside:auto}tr{page-break-inside:avoid}}':'')+
+    '</style></head><body>'+reportInner(backup,selected)+'</body></html>';
+}
+/* PDF حقيقي كملف: تصيير التقرير المهيكل بالمتصفح (عربي سليم) ثم تجميعه صفحات A4 أفقية */
+function buildPDFBlob(backup,selected){
+  return loadPDFLibs().then(function(){
+    var host=document.createElement('div');
+    host.setAttribute('dir','rtl');
+    host.style.cssText='position:absolute;left:-12000px;top:0;width:1080px;background:#fff;padding:28px;z-index:-1';
+    host.innerHTML='<style>'+REPORT_CSS+'</style>'+reportInner(backup,selected);
+    document.body.appendChild(host);
+    function cleanup(){try{host.remove();}catch(e){}}
+    return window.html2canvas(host,{scale:1.6,useCORS:true,backgroundColor:'#ffffff',logging:false}).then(function(canvas){
+      cleanup();
+      var jsPDF=window.jspdf.jsPDF;
+      var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+      var pageW=297,pageH=210,margin=10,imgW=pageW-margin*2,usableH=pageH-margin*2;
+      var sliceH=Math.floor(canvas.width*usableH/imgW); /* ارتفاع الشريحة بالبكسل المقابل لصفحة */
+      var rendered=0,page=0;
+      while(rendered<canvas.height){
+        var h=Math.min(sliceH,canvas.height-rendered);
+        var c=document.createElement('canvas');c.width=canvas.width;c.height=h;
+        var ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.drawImage(canvas,0,rendered,canvas.width,h,0,0,c.width,h);
+        if(page>0)pdf.addPage();
+        pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
+        rendered+=h;page++;
+      }
+      return pdf.output('blob');
+    },function(err){cleanup();throw err;});
+  });
+}
+function exportPDF(backup,selected){return buildPDFBlob(backup,selected).then(function(b){download(b,'تقرير-إعداد-خدام-'+today()+'.pdf');});}
+function printPDF(backup,selected){
+  var w=window.open('','_blank'); if(!w){toastMsg('اسمح بالنوافذ المنبثقة للطباعة');return;}
   w.document.open();w.document.write(reportHTML(backup,selected,true));w.document.close();
-  toastMsg('📄 اتفتح تقرير PDF — اختر «حفظ كـ PDF» من نافذة الطباعة');
   setTimeout(function(){try{w.focus();w.print();}catch(e){}},700);
-  return Promise.resolve();
 }
-function dataUriToBytes(uri){
-  var parts=uri.split(','),bin=atob(parts[1]||''),arr=new Uint8Array(bin.length);
-  for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return arr;
-}
-function exportWord(backup,selected){
+
+/* ---------- Word ---------- */
+function buildWordBlob(backup,selected){
   return loadDOCX().then(function(){
-    var D=window.docx, tables=allTables(selected);
+    var D=window.docx, tables=splitTables(allTables(selected),7);
     var children=[
-      new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'✝ '+BRAND.name,bold:true,size:36,color:'0D2B4A',font:'Tahoma'})]}),
+      new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'✝ '+BRAND.name,bold:true,size:38,color:'0D2B4A',font:'Tahoma'})]}),
       new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:BRAND.org,size:22,color:'5D6D7D',font:'Tahoma'})]}),
       new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'تقرير شامل — '+backup.exportedAtLocal,size:20,color:'5D6D7D',font:'Tahoma'})]}),
-      new D.Paragraph({children:[new D.TextRun({text:'— — —',color:'C9A227'})],alignment:D.AlignmentType.CENTER})
+      new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'الأقسام: '+sectionLabels(selected),size:18,color:'5D6D7D',font:'Tahoma'})]}),
+      new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'━━━━━━━━━━━━━━',color:'C9A227'})]})
     ];
-    tables.forEach(function(t){
-      children.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun({text:t.name+' ('+t.rows.length+')',bold:true,color:'0D2B4A',font:'Tahoma'})]}));
-      var headerRow=new D.TableRow({tableHeader:true,children:t.headers.map(function(h){
-        return new D.TableCell({shading:{fill:'0D2B4A'},children:[new D.Paragraph({bidirectional:true,children:[new D.TextRun({text:S(h),bold:true,color:'FFFFFF',font:'Tahoma',size:18})]})]});
+    tables.forEach(function(tb){
+      children.push(new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun({text:tb.name+' ('+tb.rows.length+')',bold:true,color:'0D2B4A',font:'Tahoma'})]}));
+      var headerRow=new D.TableRow({tableHeader:true,children:tb.headers.map(function(h){
+        return new D.TableCell({shading:{fill:'0D2B4A'},children:[new D.Paragraph({bidirectional:true,children:[new D.TextRun({text:S(h),bold:true,color:'FFFFFF',font:'Tahoma',size:17})]})]});
       })});
-      var rows=t.rows.map(function(r){return new D.TableRow({children:r.map(function(c){
-        return new D.TableCell({children:[new D.Paragraph({bidirectional:true,children:[new D.TextRun({text:S(c),font:'Tahoma',size:18})]})]});
+      var rows=tb.rows.map(function(r){return new D.TableRow({children:r.map(function(c){
+        return new D.TableCell({children:[new D.Paragraph({bidirectional:true,children:[new D.TextRun({text:reportName(c),font:'Tahoma',size:17})]})]});
       })});});
       children.push(new D.Table({rows:[headerRow].concat(rows),width:{size:100,type:D.WidthType.PERCENTAGE}}));
       children.push(new D.Paragraph({children:[new D.TextRun({text:''})]}));
     });
-    children.push(new D.Paragraph({children:[new D.TextRun({text:'هذا المستند سرّي ومخصص لخدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف JSON.',color:'5D6D7D',size:18,font:'Tahoma'})]}));
-    var doc=new D.Document({sections:[{properties:{page:{size:{orientation:D.PageOrientation.LANDSCAPE}}},children:children}]});
-    return D.Packer.toBlob(doc).then(function(blob){download(blob,'تقرير-إعداد-خدام-'+today()+'.docx');});
+    children.push(new D.Paragraph({children:[new D.TextRun({text:'هذا المستند سرّي ومخصص لخدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف JSON المرافق داخل نفس ملف ZIP.',color:'5D6D7D',size:18,font:'Tahoma'})]}));
+    var doc=new D.Document({sections:[{properties:{page:{size:{orientation:D.PageOrientation.LANDSCAPE},margin:{top:720,bottom:720,left:720,right:720}}},children:children}]});
+    return D.Packer.toBlob(doc);
   }).catch(function(){
-    /* بديل مضمون بدون إنترنت: ملف Word متوافق بصيغة HTML */
-    var html=reportHTML(backup,selected,false);
-    download(new Blob(['\ufeff'+html],{type:'application/msword'}),'تقرير-إعداد-خدام-'+today()+'.doc');
-    toastMsg('📘 تم تنزيل Word (صيغة متوافقة) — لو محتاج DOCX رسمي فعّل الإنترنت وحاول تاني');
+    return new Blob(['\ufeff'+reportHTML(backup,selected,false)],{type:'application/msword'});
   });
 }
+function exportWord(backup,selected){return buildWordBlob(backup,selected).then(function(b){
+  download(b, 'تقرير-إعداد-خدام-'+today()+(b.type==='application/msword'?'.doc':'.docx'));});}
 
-/* ---------- تصدير JSON مع بصمة تحقق ---------- */
-function exportJSON(backup){
+/* ---------- JSON مع بصمة تحقق ---------- */
+function buildJSONBlob(backup){
   var payload=JSON.parse(JSON.stringify(backup));
   return sha256(JSON.stringify(payload.data||{})).then(function(hash){
     payload.checksum={algorithm:'SHA-256',of:'data',value:hash};
-    download(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),
-      'نسخة-احتياطية-إعداد-خدام-'+stamp()+'.json');
+    return {blob:new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),payload:payload};
+  });
+}
+function exportJSON(backup){return buildJSONBlob(backup).then(function(r){download(r.blob,'نسخة-احتياطية-إعداد-خدام-'+stamp()+'.json');});}
+
+/* ---------- ZIP: كل الصيغ المحددة في تنزيل واحد ---------- */
+function buildZip(backup,selected,fmts){
+  return loadJSZip().then(function(){
+    var zip=new JSZip(), folder=zip.folder('نسخة-إعداد-خدام-'+today());
+    var readme='✝ '+BRAND.name+'\n'+BRAND.org+'\n\nحزمة نسخة احتياطية شاملة — '+backup.exportedAtLocal+'\n'+
+      'تم بواسطة: '+(backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):'')+'\n'+
+      'الأقسام المضمنة: '+sectionLabels(selected)+'\n\n'+
+      'محتويات الحزمة:\n'+
+      '• JSON: النسخة الكاملة الوحيدة القابلة لاسترجاع النظام من مركز الاستيراد (تحمل بصمة تحقق SHA-256).\n'+
+      '• Excel: جداول منظمة للمراجعة والفرز والطباعة.\n'+
+      '• Word: مستند رسمي بالهوية لعرض البيانات.\n'+
+      '• PDF: تقرير رسمي جاهز للطباعة والأرشفة.\n\n'+
+      'تنبيه سرية: هذه البيانات مخصصة لخدمة إعداد الخدام فقط، فاحفظ الحزمة في مكان آمن.\n';
+    folder.file('اقرأني-محتويات-الحزمة.txt',readme);
+    var chain=Promise.resolve();
+    fmts.forEach(function(f){
+      chain=chain.then(function(){
+        if(f==='json')return buildJSONBlob(backup).then(function(r){folder.file('01-نسخة-استرجاع-كاملة-'+today()+'.json',r.blob);});
+        if(f==='xlsx')return buildExcelBlob(backup,selected).then(function(b){folder.file('02-جداول-Excel-'+today()+'.xlsx',b);});
+        if(f==='docx')return buildWordBlob(backup,selected).then(function(b){folder.file('03-تقرير-Word-'+today()+(b.type==='application/msword'?'.doc':'.docx'),b);});
+        if(f==='pdf')return buildPDFBlob(backup,selected).then(function(b){folder.file('04-تقرير-PDF-'+today()+'.pdf',b);});
+      });
+    });
+    return chain.then(function(){return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});});
   });
 }
 
@@ -3356,10 +3430,10 @@ function levelFromName(v){var t=S(v);if(typeof LEVELS!=='undefined'){for(var i=0
 /* ============================================================
    واجهة المركز
    ============================================================ */
-var BC={tab:'export',selected:null,formats:{json:true,xlsx:true,docx:true,pdf:false},includePasswords:false,pending:null};
+var BC={tab:'export',selected:null,formats:{json:true,xlsx:true,docx:true,pdf:true},includePasswords:false,pending:null};
 function defaultSelected(){return BACKUP_REGISTRY.map(function(s){return s.id;});}
 function openBackupCenter(tab){
-  if(typeof ME==='undefined'||!ME){toastMsg('سجل الدخول أولًا');return;}
+  if(typeof ME==='undefined'||!ME){return;} /* داخل لوحة التحكم الجلسة متحققة أصلًا من النظام — لا رسائل هنا */
   if(typeof can==='function'&&!can('manageUsers')){toastMsg('🔒 مركز النسخ والاستيراد لإدارة النظام فقط');return;}
   BC.tab=tab||'export';if(!BC.selected)BC.selected=defaultSelected();
   if(typeof openModal!=='function'){toastMsg('تعذر فتح المركز');return;}
@@ -3376,7 +3450,7 @@ function renderBC(){
     '<div class="bc-row bc-no-print"><button class="btn sm" id="bcAll">تحديد الكل</button><button class="btn sm" id="bcNone">إلغاء الكل</button>'+
     '<button class="btn sm" id="bcCore">الأساسي فقط (دارسون + مواد + درجات)</button></div>'+
     '<h4 style="margin:14px 0 8px">١) اختر أقسام البيانات</h4><div class="bc-grid">'+secs+'</div>'+
-    '<h4 style="margin:16px 0 8px">٢) اختر الصيغ</h4><div class="bc-fmts">'+
+    '<h4 style="margin:16px 0 8px">٢) اختر الصيغ — لو اخترت أكثر من صيغة هينزلوا كلهم مرة واحدة داخل ZIP</h4><div class="bc-fmts">'+
       fmtBox('json','⬇️ JSON','النسخة الكاملة القابلة للاسترجاع — أساسية دائمًا')+
       fmtBox('xlsx','📗 Excel','شيت منظم لكل قسم بفلتر وأعمدة معدة للطباعة')+
       fmtBox('docx','📘 Word','مستند رسمي بالهوية واللوجو وجداول مرتبة')+
@@ -3386,7 +3460,7 @@ function renderBC(){
     '<span><b>🔐 تضمين كلمات مرور الخدام داخل JSON فقط</b><small>لا تخرج أبدًا في Excel أو Word أو PDF. فعّلها فقط لو دي نسخة استرجاع إدارية كاملة وستحفظها في مكان آمن.</small></span></label>'+
     '<div class="bc-note">🛡️ كل تصدير يُسجَّل في سجل النشاطات، وملف JSON يحمل بصمة تحقق SHA-256 وكشفًا بعدد السجلات في كل قسم. الأقسام الجديدة مستقبلًا ستظهر هنا تلقائيًا.</div>'+
     '<div class="bc-progress" id="bcProg"><i></i></div>'+
-    '<div class="bc-row"><button class="btn primary" id="bcDoExport">⬇️ تنزيل المحدد الآن</button><button class="btn" data-act="closeModal">إغلاق</button></div>';
+    '<div class="bc-row"><button class="btn primary" id="bcDoExport">🗜️ تنزيل ZIP الآن</button><button class="btn" data-act="closeModal">إغلاق</button></div>';
   var importBody=
     '<div class="bc-drop" id="bcDrop"><div style="font-size:34px">⬆️</div><b>اسحب ملف النسخة هنا أو اضغط للاختيار</b><br>'+
     '<small>JSON صادر من النظام (موصى به للاسترجاع الكامل) أو Excel (.xlsx) صادر من هذا المركز — حتى 25MB</small>'+
@@ -3432,24 +3506,23 @@ function doExport(){
   if(!BC.selected.length){toastMsg('اختر قسمًا واحدًا على الأقل');return;}
   var fmts=Object.keys(BC.formats).filter(function(k){return BC.formats[k];});
   if(!fmts.length){toastMsg('اختر صيغة واحدة على الأقل');return;}
+  var btn=document.getElementById('bcDoExport');
   var run=function(){
     var backup=buildBackup(BC.selected,{includePasswords:BC.includePasswords});
-    setProgress(15);
-    var chain=Promise.resolve(),step=0;
-    fmts.forEach(function(f){
-      chain=chain.then(function(){
-        step++;setProgress(15+Math.round(step/fmts.length*75));
-        if(f==='json')return exportJSON(backup);
-        if(f==='xlsx')return exportExcel(backup,BC.selected);
-        if(f==='docx')return exportWord(backup,BC.selected);
-        if(f==='pdf')return exportPDF(backup,BC.selected);
-      });
-    });
-    chain.then(function(){
-      setProgress(100);
-      if(typeof logActivity==='function')logActivity('export','مركز النسخ الاحتياطي','تصدير أقسام: '+BC.selected.join('، ')+' بصيغ: '+fmts.join('، ')+(BC.includePasswords?' (تضمن كلمات مرور داخل JSON)':''));
-      toastMsg('⬇️ تم تنزيل النسخة بنجاح');
-    }).catch(function(err){toastMsg('⚠️ '+(err&&err.message?err.message:'حدث خطأ أثناء التصدير'));});
+    if(btn){btn.disabled=true;btn.textContent='⏳ جارٍ تجهيز الحزمة…';}
+    setProgress(20);
+    var done=function(msg){ setProgress(100); if(btn){btn.disabled=false;btn.textContent='⬇️ تنزيل ZIP الآن';}
+      if(typeof logActivity==='function')logActivity('export','مركز النسخ الاحتياطي','تصدير أقسام: '+sectionLabels(BC.selected)+' بصيغ: '+fmts.join('، ')+(fmts.length>1?' داخل ZIP واحد':'')+(BC.includePasswords?' (تضمن كلمات مرور داخل JSON)':''));
+      toastMsg(msg); };
+    var fail=function(err){ if(btn){btn.disabled=false;btn.textContent='⬇️ تنزيل ZIP الآن';} setProgress(0); toastMsg('⚠️ '+(err&&err.message?err.message:'حدث خطأ أثناء التصدير — جرّب صيغة واحدة')); };
+    if(fmts.length===1){
+      var f=fmts[0], pr=f==='json'?exportJSON(backup):f==='xlsx'?exportExcel(backup,BC.selected):f==='docx'?exportWord(backup,BC.selected):exportPDF(backup,BC.selected);
+      pr.then(function(){done('⬇️ تم تنزيل الملف بنجاح');}).catch(fail); return;
+    }
+    buildZip(backup,BC.selected,fmts).then(function(blob){
+      download(blob,'نسخة-شاملة-إعداد-خدام-'+today()+'.zip');
+      done('🗜️ تم تنزيل كل الصيغ مرة واحدة داخل ملف ZIP');
+    }).catch(fail);
   };
   if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
     ask('تضمين كلمات المرور؟','اخترت تضمين كلمات مرور حسابات الخدام داخل ملف JSON. احفظ الملف في مكان آمن جدًا ولا تشاركه.','متابعة التصدير').then(function(ok){if(ok)run();});
@@ -3578,6 +3651,18 @@ window.E3DADBackup={version:BC_VERSION,registerSection:registerSection,open:open
 window.exportBackup=function(){openBackupCenter('export');};
 })();
 
+
+initHeaderTools();
+initFirebase();
+route();
+applyPerms();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js?v=1').catch(function(){});});}
+} // end authenticated application
+})();
+
 </script>
-</body>
+
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df3cd4dfbe1b37',t:'MTc5MjU3NDk2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
