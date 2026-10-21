@@ -10,7 +10,152 @@
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="manifest.json?v=6.3">
 <meta name="theme-color" id="metaThemeColor" content="#f7f2e6">
-<script>(function(){try{var t=localStorage.getItem('e3dad-theme');if(t!=='dark'&&t!=='light')t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';document.documentElement.setAttribute('data-theme',t);var mt=document.getElementById('metaThemeColor');if(mt)mt.content=(t==='dark'?'#0e1826':'#f7f2e6');}catch(e){}})();</script>
+<script id="e3-theme-engine">/* E3DAD ThemeSchedule v1.0 — نهاري ٦:٠٠ص → ٧:٠٠م، ليلي ٧:٠٠م → ٦:٠٠ص بتوقيت مصر */
+(function(){
+'use strict';
+var TZ='Africa/Cairo', LIGHT_H=6, DARK_H=19;
+var OVR_KEY='e3dad-theme-manual', LEGACY_KEY='e3dad-theme', MODE_ATTR='data-theme-mode';
+function pad(n){return (n<10?'0':'')+n;}
+function parts(ms){
+  var d=new Date(ms===undefined?Date.now():ms);
+  try{
+    var f=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    var o={};f.formatToParts(d).forEach(function(p){o[p.type]=p.value;});
+    var h=parseInt(o.hour,10);if(!isFinite(h))h=0;if(h===24)h=0;
+    var r={y:+o.year,mo:+o.month,d:+o.day,h:h,mi:+o.minute,s:+o.second};
+    if(isFinite(r.y)&&isFinite(r.mo)&&isFinite(r.d))return r;
+    throw new Error('parts');
+  }catch(e){return {y:d.getFullYear(),mo:d.getMonth()+1,d:d.getDate(),h:d.getHours(),mi:d.getMinutes(),s:d.getSeconds()};}
+}
+function isoNow(ms){var p=parts(ms);return p.y+'-'+pad(p.mo)+'-'+pad(p.d)+'T'+pad(p.h)+':'+pad(p.mi);}
+/* الجدول: من ٦ الصبح لـ ٧ بالليل نهاري، والباقي ليلي */
+function scheduled(ms){var p=parts(ms);return (p.h>=LIGHT_H&&p.h<DARK_H)?'light':'dark';}
+function nextBoundary(ms){
+  var p=parts(ms),y=p.y,mo=p.mo,d=p.d,h;
+  if(p.h<LIGHT_H)h=LIGHT_H;
+  else if(p.h<DARK_H)h=DARK_H;
+  else{h=LIGHT_H;var n=new Date(Date.UTC(y,mo-1,d+1));y=n.getUTCFullYear();mo=n.getUTCMonth()+1;d=n.getUTCDate();}
+  return {iso:y+'-'+pad(mo)+'-'+pad(d)+'T'+pad(h)+':00',hour:h,col:h<12?'صباحًا':'مساءً',
+    label:(h===LIGHT_H?'٦:٠٠ صباحًا':'٧:٠٠ مساءً'),to:(h===LIGHT_H?'light':'dark')};
+}
+function read(fn,val){try{return window[fn]?window[fn](val):localStorage[fn](val);}catch(e){return null;}}
+function readOverride(){
+  try{
+    var raw=localStorage.getItem(OVR_KEY);
+    if(!raw){
+      var old=localStorage.getItem(LEGACY_KEY); /* ترحيل الاختيار القديم لمرة واحدة */
+      if(old==='light'||old==='dark'){
+        localStorage.removeItem(LEGACY_KEY);
+        var o0={mode:old,until:nextBoundary().iso};
+        localStorage.setItem(OVR_KEY,JSON.stringify(o0));
+        return o0;
+      }
+      return null;
+    }
+    var o=JSON.parse(raw);
+    if(!o||(o.mode!=='light'&&o.mode!=='dark')){localStorage.removeItem(OVR_KEY);return null;}
+    if(o.until&&isoNow()>=o.until){localStorage.removeItem(OVR_KEY);return null;} /* انتهى التثبيت */
+    return o;
+  }catch(e){return null;}
+}
+function mode(){var o=readOverride();return o?o.mode:'auto';}
+function theme(){var o=readOverride();return o?o.mode:scheduled();}
+function isAuto(){return !readOverride();}
+
+function flash(msg){
+  try{
+    var el=document.getElementById('e3ThemeToast');
+    if(!el){
+      el=document.createElement('div');el.id='e3ThemeToast';
+      el.style.cssText='position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));inset-inline:0;margin:auto;width:max-content;max-width:92vw;z-index:99999;'+
+        'padding:10px 16px;border-radius:12px;background:#0d2b4a;color:#fff;font:800 12.5px/1.7 Tahoma,system-ui;'+
+        'box-shadow:0 12px 30px rgba(0,0,0,.35);text-align:center;opacity:0;transform:translateY(8px);transition:opacity .18s,transform .18s;pointer-events:none';
+      document.body.appendChild(el);
+    }
+    el.textContent=msg;el.style.opacity='1';el.style.transform='translateY(0)';
+    clearTimeout(el._t);el._t=setTimeout(function(){el.style.opacity='0';el.style.transform='translateY(8px)';},2600);
+  }catch(e){}
+}
+function syncButtons(t,m){
+  var boundary=nextBoundary();
+  var icon=m==='auto'?'🌗':(t==='dark'?'🌙':'☀️');
+  var title=m==='auto'
+    ? 'الوضع التلقائي — نهاري ٦:٠٠ صباحًا حتى ٧:٠٠ مساءً، وليلي بعدها حتى ٦:٠٠ صباحًا (بتوقيت مصر). التحويل القادم: '+boundary.label
+    : 'مثبّت يدويًا ('+(t==='dark'?'ليلي':'نهاري')+') — هيرجع تلقائي '+boundary.label+'. اضغط للرجوع للتلقائي';
+  var label=m==='auto'?(t==='dark'?'الوضع الليلي · تلقائي':'الوضع النهاري · تلقائي'):(t==='dark'?'الوضع الليلي · مثبّت':'الوضع النهاري · مثبّت');
+  try{
+    var btn=document.getElementById('themeBtn');
+    if(btn){btn.textContent=icon;btn.title=title;btn.setAttribute('aria-label',title);}
+    var list=document.querySelectorAll('[data-theme-toggle]');
+    Array.prototype.forEach.call(list,function(b){
+      var ic=b.querySelector('.tico'),lb=b.querySelector('.tlabel');
+      if(ic)ic.textContent=icon;
+      if(lb)lb.textContent=label;
+      b.title=title;b.setAttribute('aria-label',title);b.setAttribute('aria-pressed',t==='dark'?'true':'false');
+    });
+  }catch(e){}
+}
+function apply(t){
+  t=(t==='dark')?'dark':'light';
+  try{
+    var h=document.documentElement;
+    h.setAttribute('data-theme',t);
+    if(t==='dark')h.classList.add('dark');else h.classList.remove('dark');
+    h.setAttribute(MODE_ATTR,mode());
+    h.setAttribute('data-theme-auto',mode()==='auto'?'1':'0');
+    var mt=document.getElementById('metaThemeColor');
+    if(mt)mt.content=(t==='dark'?'#0e1826':'#f7f2e6');
+    var mt2=document.querySelector('meta[name="theme-color"]:not(#metaThemeColor)');
+    if(mt2)mt2.content=(t==='dark'?'#0a1017':'#123a63');
+  }catch(e){}
+  syncButtons(t,mode());
+  try{window.dispatchEvent(new CustomEvent('e3themechange',{detail:{theme:t,mode:mode(),auto:isAuto()}}));}catch(e){}
+  return t;
+}
+function refresh(){
+  var want=theme();
+  var cur=document.documentElement.getAttribute('data-theme');
+  if(want!==cur||document.documentElement.getAttribute(MODE_ATTR)!==mode())apply(want);
+  else syncButtons(want,mode());
+  return want;
+}
+function setMode(m,quiet){
+  try{
+    if(m==='auto')localStorage.removeItem(OVR_KEY);
+    else if(m==='light'||m==='dark')localStorage.setItem(OVR_KEY,JSON.stringify({mode:m,until:nextBoundary().iso,at:new Date().toISOString()}));
+    else return refresh();
+  }catch(e){}
+  var t=refresh();
+  if(!quiet){
+    if(mode()==='auto')flash('🌗 الوضع التلقائي — نهاري ٦:٠٠ ص حتى ٧:٠٠ م، وليلي بعد كده');
+    else flash((t==='dark'?'🌙 الوضع الليلي':'☀️ الوضع النهاري')+' مثبّت لحد '+nextBoundary().label+' — اضغط تاني للرجوع للتلقائي');
+  }
+  return t;
+}
+function toggle(quiet){
+  var cur=theme();
+  if(isAuto())return setMode(cur==='dark'?'light':'dark',quiet);
+  return setMode('auto',quiet);
+}
+function start(){
+  try{
+    refresh();
+    setInterval(refresh,20000);
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
+    window.addEventListener('focus',refresh);
+    window.addEventListener('pageshow',refresh);
+    setTimeout(function(){try{var mt=document.getElementById('metaThemeColor');if(mt)mt.content=(theme()==='dark'?'#0e1826':'#f7f2e6');}catch(e){}},400);
+  }catch(e){}
+}
+window.E3Theme={apply:apply,refresh:refresh,setMode:setMode,toggle:toggle,mode:mode,theme:theme,isAuto:isAuto,
+  scheduled:scheduled,nextBoundary:nextBoundary,parts:parts,start:start,
+  LIGHT_HOUR:LIGHT_H,DARK_HOUR:DARK_H,timezone:TZ,
+  init:function(){apply(theme());}};
+/* التطبيق الفوري قبل أول رسم */
+try{apply(theme());}catch(e){}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',start);}else{start();}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@400;600;700;900&family=Changa:wght@500;700&family=Markazi+Text:wght@500;600;700&family=Noto+Sans+Coptic:wght@400&display=swap" rel="stylesheet">
@@ -2016,14 +2161,10 @@ function initHeaderTools(){
   f.addEventListener('change',function(){if(f.files[0])importBackup(f.files[0]);f.value='';});
   document.getElementById('logoutBtn').addEventListener('click',logout);
   document.getElementById('fbUser').addEventListener('click',function(){if(location.hash==='#profile')openStaffForm(ME.id,true);else location.hash='profile';});
+  /* زرار الوضع: بيقرأ/يخزّن من محرك التوقيت E3Theme (نهاري ٦ص–٧م · ليلي ٧م–٦ص بتوقيت مصر) */
   var tb=document.getElementById('themeBtn');
-  function syncThemeBtn(){if(tb)tb.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'☀️':'🌙';}
-  if(tb)tb.addEventListener('click',function(){
-    var h=document.documentElement,t=h.getAttribute('data-theme')==='dark'?'light':'dark';
-    h.setAttribute('data-theme',t);try{localStorage.setItem('e3dad-theme',t);}catch(_e){}
-    var mt=document.getElementById('metaThemeColor');if(mt)mt.content=(t==='dark'?'#0e1826':'#f7f2e6');
-    syncThemeBtn();
-  });
+  function syncThemeBtn(){if(window.E3Theme)window.E3Theme.refresh();}
+  if(tb&&!tb._e3wired){tb._e3wired=true;tb.addEventListener('click',function(e){e.preventDefault();if(window.E3Theme)window.E3Theme.toggle(false);});}
   syncThemeBtn();
   document.addEventListener('focusout',function(){setTimeout(flushPending,80);});
   window.addEventListener('online',function(){if(fbDirty)pushNow();});
@@ -2206,11 +2347,14 @@ function accountAllowed(u){return u&&(u.id===ME.id||isOwner()||(can('manageUsers
    - كلمات المرور مش بتتحط في HTML وهي مخفية؛ بتتقرأ من USERS وقت
      الضغط على «إظهار» فقط.
    ============================================================ */
+/* مساعدات محلية: في نطاق التطبيق S هو كائن الفلاتر وN غير معرّفة — لا نستخدمهما هنا */
+function pwStr(v){return v==null?'':String(v);}
+function pwNum(v){try{return typeof nf==='function'?nf(v):pwStr(v);}catch(e){return pwStr(v);}}
 function pwUserById(id){for(var i=0;i<USERS.length;i++)if(USERS[i].id===id)return USERS[i];return null;}
 function pwMask(){return '••••••••••';}
 function pwCodeHTML(u,prefix){
   if(!u)return '';
-  var p=S(u.pass);
+  var p=pwStr(u.pass);
   if(!p)return '<code class="pw-code pw-empty" data-pw-code="'+esc(u.id)+'" dir="ltr">لا توجد كلمة مرور محفوظة</code>';
   return '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr" title="كلمة المرور مخفية — اضغط إظهار">'+pwMask()+'</code>';
 }
@@ -2230,12 +2374,12 @@ function pwVaultHTML(u){
 }
 function pwReveal(id,forceHide){
   if(!isOwner()){return;}
-  var u=pwUserById(id);if(!u||!S(u.pass))return;
+  var u=pwUserById(id);if(!u||!pwStr(u.pass))return;
   var codes=document.querySelectorAll('[data-pw-code="'+id+'"]'),show=forceHide?false:true;
   Array.prototype.forEach.call(codes,function(el){
     var isShown=el.getAttribute('data-shown')==='1';
     var next=forceHide?false:!isShown;
-    el.textContent=next?S(u.pass):pwMask();
+    el.textContent=next?pwStr(u.pass):pwMask();
     el.setAttribute('data-shown',next?'1':'0');
     el.style.color=next?'#8a1c1c':'';
   });
@@ -2246,8 +2390,8 @@ function pwReveal(id,forceHide){
 function pwCopy(id){
   if(!isOwner())return;
   var u=pwUserById(id);
-  if(!u||!S(u.pass)){toast('لا توجد كلمة مرور محفوظة لهذا الحساب');return;}
-  var txt=S(u.pass);
+  if(!u||!pwStr(u.pass)){toast('لا توجد كلمة مرور محفوظة لهذا الحساب');return;}
+  var txt=pwStr(u.pass);
   var fallback=function(){
     try{
       var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
@@ -2263,7 +2407,7 @@ function pwCopy(id){
 function openPasswordsVault(){
   if(!isOwner()){toast('🔒 كلمات المرور متاحة لإدارة النظام فقط');return;}
   if(typeof openModal!=='function'){toast('تعذر فتح الخزنة');return;}
-  var list=USERS.slice().sort(function(a,b){return S(a.name||a.u).localeCompare(S(b.name||b.u),'ar');});
+  var list=USERS.slice().sort(function(a,b){return pwStr(a.name||a.u).localeCompare(pwStr(b.name||b.u),'ar');});
   var rows=list.map(function(u){
     return '<div class="pw-row">'+
       '<div class="pw-row-main"><b>'+esc(u.name||u.u||'—')+'</b><small>@'+esc(u.username||u.u||'')+' · '+esc(u.role||'—')+(u.active===false?' · موقوف':'')+'</small></div>'+
@@ -2271,15 +2415,15 @@ function openPasswordsVault(){
       '<div class="pw-vault-actions">'+
         '<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️ إظهار</button>'+
         '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋</button>'+
-        (S(u.pass)?'<button type="button" class="btn sm" data-pw-wa="'+esc(u.id)+'" title="إرسال بيانات الدخول على واتساب">📨</button>':'')+
+        (pwStr(u.pass)?'<button type="button" class="btn sm" data-pw-wa="'+esc(u.id)+'" title="إرسال بيانات الدخول على واتساب">📨</button>':'')+
       '</div></div>';
   }).join('');
-  openModal('<div class="pw-vault-modal"><div class="modal-head"><div><small>إدارة النظام · خزنة كلمات المرور</small><h3>🔑 كلمات مرور الحسابات</h3><p>'+N(list.length)+' حساب. كلمات المرور مخفية افتراضيًا — اضغط «إظهار» أو «📋» للحفظ.</p></div><button type="button" class="btn sm" data-act="closeModal">إغلاق</button></div>'+
+  openModal('<div class="pw-vault-modal"><div class="modal-head"><div><small>إدارة النظام · خزنة كلمات المرور</small><h3>🔑 كلمات مرور الحسابات</h3><p>'+pwNum(list.length)+' حساب. كلمات المرور مخفية افتراضيًا — اضغط «إظهار» أو «📋» للحفظ.</p></div><button type="button" class="btn sm" data-act="closeModal">إغلاق</button></div>'+
     '<div class="pw-vault" style="margin-top:4px"><div class="pw-vault-head"><b>⚠️ سرّي</b><span class="pw-only">إدارة النظام فقط</span></div>'+
     '<p style="margin:0;font-size:.72rem;line-height:1.8;color:var(--cx-muted,#5d6d7d)">الشاشة دي بتفتح لإدارة النظام فقط، وفتحها بيتسجل في سجل النشاطات. ماينفعش تبعت كلمة المرور لأي حد غير صاحب الحساب.</p>'+
     '<div class="pw-vault-actions" style="margin-top:10px"><button type="button" class="btn sm" data-pw-all="show">👁️ إظهار الكل</button><button type="button" class="btn sm" data-pw-all="hide">🙈 إخفاء الكل</button></div></div>'+
     '<div class="pw-table">'+rows+'</div></div>');
-  if(typeof logActivity==='function')logActivity('view_passwords','كلمات مرور الحسابات','فتح خزنة كلمات المرور ('+N(list.length)+' حساب)',{protected:true});
+  if(typeof logActivity==='function')logActivity('view_passwords','كلمات مرور الحسابات','فتح خزنة كلمات المرور ('+pwNum(list.length)+' حساب)',{protected:true});
 }
 /* كل أزرار الخزنة من مكان واحد (تفويض) */
 document.addEventListener('click',function(e){
@@ -2560,15 +2704,37 @@ function route(noScroll){
   if(ME.role==='خادم'&&tab!=='results'){location.replace('#results');return;}
   var active=tab==='student'?'students':tab;
   $$('[data-view]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-view')===active);});
-  if(tab==='students')renderStudents();
-  else if(tab==='student')renderStudent(parts[1]);
-  else if(tab==='results')renderResults();
-  else if(tab==='team')renderTeam();
-  else if(tab==='activity')renderActivity();
-  else renderSubjects();
+  /* عرض آمن: أي خطأ في قسم لا يقفل التاب ولا يسيب شاشة قديمة */
+  if(tab==='students')safeRender('الدارسون',renderStudents);
+  else if(tab==='student')safeRender('ملف الدارس',function(){renderStudent(parts[1]);});
+  else if(tab==='results')safeRender('النتائج',renderResults);
+  else if(tab==='team')safeRender('إدارة الخدام',renderTeam);
+  else if(tab==='activity')safeRender('سجل النشاطات',renderActivity);
+  else safeRender('المواد',renderSubjects);
   applyPerms(true);
   if(noScroll!==true)window.scrollTo(0,0);
 }
+/* ============================================================
+   safeRender — درع ضد انهيار قسم واحد
+   لو أي دالة عرض رميت استثناء، بنعرض كارت خطأ واضح بدل ما التاب
+   يفضل واقف على شاشة قديمة (اللي كان بيخلي «إدارة الخدام» متقفل).
+   ============================================================ */
+function safeRender(label,fn){
+  try{ fn(); }
+  catch(e){
+    try{ console.error('[E3DAD] render "'+label+'" failed:',e); }catch(_e){}
+    try{
+      view.innerHTML='<div class="sx-empty"><div class="big">⚠️</div>'+
+        '<p>تعذر فتح قسم «'+esc(label)+'» — حصل خطأ في العرض.</p>'+
+        '<p style="font-size:12px;opacity:.75;direction:ltr;word-break:break-word">'+esc(String((e&&e.message)||e))+'</p>'+
+        '<button class="btn primary" type="button" data-act="reloadView">🔄 إعادة المحاولة</button></div>';
+    }catch(_e2){}
+  }
+}
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('[data-act="reloadView"]'):null;
+  if(!b)return; e.preventDefault(); route();
+});
 window.addEventListener('hashchange',function(){route();});
 function go(h){ if(location.hash==='#'+h)route(); else location.hash=h; }
 
@@ -3432,7 +3598,7 @@ registerSection({id:'attempts',icon:'🔁',label:'سجل المحاولات وا
 registerSection({id:'confessors',icon:'🙏',label:'آباء الاعتراف',description:'قائمة مجمعة تلقائيًا من بيانات الدارسين (تقرير — تُبنى من قسم الدارسين عند الاستيراد).',
   count:function(){return collectConfessors().length;},collect:function(){return collectConfessors();},
   tables:function(){return [{name:'آباء الاعتراف',headers:['أب الاعتراف','الموبايل','الكنيسة','عدد الدارسين'],rows:collectConfessors().map(function(c){return [c.name,c.phone,c.church,N(c.students)];})}];}});
-registerSection({id:'users',icon:'👥',label:'إدارة الخدام والحسابات',description:'أسماء الخدام وأدوارهم وحالة الحساب. كلمات المرور لا تخرج إلا في JSON وباختيار صريح منفصل.',
+registerSection({id:'users',icon:'👥',label:'إدارة الخدام والحسابات',description:'أسماء الخدام وأدوارهم وحالة الحساب. كلمات المرور لا تخرج إلا في JSON وباختيار صريح منفصل ولإدارة النظام فقط.',
   count:function(){return (typeof USERS!=='undefined'?USERS.length:0);},
   collect:function(o){return collectUsers(!!(o&&o.includePasswords));},
   tables:function(){return [{name:'الخدام',headers:['الاسم','اسم المستخدم','الموبايل','الدور','الحالة'],
@@ -3512,82 +3678,160 @@ function excelExtraTables(selected){
 function buildExcelBlob(backup,selected){
   selected=allowedIds(selected);
   return loadExcelJS().then(function(){ return buildExcelJS(backup,selected); })
-    .catch(function(){ return buildExcelBlobLegacy(backup,selected); });
+    .catch(function(e){ try{console.warn('[E3DAD] ExcelJS failed, fallback to XLSX',e);}catch(_e){} return buildExcelBlobLegacy(backup,selected); });
 }
 function buildExcelJS(backup,selected){
   var wb=new ExcelJS.Workbook();
   wb.creator=BRAND.name; wb.created=new Date(); wb.modified=new Date();
   wb.views=[{rightToLeft:true}];
-  var NAVY='FF0D2B4A', GOLD='FFC9A227', PAPER='FFFFFBF2', ALT='FFF8F6EE', LINE='FFDFE3E6';
+  // ألوان الهوية — كثافة مناسبة للطباعة
+  var NAVY='FF0D2B4A', GOLD='FFC9A227', PAPER='FFFFFBF2', ALT='FFF8F6EE', LINE='FFDFE3E6', GOLD_DARK='FF8A6D00';
   var logoId=null;
   try{var lu=logoURI(); if(lu&&lu.indexOf('data:image')===0){logoId=wb.addImage({base64:lu,extension:lu.indexOf('image/png')>=0?'png':'jpeg'});}}catch(e){}
   function styleSheet(ws,title,subtitle,headers,widths){
     ws.views=[{rightToLeft:true,state:'frozen',ySplit:4,showGridLines:false}];
-    ws.sheetProperties.pageSetUpPr={fitToPage:true};
     ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9};
-    ws.printTitlesRows='1:4';
+    ws.pageSetup.margins={left:0.35,right:0.35,top:0.5,bottom:0.5,header:0.2,footer:0.2};
+    ws.pageSetup.printTitlesRow='1:4';
     var last=Math.max(headers.length,2);
     ws.mergeCells(1,1,1,last); var c=ws.getCell(1,1); c.value='✝ '+BRAND.name+' — '+title;
     c.font={name:'Tahoma',bold:true,size:14,color:{argb:GOLD}}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:NAVY}};
     c.alignment={horizontal:'right',vertical:'middle'}; ws.getRow(1).height=30;
     ws.mergeCells(2,1,2,last); var c2=ws.getCell(2,1); c2.value=BRAND.org+(subtitle?'  •  '+subtitle:'');
-    c2.font={name:'Tahoma',size:10,color:{argb:'FF34495E'}}; c2.fill={type:'pattern',pattern:'solid',fgColor:{argb:PAPER}};
+    c2.font={name:'Tahoma',size:9,color:{argb:'FF34495E'}}; c2.fill={type:'pattern',pattern:'solid',fgColor:{argb:PAPER}};
     c2.alignment={horizontal:'right',vertical:'middle',wrapText:true}; ws.getRow(2).height=22;
     ws.mergeCells(3,1,3,last); var c3=ws.getCell(3,1);
-    c3.value='تاريخ التصدير: '+backup.exportedAtLocal+'   •   بواسطة: '+(backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):'')+'   •   إصدار المركز: '+BC_VERSION;
-    c3.font={name:'Tahoma',size:9,italic:true,color:{argb:'FF5D6D7D'}}; c3.alignment={horizontal:'right',vertical:'middle'}; ws.getRow(3).height=18;
-    if(logoId!=null){try{ws.addImage(logoId,{tl:{col:last-1,row:0},ext:{width:52,height:52}});}catch(e){}}
-    var hr=ws.getRow(4); hr.height=30;
+    c3.value='تاريخ التصدير: '+backup.exportedAtLocal+'  •  بواسطة: '+(backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):'')+'  •  إصدار المركز: '+BC_VERSION;
+    c3.font={name:'Tahoma',size:8,italic:true,color:{argb:'FF5D6D7D'}}; c3.alignment={horizontal:'right',vertical:'middle',wrapText:true}; ws.getRow(3).height=16;
+    if(logoId!=null){try{ws.addImage(logoId,{tl:{col:Math.max(0,last-1),row:0},ext:{width:48,height:48}});}catch(e){}}
+    var hr=ws.getRow(4); hr.height=26;
     headers.forEach(function(h,i){var cell=hr.getCell(i+1); cell.value=h;
-      cell.font={name:'Tahoma',bold:true,size:10,color:{argb:'FFFFFFFF'}};
+      cell.font={name:'Tahoma',bold:true,size:9,color:{argb:'FFFFFFFF'}};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:NAVY}};
       cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};
-      cell.border={bottom:{style:'medium',color:{argb:GOLD}},left:{style:'thin',color:{argb:LINE}},right:{style:'thin',color:{argb:LINE}},top:{style:'thin',color:{argb:NAVY}}};
+      cell.border={bottom:{style:'medium',color:{argb:GOLD}},left:{style:'thin',color:{argb:LINE}},right:{style:'thin',color:{argb:LINE}},top:{style:'thin',color:{argb:LINE}}};
     });
-    (widths||[]).forEach(function(w,i){ws.getColumn(i+1).width=w;});
-    ws.autoFilter={from:{row:4,column:1},to:{row:4,column:headers.length}};
+    (widths||[]).forEach(function(w,i){ws.getColumn(i+1).width=Math.min(50,Math.max(9,w));});
+    // فلتر + تجميد عناوين
+    try{ws.autoFilter={from:{row:4,column:1},to:{row:4,column:headers.length}};}catch(e){}
     return 5;
   }
   function addRows(ws,start,rows){
-    rows.forEach(function(r,ri){var row=ws.getRow(start+ri); row.height=20;
-      r.forEach(function(v,ci){var cell=row.getCell(ci+1); cell.value=(v===undefined||v===null)?'':(typeof v==='number'?v:cellSafe(reportName(v)));
-        cell.font={name:'Tahoma',size:10,color:{argb:'FF152232'}};
-        cell.alignment={horizontal:ci===0?'right':'center',vertical:'middle',wrapText:true};
+    if(!rows||!rows.length) return start;
+    rows.forEach(function(r,ri){var row=ws.getRow(start+ri); row.height=19;
+      r.forEach(function(v,ci){var cell=row.getCell(ci+1);
+        var raw=(v===undefined||v===null)?'':v;
+        // حفظ الأرقام كأرقام ليتسنى الفرز والجمع
+        if(typeof raw==='number'&&isFinite(raw)){ cell.value=raw; cell.numFmt='0.00'; }
+        else { var txt=cellSafe(reportName(raw)); cell.value=txt===''?'':txt; }
+        cell.font={name:'Tahoma',size:9,color:{argb:'FF152232'}};
+        cell.alignment={horizontal:(ci===0?'right':'center'),vertical:'middle',wrapText:true};
         cell.border={left:{style:'thin',color:{argb:LINE}},right:{style:'thin',color:{argb:LINE}},top:{style:'thin',color:{argb:LINE}},bottom:{style:'thin',color:{argb:LINE}}};
         if(ri%2===1)cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:ALT}};
-      });});
+      });
+      row.commit();
+    });
+    return start + rows.length;
   }
-  function widthsFor(headers,rows,minW){return headers.map(function(h,i){var m=Math.max(S(h).length+4,(minW||14));rows.forEach(function(r){m=Math.max(m,Math.min(42,S(r[i]).length+2));});return m;});}
+  function widthsFor(headers,rows,minW){
+    minW=minW||12;
+    return headers.map(function(h,i){
+      var m=Math.max((S(h)||'').length+6, minW);
+      (rows||[]).forEach(function(r){
+        var cell=S(r[i]); if(cell.length>80) cell=cell.slice(0,80);
+        m=Math.max(m, Math.min(46, cell.length+4));
+      });
+      return Math.min(48, Math.max(minW, m));
+    });
+  }
   function addGeneric(tb,subtitle){
-    var ws=wb.addWorksheet(S(tb.name).slice(0,31),{views:[{rightToLeft:true}]});
+    if(!tb||!tb.headers||!tb.headers.length) return null;
+    var safeName=S(tb.name).slice(0,31)||'بيانات';
+    // Excel لا يسمح بتكرار الاسم — أضف رقم إن لزم
+    var base=safeName, n=1; while(wb.getWorksheet(safeName)){ safeName=(base+' ('+n+')').slice(0,31); n++; }
+    var ws=wb.addWorksheet(safeName,{views:[{rightToLeft:true}]});
     var start=styleSheet(ws,tb.name,subtitle,tb.headers,widthsFor(tb.headers,tb.rows));
-    addRows(ws,start,tb.rows); return ws;
+    var end=addRows(ws,start,tb.rows);
+    // تذييل بعدد السجلات
+    if(tb.rows.length){
+      var fr=ws.getRow(end+1); fr.height=18;
+      fr.getCell(1).value='الإجمالي: '+N(tb.rows.length)+' سجل';
+      fr.getCell(1).font={name:'Tahoma',bold:true,size:9,color:{argb:NAVY}};
+      fr.getCell(1).alignment={horizontal:'right',vertical:'middle'};
+      ws.mergeCells(end+1,1,end+1,Math.min(3,tb.headers.length));
+    }
+    return ws;
   }
-  /* غلاف منظم */
+  // ── غلاف النظام — مُصلّح: addRows تُرجع السطر التالي فلا حاجة لإضافة الطول مرتين
   var cover=wb.addWorksheet('غلاف النظام',{views:[{rightToLeft:true}]});
-  styleSheet(cover,'غلاف النظام','ملخص الحزمة', ['البند','التفاصيل'],[30,90]);
-  var coverRows=[['تاريخ التصدير',backup.exportedAtLocal],['تم بواسطة',backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):''],['إصدار مركز النسخ',BC_VERSION],['عدد الأقسام المضمنة',selected.length],['تنبيه','الاسترجاع الكامل للنظام من ملف JSON المرافق داخل ZIP — الإكسيل للمراجعة والطباعة والاستيراد الجزئي (الدارسون والدرجات).'],['سرية','بيانات سرية مخصصة لخدمة إعداد الخدام فقط.']];
-  var r0=addRows(cover,5,coverRows);
-  var hr=cover.getRow(r0+coverRows.length+1); hr.getCell(1).value='القسم'; hr.getCell(2).value='عدد السجلات';
-  [1,2].forEach(function(i){var c=hr.getCell(i);c.font={name:'Tahoma',bold:true,color:{argb:GOLD}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:NAVY}};c.alignment={horizontal:'center'};});
-  addRows(cover,r0+coverRows.length+2,selected.map(function(id){var key=id==='__extra'?'extra':id;return [sectionLabel(id),backup.counts&&backup.counts[key]!=null?backup.counts[key]:''];}));
-  /* شيتات مخصصة كاملة البيانات */
+  styleSheet(cover,'غلاف النظام','ملخص الحزمة — اقرأني أولاً', ['البند','التفاصيل'],[32,88]);
+  var coverRows=[
+    ['تاريخ التصدير',backup.exportedAtLocal],
+    ['تم بواسطة',backup.exportedBy?(backup.exportedBy.name+' — '+backup.exportedBy.role):'غير مسجّل'],
+    ['إصدار مركز النسخ',BC_VERSION],
+    ['عدد الأقسام المضمنة',S(selected.length)+' قسم'],
+    ['طريقة الاسترجاع','الاسترجاع الكامل للنظام من ملف JSON المرافق داخل ZIP — الإكسيل للمراجعة والطباعة والاستيراد الجزئي (الدارسون والدرجات التفصيلية)'],
+    ['تنبيه سرية','بيانات سرية مخصصة لخدمة إعداد الخدام فقط — احفظ الحزمة في مكان آمن.']
+  ];
+  var afterCover=addRows(cover,5,coverRows); // ==5+6=11
+  var hr=cover.getRow(afterCover+1); hr.height=22;
+  hr.getCell(1).value='القسم'; hr.getCell(2).value='عدد السجلات';
+  [1,2].forEach(function(i){var c=hr.getCell(i);
+    c.font={name:'Tahoma',bold:true,size:9,color:{argb:'FFFFFFFF'}};
+    c.fill={type:'pattern',pattern:'solid',fgColor:{argb:NAVY}};
+    c.alignment={horizontal:'center',vertical:'middle'};
+    c.border={left:{style:'thin',color:{argb:LINE}},right:{style:'thin',color:{argb:LINE}},top:{style:'thin',color:{argb:LINE}},bottom:{style:'thin',color:{argb:LINE}},bottom:{style:'medium',color:{argb:GOLD}}};
+  });
+  var countsRows=selected.map(function(id){
+    var key=id==='__extra'?'extra':id;
+    var cnt=backup.counts&&backup.counts[key]!=null?backup.counts[key]:0;
+    return [sectionLabel(id), N(cnt)];
+  });
+  addRows(cover,afterCover+2,countsRows);
+  // معلومات إضافية أسفل الجدول
+  var infoRow=afterCover+2+countsRows.length+1;
+  var inf=cover.getRow(infoRow); inf.height=26;
+  inf.getCell(1).value='💡 للطباعة: كل شيت مُجهز أفقيًا (Landscape) مع ترويسة ثابتة وفلتر على كل عمود. استخدم Ctrl+P → Landscape.';
+  inf.getCell(1).font={name:'Tahoma',size:8,color:{argb:'FF5D6D7D'},italic:true};
+  inf.getCell(1).alignment={horizontal:'right',vertical:'middle',wrapText:true};
+  cover.mergeCells(infoRow,1,infoRow,2);
+  // ── شيتات مخصصة كاملة البيانات (تضمن عدم فقدان أي عمود)
   var generic=allTables(selected), used={};
   if(selected.indexOf('students')>=0){
     used['الدارسون']=1;
-    var srows=(db.students||[]).slice().sort(byName).map(function(s){return [s.id||'',s.name||'',s.phone||'',levelName(s.level),statusText(s.status),s.gender==='m'?'ذكر':s.gender==='f'?'أنثى':'',s.joinYear||'',s.birth||'',s.nid||'',s.address||'',s.confName||'',s.confChurch||'',s.confPhone||'',s.notes||'',Object.keys(s.grades||{}).length,''];});
+    var stList=(db.students||[]).slice().sort(byName);
+    // 16 عمودًا كاملة — نفس الأعمدة التي يستورد منها النظام
+    var srows=stList.map(function(s){
+      return [s.id||'',s.name||'',s.phone||'',levelName(s.level),statusText(s.status),s.gender==='m'?'ذكر':s.gender==='f'?'أنثى':'',s.joinYear||'',s.birth||'',s.nid||'',s.address||'',s.confName||'',s.confChurch||'',s.confPhone||'',s.notes||'',S(Object.keys(s.grades||{}).length), s.photo?'يوجد صورة':''];
+    });
     var ws=wb.addWorksheet('الدارسون',{views:[{rightToLeft:true}]});
     var sheaders=['معرف الدارس','الاسم','الموبايل','السنة الدراسية','الحالة','النوع','سنة الالتحاق','تاريخ الميلاد','الرقم القومي','العنوان','أب الاعتراف','كنيسة أب الاعتراف','موبايل أب الاعتراف','ملاحظات','مواد مقيّمة','الصورة'];
-    var st=styleSheet(ws,'الدارسون','كل بيانات الدارسين',sheaders,[16,26,15,15,10,9,13,13,17,22,20,20,16,26,11,12]);
-    addRows(ws,st,srows);
-    (db.students||[]).slice().sort(byName).forEach(function(s,i){ if(s.photo&&S(s.photo).indexOf('data:image')===0){ try{var im=wb.addImage({base64:s.photo,extension:S(s.photo).indexOf('image/png')>=0?'png':'jpeg'}); ws.addImage(im,{tl:{col:15,row:st-1+i},ext:{width:34,height:34}}); ws.getRow(st+i).height=38; }catch(e){} }});
+    var stStart=styleSheet(ws,'الدارسون — كل بيانات الدارسين','16 عمودًا كاملة (التصدير ↔ الاستيراد)',sheaders,[16,26,15,15,10,9,13,13,17,24,20,20,16,28,11,11]);
+    addRows(ws,stStart,srows);
+    // تضمين الصور كصور فعلية + إشارة نصية في العمود الأخير
+    stList.forEach(function(s,i){
+      if(s.photo&&S(s.photo).indexOf('data:image')===0){
+        try{
+          var im=wb.addImage({base64:s.photo,extension:S(s.photo).indexOf('image/png')>=0?'png':'jpeg'});
+          ws.addImage(im,{tl:{col:15,row:stStart-1+i},ext:{width:30,height:30}});
+          ws.getRow(stStart+i).height=34;
+        }catch(e){}
+      }
+    });
+    // تذييل
+    var sEnd=stStart+srows.length;
+    var sf=ws.getRow(sEnd+1); sf.height=18;
+    sf.getCell(1).value='الإجمالي: '+N(stList.length)+' دارس';
+    sf.getCell(1).font={name:'Tahoma',bold:true,size:9,color:{argb:NAVY}};
+    ws.mergeCells(sEnd+1,1,sEnd+1,3);
   }
   if(selected.indexOf('grades')>=0){ used['الدرجات التفصيلية']=1;
-    var grows=[];(db.students||[]).forEach(function(st){Object.keys(st.grades||{}).forEach(function(sid){var sub=subj(sid);if(!sub)return;var eff=(typeof effCrit==='function')?effCrit(sub,st):{};Object.keys(eff).forEach(function(k){var g=(st.grades[sid]||{})[k];grows.push([st.id||'',st.name||'',st.phone||'',sid,sub.name||'',critName(k),(g===undefined||g==='')?'':Number(g),eff[k].max,(g===undefined||g===''||!eff[k].max)?'':Math.round(Number(g)/Number(eff[k].max)*1000)/10+'٪']);});});});
-    addGeneric({name:'الدرجات التفصيلية',headers:['معرف الدارس','الدارس','الموبايل','معرف المادة','المادة','المعيار','الدرجة','الدرجة الكاملة','النسبة'],rows:grows},'كل درجة بمعرفاتها للاستيراد الدقيق');
+    var grows=[];(db.students||[]).forEach(function(st){Object.keys(st.grades||{}).forEach(function(sid){var sub=subj(sid);if(!sub)return;var eff=(typeof effCrit==='function')?effCrit(sub,st):(sub.criteria||{});Object.keys(eff).forEach(function(k){var g=(st.grades[sid]||{})[k];var mx=eff[k]&&eff[k].max;grows.push([st.id||'',st.name||'',st.phone||'',sid,sub.name||'',critName(k),(g===undefined||g==='')?'':Number(g),mx==null?'':Number(mx),(g===undefined||g===''||!mx)?'':Math.round(Number(g)/Number(mx)*1000)/10+'٪']);});});});
+    addGeneric({name:'الدرجات التفصيلية',headers:['معرف الدارس','الدارس','الموبايل','معرف المادة','المادة','المعيار','الدرجة','الدرجة الكاملة','النسبة'],rows:grows},'كل درجة بمعرّفاتها — لإعادة الاستيراد الدقيق');
   }
   generic.forEach(function(tb){ if(used[tb.name])return; addGeneric(tb,''); });
-  excelExtraTables(selected).forEach(function(tb){ addGeneric(tb,'بيانات مكملة'); });
+  // الجداول الإضافية (معايير المواد + تخصيصات + مصفوفة النتائج) — كانت غائبة في legacy
+  try{ excelExtraTables(selected).forEach(function(tb){ if(used[tb.name])return; addGeneric(tb,'بيانات مكملة'); }); }catch(e){}
   return wb.xlsx.writeBuffer().then(function(buf){return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});});
 }
 function buildExcelBlobLegacy(backup,selected){
@@ -3608,18 +3852,33 @@ function buildExcelBlobLegacy(backup,selected){
     ];
     selected.forEach(function(id){
       var key=id==='__extra'?'extra':id;
-      cover.push([sectionLabel(id), backup.counts&&backup.counts[key]!=null?backup.counts[key]:'']);
+      cover.push([sectionLabel(id), backup.counts&&backup.counts[key]!=null?N(backup.counts[key]):'0']);
     });
     cover.push([],['تنبيه','هذا الملف تقرير منظم للمراجعة والطباعة. الاسترجاع الكامل للنظام يكون من ملف JSON المرافق داخل نفس ملف ZIP.'],['سرية','بيانات هذا الملف سرية ومخصصة لخدمة إعداد الخدام فقط.']);
     var ws=XLSX.utils.aoa_to_sheet(cover); ws['!cols']=[{wch:34},{wch:95}];
     XLSX.utils.book_append_sheet(wb,ws,'غلاف النظام');
+    // كل الجداول الأساسية
     allTables(selected).forEach(function(tb){
+      if(!tb||!tb.headers||!tb.headers.length) return;
       var aoa=[tb.headers].concat(tb.rows.map(function(r){return r.map(function(c){return cellSafe(reportName(c)===S(c)?c:reportName(c));});}));
       var sh=XLSX.utils.aoa_to_sheet(aoa);
       sh['!cols']=tb.headers.map(function(h,i){var m=S(h).length; tb.rows.forEach(function(r){m=Math.max(m,Math.min(48,S(r[i]).length));}); return {wch:Math.max(12,m+2)};});
-      if(tb.rows.length)sh['!autofilter']={ref:sh['!ref']};
-      XLSX.utils.book_append_sheet(wb,sh,S(tb.name).slice(0,31)||'بيانات');
+      if(tb.rows.length)try{sh['!autofilter']={ref:sh['!ref']};}catch(e){}
+      var shName=S(tb.name).slice(0,31)||'بيانات'; var base=shName,n=1; while(wb.SheetNames.indexOf(shName)>=0){shName=(base+' ('+n+')').slice(0,31); n++;}
+      XLSX.utils.book_append_sheet(wb,sh,shName);
     });
+    // الجداول الإضافية — كانت السبب في «ناقص» عند فشل ExcelJS
+    try{
+      excelExtraTables(selected).forEach(function(tb){
+        if(!tb||!tb.headers||!tb.headers.length) return;
+        var aoa=[tb.headers].concat(tb.rows.map(function(r){return r.map(function(c){return cellSafe(reportName(c));});}));
+        var sh=XLSX.utils.aoa_to_sheet(aoa);
+        sh['!cols']=tb.headers.map(function(h,i){var m=S(h).length; tb.rows.forEach(function(r){m=Math.max(m,Math.min(48,S(r[i]).length));}); return {wch:Math.max(12,m+2)};});
+        if(tb.rows.length)try{sh['!autofilter']={ref:sh['!ref']};}catch(e){}
+        var shName=S(tb.name).slice(0,31)||'بيانات'; var base=shName,n=1; while(wb.SheetNames.indexOf(shName)>=0){shName=(base+' ('+n+')').slice(0,31); n++;}
+        XLSX.utils.book_append_sheet(wb,sh,shName);
+      });
+    }catch(e){}
     var out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     return new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   });
@@ -3628,103 +3887,178 @@ function exportExcel(backup,selected){return buildExcelBlob(backup,selected).the
 
 /* ---------- تقارير Word / PDF: ترويسة فاتحة بالهوية تُطبع بوضوح دائمًا ---------- */
 function reportInner(backup,selected){
-  selected=allowedIds(selected); /* بوابة الصلاحيات: وثائق PDF */
+  selected=allowedIds(selected);
   var logo=logoURI();
-  var tables=splitTables(allTables(selected),7);
+  var tables=splitTables(allTables(selected),8);
+  // ترتيب الجداول: الدارسون → المواد → الدرجات → النتائج → الباقي (حتى يقرأ التقرير بسلاسة)
+  tables.sort(function(a,b){
+    var order={'الدارسون':1,'المواد':2,'الدرجات التفصيلية':3,'النتائج':4,'مصفوفة النتائج':5,'معايير المواد':6,'تخصيصات المعايير':7,'المحاولات السابقة':8,'آباء الاعتراف':9,'سجل النشاطات':10,'ملخص النظام':11};
+    return (order[a.name]||99)-(order[b.name]||99);
+  });
   var secs=tables.map(function(tb){
+    var badge='<span class="rowbadge">'+E(N(tb.rows.length))+' صف</span>';
     var head=tb.headers.map(function(h){return '<th>'+E(h)+'</th>';}).join('');
-    var body=tb.rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+E(reportName(c))+'</td>';}).join('')+'</tr>';}).join('');
-    return '<section><h2>'+E(tb.name)+' <small>('+N(tb.rows.length)+' صف)</small></h2><table><thead><tr>'+head+'</tr></thead><tbody>'+(body||'<tr><td colspan="'+tb.headers.length+'">لا توجد بيانات</td></tr>')+'</tbody></table></section>';
+    var body=tb.rows.map(function(r,i){
+      return '<tr>'+r.map(function(c){return '<td>'+E(reportName(c))+'</td>';}).join('')+'</tr>';
+    }).join('');
+    if(!tb.rows.length) body='<tr><td colspan="'+tb.headers.length+'" class="emptycell">لا توجد بيانات في هذا القسم</td></tr>';
+    return '<section><div class="sech"><h2>'+E(tb.name)+'</h2>'+badge+'</div><div class="tWrap"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></section>';
   }).join('');
   var metaRows=[
     ['تاريخ التصدير',backup.exportedAtLocal],
-    ['تم بواسطة',backup.exportedBy?(reportName(backup.exportedBy.name)+' — '+backup.exportedBy.role):''],
-    ['إجمالي الدارسين',N(backup.counts.students||0)],
-    ['إجمالي المواد',N(backup.counts.subjects||0)],
-    ['الأقسام المضمنة',sectionLabels(selected)]
+    ['تم بواسطة',backup.exportedBy?(reportName(backup.exportedBy.name)+' — '+backup.exportedBy.role):'غير مسجل'],
+    ['إجمالي الدارسين',N(backup.counts.students||0)+' دارس'],
+    ['إجمالي المواد',N(backup.counts.subjects||0)+' مادة'],
+    ['الأقسام المضمنة',sectionLabels(selected)],
+    ['إصدار التقرير',BC_VERSION+' — Schema '+SCHEMA]
   ].map(function(r){return '<tr><th>'+E(r[0])+'</th><td>'+E(r[1])+'</td></tr>';}).join('');
-  return '<header><table class="headtab"><tr><td class="logoCell">'+(logo?'<img src="'+logo+'" alt="">':'<span class="cross">✝</span>')+'</td>'+
-    '<td><h1>✝ '+E(BRAND.name)+'</h1><p>'+E(BRAND.org)+'<br>تقرير شامل من مركز النسخة الاحتياطية والتصدير</p></td></tr></table></header>'+
-    '<table class="meta">'+metaRows+'</table>'+
-    (secs||'<p>لم يتم اختيار أي قسم.</p>')+
-    '<footer>وُثّق هذا التقرير آليًا من نظام '+E(BRAND.name)+' بتاريخ '+E(backup.exportedAtLocal)+'. البيانات سرية وتُستخدم لأغراض خدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف JSON المرافق داخل نفس ملف ZIP.</footer>';
+  var summaryChips=selected.map(function(id){
+    var key=id==='__extra'?'extra':id;
+    var cnt=backup.counts&&backup.counts[key]!=null?backup.counts[key]:0;
+    return '<span class="chip">'+E(sectionLabel(id))+'<b>'+E(N(cnt))+'</b></span>';
+  }).join('');
+  return '<header><div class="headMain"><div class="logoBox">'+(logo?'<img src="'+logo+'" alt="logo">':'<span class="cross">✝</span>')+'</div>'+
+    '<div class="brand"><h1>✝ '+E(BRAND.name)+'</h1><p>'+E(BRAND.org)+'</p><span class="subline">تقرير شامل من مركز النسخة الاحتياطية والتصدير — نسخة معتمدة للأرشفة</span></div></div>'+
+    '<div class="chipsBar">'+summaryChips+'</div></header>'+
+    '<table class="meta"><tbody>'+metaRows+'</tbody></table>'+
+    (secs||'<div class="emptyReport">لم يتم اختيار أي قسم للتصدير — اختر قسمًا واحدًا على الأقل من لوحة التحكم.</div>')+
+    '<footer><div class="footTitle">ملاحظة سرية وأرشيفية</div>وُثّق هذا التقرير آليًا من نظام <b>'+E(BRAND.name)+'</b> بتاريخ <b>'+E(backup.exportedAtLocal)+'</b>. البيانات سرية ومخصصة لخدمة إعداد الخدام فقط. للاسترجاع الكامل للنظام استخدم ملف <b>JSON</b> المرفق داخل حزمة ZIP نفسها — هذا الـ PDF تقرير قراءة وطباعة فقط، ولا يُستخدم للاسترجاع.</footer>';
 }
-var REPORT_CSS='*{box-sizing:border-box}body{font-family:Tajawal,Cairo,"Segoe UI",Tahoma,Arial,sans-serif;color:#152232;margin:0;background:#fff}'+
-  'header{background:#f7f2e6;border:2px solid #c9a227;border-radius:14px;padding:18px 22px;margin-bottom:14px}'+
-  '.headtab{width:100%;border-collapse:collapse}.headtab td{border:none;padding:0;vertical-align:middle}.logoCell{width:92px;text-align:center}'+
-  'header img{width:78px;height:78px;border-radius:16px;object-fit:cover}.cross{font-size:46px;color:#0d2b4a}'+
-  'h1{margin:0 0 6px;font-size:27px;color:#0d2b4a}header p{margin:0;color:#34495e;line-height:1.9;font-size:14px}'+
-  '.meta{width:100%;border-collapse:collapse;margin:0 0 8px;font-size:13px}.meta th{width:180px;background:#0d2b4a;color:#fff;text-align:right;padding:8px 10px;border:1px solid #0d2b4a}.meta td{padding:8px 10px;border:1px solid #dfe3e6;background:#fffdf6}'+
-  'section{margin:22px 0}h2{color:#0d2b4a;border-bottom:2.5px solid #c9a227;padding-bottom:6px;font-size:18px;margin:0 0 10px}h2 small{color:#5d6d7d;font-size:12px}'+
-  'section table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}section th{background:#0d2b4a;color:#fff;padding:8px 7px;border:1px solid #0d2b4a;text-align:right;word-break:break-word}section td{padding:7px;border:1px solid #d9dee3;vertical-align:top;word-break:break-word;overflow-wrap:anywhere;line-height:1.6}section tbody tr:nth-child(even) td{background:#f8f6ee}'+
-  'footer{margin-top:26px;border-top:2.5px solid #c9a227;padding-top:10px;color:#5d6d7d;font-size:12px;line-height:1.8}';
+// ستايل التقرير — شيك واحترافي، مضبوط للطباعة والعرض
+var REPORT_CSS='*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:Tajawal,Cairo,\"Segoe UI\",Tahoma,Arial,sans-serif;color:#152232;background:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}'+
+  'header{background:linear-gradient(135deg,#0d2b4a 0%,#1e5b96 100%);color:#fff;border-radius:16px;padding:20px 22px;margin:0 0 16px;overflow:hidden;position:relative;isolation:isolate}'+
+  'header::after{content:\"\";position:absolute;inset-inline-end:-40px;top:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(201,162,39,.22) 0%,transparent 70%);z-index:0}'+
+  '.headMain{display:flex;align-items:center;gap:16px;position:relative;z-index:1}'+
+  '.logoBox{flex:0 0 72px;width:72px;height:72px;border-radius:16px;background:#fff;display:grid;place-items:center;overflow:hidden;border:2px solid rgba(201,162,39,.7);box-shadow:0 4px 14px rgba(0,0,0,.18)}'+
+  '.logoBox img{width:100%;height:100%;object-fit:cover}.logoBox .cross{font-size:34px;color:#0d2b4a}'+
+  '.brand h1{margin:0;font-size:22px;font-weight:900;color:#fff;letter-spacing:.2px}.brand p{margin:3px 0 0;color:#d6e3f2;font-size:13px;line-height:1.6}.brand .subline{display:inline-block;margin-top:8px;background:rgba(255,255,255,.14);border:1px solid rgba(201,162,39,.55);color:#ffe9a8;font-size:11px;padding:4px 10px;border-radius:999px}'+
+  '.chipsBar{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;position:relative;z-index:1}'+
+  '.chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:11px;padding:5px 10px;border-radius:999px;backdrop-filter:blur(4px)}'+
+  '.chip b{background:#c9a227;color:#0d2b4a;min-width:22px;height:22px;display:grid;place-items:center;border-radius:999px;font-size:11px;padding:0 5px}'+
+  '.meta{width:100%;border-collapse:separate;border-spacing:0;margin:0 0 18px;border:1px solid #dfe3e6;border-radius:12px;overflow:hidden;font-size:12.5px}'+
+  '.meta th{width:170px;background:#0d2b4a;color:#fff;text-align:right;padding:9px 12px;font-weight:700;font-size:12px;border-bottom:1px solid #0d2b4a}'+
+  '.meta td{padding:9px 12px;background:#fffdf6;border-bottom:1px solid #ede9d8;text-align:right}'+
+  '.meta tr:last-child th,.meta tr:last-child td{border-bottom:none}'+
+  'section{margin:20px 0;break-inside:auto}'+
+  '.sech{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f7f2e6;border-right:5px solid #c9a227;border-radius:10px;padding:10px 14px;margin:0 0 8px}'+
+  '.sech h2{margin:0;color:#0d2b4a;font-size:15px;font-weight:800}'+
+  '.rowbadge{background:#0d2b4a;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}'+
+  '.tWrap{overflow:hidden;border-radius:10px;border:1px solid #d9dee3}'+
+  'section table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}'+
+  'section thead th{background:#0d2b4a;color:#fff;padding:9px 6px;text-align:center;font-weight:800;font-size:11px;border:1px solid #0d2b4a;word-break:break-word;overflow-wrap:anywhere}'+
+  'section tbody td{padding:7px 6px;border:1px solid #d9dee3;vertical-align:middle;word-break:break-word;overflow-wrap:anywhere;line-height:1.55;text-align:center}'+
+  'section tbody td:first-child{text-align:right}'+
+  'section tbody tr:nth-child(even) td{background:#faf8f0}'+
+  'section tbody tr:hover td{background:#fff3d6}'+
+  '.emptycell{text-align:center!important;color:#8a95a5;font-style:italic;padding:14px 8px!important}'+
+  '.emptyReport{text-align:center;color:#5d6d7d;background:#f7f2e6;border:1px dashed #c9a227;border-radius:12px;padding:22px;margin:12px 0}'+
+  'footer{margin-top:22px;background:#f7f2e6;border:1.5px solid #c9a227;border-radius:12px;padding:14px 16px;color:#34495e;font-size:11.5px;line-height:1.9;text-align:center}'+
+  'footer .footTitle{font-weight:800;color:#0d2b4a;margin-bottom:6px;font-size:12px}';
 function reportHTML(backup,selected,forPrint){
-  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير '+E(BRAND.name)+'</title><style>@page{size:A4 landscape;margin:12mm}'+REPORT_CSS+
-    (forPrint?'@media print{header,.meta th,section th{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{page-break-inside:auto}tr{page-break-inside:avoid}}':'')+
+  return '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقرير '+E(BRAND.name)+'</title><style>@page{size:A4 landscape;margin:10mm}'+REPORT_CSS+
+    (forPrint?'@media print{header,.meta th,section thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}section{break-inside:auto}tr{break-inside:avoid;page-break-inside:avoid}footer{break-inside:avoid}}':'')+
     '</style></head><body>'+reportInner(backup,selected)+'</body></html>';
 }
-/* PDF حقيقي كملف: يُصيَّر التقرير داخل iframe معزول تمامًا عن CSS التطبيق
-   (حتى لا تتعثر مكتبة التصيير في دوال ألوان حديثة مثل color-mix الخاصة بتصميم النظام) */
+/* PDF حقيقي — يصيّر التقرير داخل iframe معزول عن CSS التطبيق، مع انتظار الخطوط والصور وتقسيم ذكي للصفحات */
 function buildPDFBlob(backup,selected){
   return loadPDFLibs().then(function(){
     return new Promise(function(resolve,reject){
       var iframe=document.createElement('iframe');
       iframe.setAttribute('title','pdf-render');
-      iframe.style.cssText='position:absolute;left:-12000px;top:0;width:1120px;height:900px;border:0;background:#fff';
+      iframe.style.cssText='position:fixed;left:-20000px;top:0;width:1160px;height:900px;border:0;background:#fff;opacity:0;pointer-events:none';
       document.body.appendChild(iframe);
       var cleaned=false;
-      function cleanup(){if(cleaned)return;cleaned=true;try{iframe.remove();}catch(e){}}
+      function cleanup(){ if(cleaned) return; cleaned=true; try{iframe.remove();}catch(e){} }
+      function fail(msg){ cleanup(); reject(new Error(msg)); }
       iframe.onload=function(){
-        setTimeout(function(){
+        (async function(){
           try{
             var doc=iframe.contentDocument;
-            if(!doc||!doc.body)throw new Error('تعذر تجهيز صفحة التقرير');
-            /* صفحة التقرير وحدها + حشوة مريحة */
-            var st=doc.createElement('style');st.textContent='body{padding:28px;background:#fff}';doc.head.appendChild(st);
+            if(!doc||!doc.body) throw new Error('تعذر تجهيز صفحة التقرير');
+            // حشوة مريحة داخل iframe
+            var st=doc.createElement('style'); st.textContent='body{padding:18px 20px 12px;background:#fff;max-width:1120px;margin:0 auto}'; doc.head.appendChild(st);
+            // انتظار الخطوط
+            try{ if(doc.fonts&&doc.fonts.ready) await doc.fonts.ready; }catch(e){}
+            // انتظار الصور (اللوجو)
+            var imgs=Array.from(doc.images||[]);
+            if(imgs.length){
+              await Promise.all(imgs.map(function(img){
+                if(img.complete) return Promise.resolve();
+                return new Promise(function(res){ img.onload=res; img.onerror=res; setTimeout(res,1500); });
+              }));
+            }
+            await new Promise(function(r){ setTimeout(r,220); });
+
             var target=doc.body;
-            var pdfScale=IS_MOBILE?1.05:1.6, pdfW=IS_MOBILE?900:1120;
-            window.html2canvas(target,{scale:pdfScale,useCORS:true,backgroundColor:'#ffffff',logging:false,width:target.scrollWidth,height:target.scrollHeight,windowWidth:pdfW}).then(function(canvas){
-              cleanup();
-              try{
-                var jsPDF=window.jspdf.jsPDF;
-                var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
-                var pageW=297,pageH=210,margin=10,imgW=pageW-margin*2,usableH=pageH-margin*2;
-                var sliceH=Math.floor(canvas.width*usableH/imgW);
-                var rendered=0,page=0;
-                while(rendered<canvas.height){
-                  var h=Math.min(sliceH,canvas.height-rendered);
-                  var c=document.createElement('canvas');c.width=canvas.width;c.height=h;
-                  var cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);cx.drawImage(canvas,0,rendered,canvas.width,h,0,0,c.width,h);
-                  if(page>0)pdf.addPage();
-                  pdf.addImage(c.toDataURL('image/jpeg',IS_MOBILE?0.82:0.92),'JPEG',margin,margin,imgW,h*imgW/canvas.width);
-                  c.width=c.height=0; /* تحرير ذاكرة الكانفس على الموبايل */
-                  rendered+=h;page++;
-                }
-                resolve(pdf.output('blob'));
-              }catch(e2){reject(e2);}
-            },function(err){cleanup();reject(err);});
-          }catch(err){cleanup();reject(err);}
-        },450); /* مهلة للشعار والخطوط */
+            if(!target) throw new Error('لا يوجد محتوى للتصدير');
+            // scale أقل على الموبايل لتوفير الذاكرة، أعلى على الديسكتوب لحدة الطباعة
+            var pdfScale=IS_MOBILE?1.15:1.55, pdfW=IS_MOBILE?920:1120;
+
+            // نلتقط الصفحة كاملة مرة واحدة ثم نقسم الصورة أفقيًا — أثبت وأسرع من التقاط كل section منفصل
+            var canvas=await window.html2canvas(target,{scale:pdfScale,useCORS:true,backgroundColor:'#ffffff',logging:false,width:target.scrollWidth,height:target.scrollHeight,windowWidth:pdfW});
+
+            cleanup();
+            try{
+              var jsPDF=window.jspdf.jsPDF;
+              var pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4',compress:true});
+              var margin=8, imgW=297-margin*2, usableH=210-margin*2;
+              var sliceHpx=Math.floor(canvas.width * usableH / imgW);
+              // هامش تداخل 2px بين الشرائح حتى لا ينقطع سطر في المنتصف بلا أثر
+              var OVERLAP=2;
+              var rendered=0, page=0;
+              var totalSlices=Math.ceil(canvas.height / sliceHpx);
+              while(rendered < canvas.height){
+                var h=Math.min(sliceHpx, canvas.height - rendered);
+                var c=document.createElement('canvas'); c.width=canvas.width; c.height=h;
+                var ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+                ctx.drawImage(canvas, 0, rendered, canvas.width, h, 0, 0, canvas.width, h);
+                if(page>0) pdf.addPage();
+                var imgData=c.toDataURL('image/jpeg', IS_MOBILE?0.84:0.92);
+                var renderH=h*imgW/canvas.width;
+                pdf.addImage(imgData,'JPEG',margin,margin,imgW,renderH);
+                // تذييل ترقيم الصفحات بخط لاتيني آمن (Helvetica يدعم الأرقام الإنجليزية)
+                try{
+                  pdf.setFont('helvetica','normal');
+                  pdf.setFontSize(7.5);
+                  pdf.setTextColor('#7a8491');
+                  // رقم الصفحة — إنجليزي لتجنب تشويه العربي في jsPDF
+                  var pgText='Page '+(page+1)+' / '+totalSlices+'  •  '+BRAND.name+'  •  '+backup.exportedAtLocal;
+                  pdf.text(pgText, 297-margin, 210-3.5, {align:'right'});
+                  // خط ذهبي رفيع فوق التذييل
+                  pdf.setDrawColor('#c9a227'); pdf.setLineWidth(0.2);
+                  pdf.line(margin, 210-5.5, 297-margin, 210-5.5);
+                }catch(e){}
+                c.width=c.height=0;
+                rendered += (h - (rendered + h < canvas.height ? OVERLAP : 0));
+                page++;
+                // تحرير ضغط الذاكرة كل صفحتين على الموبايل
+                if(IS_MOBILE && page%2===0) await new Promise(function(r){ setTimeout(r,0); });
+              }
+              resolve(pdf.output('blob'));
+            }catch(e2){ reject(e2); }
+          }catch(err){ fail(err.message||String(err)); }
+        })();
       };
-      iframe.onerror=function(){cleanup();reject(new Error('تعذر تحميل صفحة تقرير PDF'));};
+      iframe.onerror=function(){ fail('تعذر تحميل صفحة تقرير PDF'); };
       iframe.srcdoc=reportHTML(backup,selected,true);
-      setTimeout(function(){if(!cleaned&&!iframe.contentDocument){/* srcdoc قد لا يطلق onload في متصفحات نادرة */ try{iframe.onload&&iframe.onload();}catch(e){}}},1800);
+      setTimeout(function(){ if(!cleaned && (!iframe.contentDocument||!iframe.contentDocument.body)){
+        try{ iframe.onload&&iframe.onload(); }catch(e){}
+      }}, 2200);
     });
   });
 }
 function exportPDF(backup,selected){
-  return buildPDFBlob(backup,selected).then(function(b){download(b,'تقرير-إعداد-خدام-'+today()+'.pdf');})
+  return buildPDFBlob(backup,selected).then(function(b){ download(b,'تقرير-إعداد-خدام-'+today()+'.pdf'); })
     .catch(function(err){
-      /* بديل لا يفقد التقرير: نسخة طباعة HTML تُفتح ويُحفظ منها PDF من الموبايل */
       var html='\ufeff'+reportHTML(backup,selected,true);
       download(new Blob([html],{type:'text/html;charset=utf-8'}),'تقرير-إعداد-خدام-'+today()+'-للطباعة.html');
-      toastMsg('📄 تعذر توليد PDF على الجهاز — نزّلنا نسخة طباعة: افتحها ثم «مشاركة/طباعة ← حفظ كـ PDF»');
+      toastMsg('📄 تعذر توليد PDF — نزّلنا نسخة طباعة HTML: افتحها ثم «مشاركة/طباعة ← حفظ كـ PDF» • '+((err&&err.message)||''));
     });
 }
 function printPDF(backup,selected){
   var w=window.open('','_blank'); if(!w){toastMsg('اسمح بالنوافذ المنبثقة للطباعة');return;}
   w.document.open();w.document.write(reportHTML(backup,selected,true));w.document.close();
-  setTimeout(function(){try{w.focus();w.print();}catch(e){}},700);
+  setTimeout(function(){try{w.focus();w.print();}catch(e){}},650);
 }
 
 /* ---------- Word ---------- */
@@ -3933,13 +4267,14 @@ function levelFromName(v){var t=S(v);if(typeof LEVELS!=='undefined'){for(var i=0
    ============================================================ */
 var BC={tab:'export',selected:null,formats:{json:true,xlsx:true,docx:true,pdf:true},includePasswords:false,pending:null};
 function defaultSelected(){return visibleSections().map(function(s){return s.id;});}
-var BC_ALLOWED_ROLES=['إدارة النظام','أمين خدمة إعداد خدام'];
+/* النسخ الاحتياطي: متاح للجميع للتحميل، لكن كلمة المرور لإدارة النظام فقط */
+var BC_ALLOWED_ROLES=['إدارة النظام','أمين خدمة إعداد خدام','مساعد أمين إعداد خدام','خادم'];
 function bcAllowed(){
   try{return !!(typeof ME!=='undefined'&&ME&&BC_ALLOWED_ROLES.indexOf(ME.role)>=0);}catch(e){return false;}
 }
 function openBackupCenter(tab){
   if(typeof ME==='undefined'||!ME){return;} /* الجلسة متحققة أصلًا من النظام */
-  if(!bcAllowed()){toastMsg('🔒 النسخة الاحتياطية والاستيراد متاحة لإدارة النظام وأمين خدمة إعداد خدام فقط');return;}
+  if(!bcAllowed()){toastMsg('🔒 النسخة الاحتياطية غير متاحة لدورك الحالي');return;}
   BC.tab=tab||'export';if(!BC.selected)BC.selected=defaultSelected();
   if(typeof openModal!=='function'){toastMsg('تعذر فتح المركز');return;}
   renderBC();
@@ -4225,6 +4560,5 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 
 
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df6743dd76ed5f',t:'MTc5MjU3NjcwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df6743dd76ed5f',t:'MTc5MjU3NjcwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4dff40a38d5376c',t:'MTc5MjU4MjQ2OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
