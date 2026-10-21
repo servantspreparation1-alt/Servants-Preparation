@@ -1320,6 +1320,26 @@ html[data-theme="dark"] .fb-sync[data-state="error"]{color:#fda4af!important}
 .pw-btn{border:1px solid var(--cx-line);background:transparent;color:inherit;border-radius:7px;padding:1px 6px;cursor:pointer;font-size:.76rem;line-height:1.4}
 .pw-btn:hover{border-color:var(--cx-gold)}
 .pass-wrap{position:relative;display:flex;align-items:center;gap:6px}
+/* ===== خزنة كلمات المرور (إدارة النظام فقط) ===== */
+.pw-vault{margin:4px 0 12px;padding:12px 14px;border:1.5px solid color-mix(in srgb,var(--cx-gold) 55%,var(--card-border));border-radius:14px;background:color-mix(in srgb,var(--cx-gold) 10%,var(--cx-paper))}
+.pw-vault-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pw-vault-head b{font-size:.85rem;color:var(--cx-brand)}
+.pw-only{font-size:.63rem;font-weight:900;padding:3px 8px;border-radius:999px;background:var(--cx-gold-soft,#f6ecd0);color:#7a5c06;border:1px solid rgba(201,162,39,.4)}
+.pw-inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pw-code{display:inline-block;min-width:132px;padding:8px 12px;border-radius:10px;border:1px dashed var(--card-border,#d8dee5);background:var(--cx-paper,#fff);font-family:ui-monospace,Consolas,monospace;font-size:.92rem;letter-spacing:.06em;color:var(--cx-ink,#152232);text-align:center;word-break:break-all}
+.pw-code.pw-empty{letter-spacing:0;font-family:inherit;font-size:.76rem;color:var(--cx-muted,#5d6d7d);border-style:solid}
+.pw-vault-actions{display:flex;gap:6px;flex-wrap:wrap}
+.pw-vault-modal{max-width:720px}
+.pw-table{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pw-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--card-border,#e2e7ec);border-radius:13px;background:var(--cx-paper,#fff)}
+.pw-row-main{flex:1 1 190px;min-width:150px}
+.pw-row-main b{display:block;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-row-main small{color:var(--cx-muted,#5d6d7d);font-size:.7rem;direction:ltr;display:block}
+.pw-row .pw-code{min-width:112px;font-size:.82rem;padding:6px 9px}
+@media(max-width:520px){.pw-row{gap:7px}.pw-row .pw-code{flex:1 1 100%;min-width:0}}
+html[data-theme="dark"] .pw-code,html.dark .pw-code{background:#0d1724;color:#e8eef6;border-color:#33465c}
+html[data-theme="dark"] .pw-row,html.dark .pw-row{background:#101a28;border-color:#28384b}
+html[data-theme="dark"] .pw-vault,html.dark .pw-vault{background:rgba(201,162,39,.12)}
 .pass-wrap input{flex:1}
 
 /* ترويسة وتنسيق الطباعة الرسمي (يتغلب على أنماط الوضع الليلي والنهاري بالكامل) */
@@ -2062,7 +2082,7 @@ function logActivity(action,target,details,opts){
   }catch(_e){return Promise.resolve(false);}
 }
 function activityLabel(action){
-  var m={login:['تسجيل دخول','edit'],login_failed:['محاولة دخول فاشلة','delete'],session_revoked:['إنهاء جلسة','edit'],logout:['تسجيل خروج','edit'],add_user:['إضافة حساب','add'],edit_user:['تعديل حساب','edit'],delete_user:['حذف حساب','delete'],delete_activity_log:['حذف من سجل النشاطات','delete'],activate_user:['تفعيل حساب','add'],deactivate_user:['إيقاف حساب','delete'],change_password:['تغيير كلمة المرور','edit'],add_student:['إضافة دارس','add'],edit_student:['تعديل دارس','edit'],delete_student:['حذف دارس','delete'],add_subject:['إضافة مادة','add'],edit_subject:['تعديل مادة','edit'],delete_subject:['حذف مادة','delete'],edit_grades:['تعديل درجات','edit'],export:['تصدير نسخة احتياطية','edit'],import:['استيراد نسخة احتياطية','edit'],retake:['إعادة امتحان','edit'],edit_attendance:['تعديل الحضور','edit'],admin_note:['ملاحظة إدارية','edit'],export_activity:['تصدير سجل النشاطات','edit'],send_user_credentials:['إرسال بيانات الدخول','edit']};
+  var m={login:['تسجيل دخول','edit'],login_failed:['محاولة دخول فاشلة','delete'],session_revoked:['إنهاء جلسة','edit'],logout:['تسجيل خروج','edit'],add_user:['إضافة حساب','add'],edit_user:['تعديل حساب','edit'],delete_user:['حذف حساب','delete'],delete_activity_log:['حذف من سجل النشاطات','delete'],activate_user:['تفعيل حساب','add'],deactivate_user:['إيقاف حساب','delete'],change_password:['تغيير كلمة المرور','edit'],add_student:['إضافة دارس','add'],edit_student:['تعديل دارس','edit'],delete_student:['حذف دارس','delete'],add_subject:['إضافة مادة','add'],edit_subject:['تعديل مادة','edit'],delete_subject:['حذف مادة','delete'],edit_grades:['تعديل درجات','edit'],export:['تصدير نسخة احتياطية','edit'],import:['استيراد نسخة احتياطية','edit'],retake:['إعادة امتحان','edit'],edit_attendance:['تعديل الحضور','edit'],admin_note:['ملاحظة إدارية','edit'],export_activity:['تصدير سجل النشاطات','edit'],send_user_credentials:['إرسال بيانات الدخول','edit'],view_passwords:['عرض كلمات المرور','edit']};
   return m[action]||[action||'نشاط آخر','edit'];
 }
 function activityDay(ts){
@@ -2179,14 +2199,118 @@ function renderActivity(){
   };
 }
 function accountAllowed(u){return u&&(u.id===ME.id||isOwner()||(can('manageUsers')&&u.role!=='إدارة النظام'));}
+
+/* ============================================================
+   خزنة كلمات المرور — لإدارة النظام فقط (isOwner)
+   - غير إدارة النظام: الدوال بترفض الشغل أصلًا، مش مجرد إخفاء للواجهة.
+   - كلمات المرور مش بتتحط في HTML وهي مخفية؛ بتتقرأ من USERS وقت
+     الضغط على «إظهار» فقط.
+   ============================================================ */
+function pwUserById(id){for(var i=0;i<USERS.length;i++)if(USERS[i].id===id)return USERS[i];return null;}
+function pwMask(){return '••••••••••';}
+function pwCodeHTML(u,prefix){
+  if(!u)return '';
+  var p=S(u.pass);
+  if(!p)return '<code class="pw-code pw-empty" data-pw-code="'+esc(u.id)+'" dir="ltr">لا توجد كلمة مرور محفوظة</code>';
+  return '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr" title="كلمة المرور مخفية — اضغط إظهار">'+pwMask()+'</code>';
+}
+function pwVaultHTML(u){
+  /* لوحة داخل نافذة تعديل الحساب */
+  if(!isOwner())return '';
+  return '<div class="pw-vault" data-pw-box="'+esc(u.id)+'">'+
+    '<div class="pw-vault-head"><b>🔑 كلمة المرور الحالية</b><span class="pw-only">إدارة النظام فقط</span></div>'+
+    '<div class="pw-inline">'+pwCodeHTML(u)+
+      '<div class="pw-vault-actions">'+
+        '<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️ إظهار</button>'+
+        '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋 نسخ</button>'+
+      '</div>'+
+    '</div>'+
+    '<p style="margin:8px 0 0;font-size:.69rem;color:var(--cx-muted,#5d6d7d);line-height:1.7">كلمة المرور دي محفوظة حاليًا للحساب. أي تغيير هنا بيتسجل في سجل النشاطات، ومحدش غير «إدارة النظام» بيقدر يشوفها.</p>'+
+  '</div>';
+}
+function pwReveal(id,forceHide){
+  if(!isOwner()){return;}
+  var u=pwUserById(id);if(!u||!S(u.pass))return;
+  var codes=document.querySelectorAll('[data-pw-code="'+id+'"]'),show=forceHide?false:true;
+  Array.prototype.forEach.call(codes,function(el){
+    var isShown=el.getAttribute('data-shown')==='1';
+    var next=forceHide?false:!isShown;
+    el.textContent=next?S(u.pass):pwMask();
+    el.setAttribute('data-shown',next?'1':'0');
+    el.style.color=next?'#8a1c1c':'';
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-pw-reveal="'+id+'"]'),function(b){
+    b.textContent=(Array.prototype.some.call(document.querySelectorAll('[data-pw-code="'+id+'"]'),function(el){return el.getAttribute('data-shown')==='1';}))?'🙈 إخفاء':'👁️ إظهار';
+  });
+}
+function pwCopy(id){
+  if(!isOwner())return;
+  var u=pwUserById(id);
+  if(!u||!S(u.pass)){toast('لا توجد كلمة مرور محفوظة لهذا الحساب');return;}
+  var txt=S(u.pass);
+  var fallback=function(){
+    try{
+      var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);ta.select();try{ta.setSelectionRange(0,txt.length);}catch(e){}
+      document.execCommand('copy');ta.remove();toast('📋 اتنقلت كلمة المرور');
+    }catch(e){toast('تعذر النسخ — اضغط «إظهار» وانسخها يدويًا');}
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('📋 اتنقلت كلمة المرور');},fallback);
+  }else fallback();
+}
+function openPasswordsVault(){
+  if(!isOwner()){toast('🔒 كلمات المرور متاحة لإدارة النظام فقط');return;}
+  if(typeof openModal!=='function'){toast('تعذر فتح الخزنة');return;}
+  var list=USERS.slice().sort(function(a,b){return S(a.name||a.u).localeCompare(S(b.name||b.u),'ar');});
+  var rows=list.map(function(u){
+    return '<div class="pw-row">'+
+      '<div class="pw-row-main"><b>'+esc(u.name||u.u||'—')+'</b><small>@'+esc(u.username||u.u||'')+' · '+esc(u.role||'—')+(u.active===false?' · موقوف':'')+'</small></div>'+
+      pwCodeHTML(u)+
+      '<div class="pw-vault-actions">'+
+        '<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️ إظهار</button>'+
+        '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋</button>'+
+        (S(u.pass)?'<button type="button" class="btn sm" data-pw-wa="'+esc(u.id)+'" title="إرسال بيانات الدخول على واتساب">📨</button>':'')+
+      '</div></div>';
+  }).join('');
+  openModal('<div class="pw-vault-modal"><div class="modal-head"><div><small>إدارة النظام · خزنة كلمات المرور</small><h3>🔑 كلمات مرور الحسابات</h3><p>'+N(list.length)+' حساب. كلمات المرور مخفية افتراضيًا — اضغط «إظهار» أو «📋» للحفظ.</p></div><button type="button" class="btn sm" data-act="closeModal">إغلاق</button></div>'+
+    '<div class="pw-vault" style="margin-top:4px"><div class="pw-vault-head"><b>⚠️ سرّي</b><span class="pw-only">إدارة النظام فقط</span></div>'+
+    '<p style="margin:0;font-size:.72rem;line-height:1.8;color:var(--cx-muted,#5d6d7d)">الشاشة دي بتفتح لإدارة النظام فقط، وفتحها بيتسجل في سجل النشاطات. ماينفعش تبعت كلمة المرور لأي حد غير صاحب الحساب.</p>'+
+    '<div class="pw-vault-actions" style="margin-top:10px"><button type="button" class="btn sm" data-pw-all="show">👁️ إظهار الكل</button><button type="button" class="btn sm" data-pw-all="hide">🙈 إخفاء الكل</button></div></div>'+
+    '<div class="pw-table">'+rows+'</div></div>');
+  if(typeof logActivity==='function')logActivity('view_passwords','كلمات مرور الحسابات','فتح خزنة كلمات المرور ('+N(list.length)+' حساب)',{protected:true});
+}
+/* كل أزرار الخزنة من مكان واحد (تفويض) */
+document.addEventListener('click',function(e){
+  if(!ME)return;
+  var el=e.target.closest?e.target.closest('[data-pw-reveal],[data-pw-copy],[data-pw-all],[data-pw-wa]'):null;
+  if(!el)return;
+  if(!isOwner()){toast('🔒 كلمات المرور متاحة لإدارة النظام فقط');return;}
+  if(el.hasAttribute('data-pw-reveal')){e.preventDefault();pwReveal(el.getAttribute('data-pw-reveal'));return;}
+  if(el.hasAttribute('data-pw-copy')){e.preventDefault();pwCopy(el.getAttribute('data-pw-copy'));return;}
+  if(el.hasAttribute('data-pw-all')){
+    e.preventDefault();
+    var show=el.getAttribute('data-pw-all')==='show';
+    USERS.forEach(function(u){pwReveal(u.id,show?false:true);});
+    return;
+  }
+  if(el.hasAttribute('data-pw-wa')){
+    e.preventDefault();
+    if(typeof sendStaffCredentials==='function')sendStaffCredentials(el.getAttribute('data-pw-wa'));
+    return;
+  }
+});
 function renderTeam(){
  if(!can('manageUsers'))return;
  var q=(S.tq||'').toLowerCase();
  var list=USERS.filter(function(u){return ((u.name||'')+' '+(u.username||u.u||'')+' '+(u.phone||'')).toLowerCase().includes(q);});
- view.innerHTML='<div class="sx-bar"><input class="sx-search" id="sxTQ" type="search" placeholder="ابحث عن خادم…" value="'+esc(S.tq||'')+'"><button class="btn primary" data-act="newStaff">＋ خادم جديد</button></div><p class="sx-count">'+list.length+' حساب</p><div class="staff-grid">'+list.map(function(u){
+ view.innerHTML='<div class="sx-bar"><input class="sx-search" id="sxTQ" type="search" placeholder="ابحث عن خادم…" value="'+esc(S.tq||'')+'">'+(isOwner()?'<button class="btn" id="openPwVault" type="button" title="عرض كلمات مرور كل الحسابات (إدارة النظام فقط)">🔑 كلمات المرور</button>':'')+'<button class="btn primary" data-act="newStaff">＋ خادم جديد</button></div><p class="sx-count">'+list.length+' حساب</p><div class="staff-grid">'+list.map(function(u){
  var ph=safePhoto(u.photo),allow=accountAllowed(u);
- return '<article class="staff-tile" '+(allow?'tabindex="0" data-card-user="'+esc(u.id)+'" aria-label="تعديل حساب '+esc(nmForCard(u))+'"':'')+'><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<details><summary>عرض كلمة المرور</summary><code>'+esc(u.pass||'')+'</code></details>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
+ return '<article class="staff-tile" '+(allow?'tabindex="0" data-card-user="'+esc(u.id)+'" aria-label="تعديل حساب '+esc(nmForCard(u))+'"':'')+'><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<div class="pw-inline" style="justify-content:center;margin:2px 0 6px">'+pwCodeHTML(u)+'<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️</button><button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋</button></div>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
  }).join('')+'</div>';
+ var pv=document.getElementById('openPwVault');
+ if(pv)pv.onclick=function(){openPasswordsVault();};
 }
 function whatsappDigits(raw){
   var d=toEn(String(raw||'')).replace(/\D/g,'');if(d.slice(0,2)==='00')d=d.slice(2);
@@ -2240,6 +2364,7 @@ function openStaffForm(id,self){
    } else {
      /* حساب موجود (سواء إنت أو خادم تاني): تغيير الباسورد منفصل واختياري تماماً */
      pwSection='<div class="account-security-sep">'
+       +pwVaultHTML(u)
        +'<button type="button" id="acTogglePw" class="btn sm">🔑 تغيير كلمة المرور <small>(اختياري — لو عايز تغيرها بس)</small></button>'
        +'<div id="acPwWrap" class="account-fields" style="display:none">'
        +(self?fields('كلمة المرور الحالية','Current','','password'):'')
@@ -2935,7 +3060,7 @@ document.addEventListener('change',function(e){
    ============================================================ */
 (function(){
 'use strict';
-var BC_VERSION='2.4.1', APP_ID='e3_khodam', SCHEMA=2;
+var BC_VERSION='2.5.0', APP_ID='e3_khodam', SCHEMA=2;
 var BRAND={name:'إعداد خدام للتلمذة', org:'كنيسة رئيس الملائكة ميخائيل بالأندلس — معلم الأجيال', navy:'#0d2b4a', navy2:'#1e5b96', gold:'#c9a227', gold2:'#e6c766'};
 var MAX_IMPORT_BYTES=25*1024*1024;
 
@@ -3247,9 +3372,11 @@ function collectConfessors(){
   });return Object.keys(map).map(function(k){return map[k];});
 }
 function collectUsers(includePass){
+  /* حتى لو الخيار اتفعّل: كلمات المرور لا تُصدَّر إلا لإدارة النظام */
+  var canPass=!!includePass&&(typeof isOwner==='function'&&isOwner());
   return (typeof USERS!=='undefined'?USERS:[]).map(function(u){
     var o={id:u.id||'',name:u.name||'',username:u.username||u.u||'',phone:u.phone||'',role:u.role||'',active:u.active!==false};
-    if(includePass)o.pass=u.pass||'';
+    if(canPass)o.pass=u.pass||'';
     return o;
   });
 }
@@ -3837,8 +3964,8 @@ function renderBC(){
       fmtBox('docx','📘 Word','مستند رسمي بالهوية واللوجو وجداول مرتبة')+
       fmtBox('pdf','📄 PDF','تقرير جاهز للطباعة / حفظ PDF بالهوية')+
     '</div>'+
-    '<label class="bc-sec" style="margin-top:12px"><input type="checkbox" id="bcPass" '+(BC.includePasswords?'checked':'')+'>'+
-    '<span><b>🔐 تضمين كلمات مرور الخدام داخل JSON فقط</b><small>لا تخرج أبدًا في Excel أو Word أو PDF. فعّلها فقط لو دي نسخة استرجاع إدارية كاملة وستحفظها في مكان آمن.</small></span></label>'+
+    ((typeof isOwner==='function'&&isOwner())?'<label class="bc-sec" style="margin-top:12px"><input type="checkbox" id="bcPass" '+(BC.includePasswords?'checked':'')+'>'+
+    '<span><b>🔐 تضمين كلمات مرور الخدام داخل JSON فقط</b><small>لا تخرج أبدًا في Excel أو Word أو PDF. فعّلها فقط لو دي نسخة استرجاع إدارية كاملة وستحفظها في مكان آمن.</small></span></label>':'')+
     '<div class="bc-note">🛡️ كل تصدير يُسجَّل في سجل النشاطات، وملف JSON يحمل بصمة تحقق SHA-256 وكشفًا بعدد السجلات في كل قسم. الأقسام الجديدة مستقبلًا ستظهر هنا تلقائيًا.</div>'+
     '<div class="bc-progress" id="bcProg"><i></i></div>'+
     '<div class="bc-row"><button class="btn primary" id="bcDoExport">🗜️ تنزيل ZIP الآن</button><button class="btn primary" id="bcDoExportNormal" style="background:#1e5b96">⬇️ تنزيل عادي (كل ملف لوحده)</button><button class="btn" data-act="closeModal">إغلاق</button></div><p class="bc-note" style="margin-top:8px">🗜️ <b>ZIP:</b> تنزيلة واحدة فيها كل الصيغ. &nbsp;⬇️ <b>تنزيل عادي:</b> كل صيغة ملف منفصل بينزل لوحده (قد يطلب المتصفح السماح بتنزيلات متعددة).</p>';
@@ -3924,7 +4051,9 @@ function doExport(mode){
     }).catch(fail);
   };
   var start=function(){
-    if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
+    /* خيار «تضمين كلمات المرور» لإدارة النظام فقط */
+  if(BC.includePasswords&&!(typeof isOwner==='function'&&isOwner())){BC.includePasswords=false;}
+  if(BC.includePasswords&&fmts.indexOf('json')>=0&&typeof ask==='function'){
       ask('تضمين كلمات المرور؟','اخترت تضمين كلمات مرور حسابات الخدام داخل ملف JSON. احفظ الملف في مكان آمن جدًا ولا تشاركه.','متابعة التصدير').then(function(ok){if(ok)run();});
     }else run();
   };
@@ -4096,5 +4225,6 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 
 
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df6743dd76ed5f',t:'MTc5MjU3NjcwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4da0331b98e5183',t:'MTc5MjUyMDE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4df6743dd76ed5f',t:'MTc5MjU3NjcwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
 </html>
