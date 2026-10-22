@@ -2018,6 +2018,18 @@ async function changeMyPassword(currentPw,newPw){
 /* ===== إنشاء حساب خادم جديد على Firebase Authentication =====
    بنستخدم نسخة تطبيق ثانوية (secondary app) عشان إنشاء الحساب
    ميعملش تسجيل خروج للأدمن اللي بيعمل الإضافة. */
+/* حد أقصى لأي عملية شبكة — عشان الواجهة ما تتعلّقش أبدًا لو Firebase ما ردّش */
+function withTimeout(p,ms,label){
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise(function(_res,rej){
+      setTimeout(function(){
+        rej({msg:'العملية ما خلصتش خلال '+Math.round(ms/1000)+' ثانية ('+(label||'حفظ')+'). اتأكد من الإنترنت أو من القواعد المنشورة، وجرّب تاني.'});
+      },ms);
+    })
+  ]);
+}
+
 /* اسم المستخدم: بنسمح بالمسافات والحروف الكابيتال في العرض،
    لكن الدخول بيتوحّد (مسافات بتتشال + حروف صغيرة) عشان محدش يتلخبط. */
 function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
@@ -2085,8 +2097,8 @@ async function createStaffAccount(o){
     }catch(qe){ if(qe&&qe.msg)throw qe; }
   }
   try{
-    await firebase.database().ref('ekhdam/users/'+uid).set(prof);
-    await putLoginIndex(o.username,uid,o.name,emailLocal);
+    await withTimeout(firebase.database().ref('ekhdam/users/'+uid).set(prof),15000,'حفظ بيانات الحساب');
+    putLoginIndex(o.username,uid,o.name,emailLocal);
   }catch(dbErr){
     /* 2) لو فشلت: نلغي إنشاء الحساب تلقائيًا (rollback) بدل ما يفضل حساب يتيم */
     var rolled=false;
@@ -2854,7 +2866,7 @@ function openStaffForm(id,self){
    if(!isOwner()&&newRole==='إدارة النظام')return fail('غير مسموح بإنشاء حساب إدارة النظام');
    btn0.disabled=true;err.textContent='جارٍ إنشاء الحساب على Firebase…';
    try{
-     var prof=await createStaffAccount({name:name,username:un,password:pw,role:newRole,phone:enteredPhone,photo:photo});
+     var prof=await withTimeout(createStaffAccount({name:name,username:un,password:pw,role:newRole,phone:enteredPhone,photo:photo}),30000,'إنشاء الحساب');
      vaultPut(prof.id,pw,prof.name);
      USERS.push(prof);
      logActivity('add_user','الحساب: '+prof.name+' (@'+prof.username+')','إنشاء حساب جديد · الرتبة: '+prof.role);
@@ -2869,11 +2881,14 @@ function openStaffForm(id,self){
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;
  try{
-   if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await changeMyPassword(current,pw); vaultPut(u.id,pw,name); }
+   if(!fbConnected)throw {msg:'مفيش اتصال بقاعدة البيانات. شوف مؤشر المزامنة فوق، استنى ثانية، وجرّب تاني.'};
+   if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await withTimeout(changeMyPassword(current,pw),20000,'تغيير كلمة المرور'); vaultPut(u.id,pw,name); }
    err.textContent='جارٍ الحفظ…';
-   await fbUsersRef.child(u.id).set(next);
-   if(normUser(u.username||u.u)!==normUser(un)){ await delLoginIndex(u.username||u.u); }
-   await putLoginIndex(un,u.id,next.name,normUser(u.username||u.u));
+   await withTimeout(fbUsersRef.child(u.id).set(next),15000,'حفظ بيانات الحساب');
+   try{
+     if(normUser(u.username||u.u)!==normUser(un))delLoginIndex(u.username||u.u);
+     putLoginIndex(un,u.id,next.name,normUser(u.username||u.u));
+   }catch(_e){}
    var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
    if(ME.id===u.id){ME.name=next.name;ME.u=un;writeSession();}
    var _fields=[];
@@ -2881,6 +2896,7 @@ function openStaffForm(id,self){
    logActivity('edit_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')','الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة'));
    if(pw)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور من داخل النظام',{protected:true});
    toast(pw?'تم حفظ الحساب وتغيير كلمة المرور ✅':'تم حفظ الحساب والصورة ✅');
+   btn.disabled=false;err.textContent='';
    if(self)openStaffForm(ME.id,true);else renderTeam();
  }catch(ex){
    btn.disabled=false;
