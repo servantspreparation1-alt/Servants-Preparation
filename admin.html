@@ -1688,7 +1688,11 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 .staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}.staff-tile{background:var(--cx-paper);border:1px solid var(--card-border);border-radius:20px;padding:18px;text-align:center;min-width:0}.staff-top{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px}.staff-top .chip-role{margin:0;white-space:normal}.staff-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;margin:18px auto 12px;display:grid;place-items:center;background:var(--cx-paper-2);color:var(--cx-ink);border:2px solid var(--cx-gold);font-size:28px}.staff-avatar img{width:100%;height:100%;object-fit:cover}.staff-tile h3{margin:8px 0;font-size:17px}.staff-un,.staff-tile p{color:var(--cx-muted);font-size:13px;overflow-wrap:anywhere}.staff-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:14px;border-top:1px solid var(--card-border)}.staff-tile details{font-size:12px;overflow-wrap:anywhere}.account-page{max-width:760px;margin:20px auto;padding:24px;border-radius:22px;background:var(--cx-paper);border:1px solid var(--card-border)}.account-title{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border);padding-bottom:12px;margin-bottom:20px}.account-title h3{margin:0;font-size:20px}.account-photo{display:flex;gap:20px;align-items:center;padding:16px;background:var(--cx-paper-2);border:1px dashed var(--cx-gold);border-radius:16px;margin-bottom:20px}.account-photo .staff-avatar{flex:0 0 80px;margin:0}.account-photo p{font-size:12px;color:var(--cx-muted)}.account-photo input{display:block;width:100%;max-width:100%;margin:8px 0;font-size:12px}.account-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.account-fields .sx-f{min-width:0}.account-editor input:not([type=file]),.account-editor select{box-sizing:border-box;width:100%;min-height:44px;background:var(--cx-paper-2)!important;color:var(--cx-ink)!important;border:1px solid var(--card-border);border-radius:10px;padding:10px}.account-editor input:focus{outline:2px solid var(--cx-gold);outline-offset:2px}.account-editor select option{background:var(--cx-paper);color:var(--cx-ink)}.account-footer{display:flex;gap:10px;padding-top:18px;border-top:1px solid var(--card-border);margin-top:20px}#accountError{color:#db6574;font-size:13px}@media(max-width:600px){.account-fields{grid-template-columns:1fr}.account-photo{flex-direction:column}.staff-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
 
 /* Account studio v7 */
-.fb-user{cursor:pointer;font-family:inherit}.fb-user:hover{border-color:var(--cx-gold)}.staff-tile[data-card-user]{cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}.staff-tile[data-card-user]:hover{transform:translateY(-4px);border-color:var(--cx-gold);box-shadow:0 14px 28px #0002}.staff-tile:focus-visible{outline:2px solid var(--cx-gold);outline-offset:4px}
+.fb-user{cursor:pointer;font-family:inherit}
+.fb-user .fb-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;background:#e9eef6;border:1.5px solid var(--cx-gold);box-shadow:0 1px 3px #0001}
+.fb-user .fb-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.fb-user .fb-avatar .fb-avatar-ph{font-size:13px;line-height:1;color:#5b6b80}
+@media(max-width:640px){.fb-user .fb-avatar{width:22px;height:22px}}.fb-user:hover{border-color:var(--cx-gold)}.staff-tile[data-card-user]{cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}.staff-tile[data-card-user]:hover{transform:translateY(-4px);border-color:var(--cx-gold);box-shadow:0 14px 28px #0002}.staff-tile:focus-visible{outline:2px solid var(--cx-gold);outline-offset:4px}
 .account-page{max-width:940px;padding:28px}.account-shell{padding:8px}.account-title{align-items:flex-start;margin:0 0 24px;padding:0 0 20px;border-color:var(--card-border)}.editor-eyebrow{font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--cx-muted)}.account-title h3{font-size:24px!important;color:var(--cx-ink);margin:8px 0!important}.account-title p{margin:0;color:var(--cx-muted);font-size:12px}.account-title .sx-x{width:32px;height:32px;font-size:22px;border:1px solid var(--card-border);background:transparent;color:var(--cx-muted);border-radius:10px}.account-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:26px;align-items:start}.account-photo{display:flex;flex-direction:column;gap:12px;padding:24px 16px;margin:0;border:1px solid var(--card-border);border-radius:18px;background:var(--cx-paper-2);text-align:center}.account-photo .staff-avatar{width:100px;height:100px;flex:0 0 100px;margin:4px 0;cursor:pointer;border:3px solid var(--cx-paper);box-shadow:0 0 0 1px var(--cx-gold)}.account-photo b{font-size:12px;color:var(--cx-ink)}.account-photo p{font-size:11px;line-height:1.9;margin:0}.account-photo small{font-size:9px;color:var(--cx-muted)}.account-photo input[hidden]{display:none!important}.photo-pick{display:block;width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--cx-gold);border-radius:10px;color:var(--cx-ink);font-size:12px;font-weight:800;cursor:pointer;background:var(--cx-paper)}.photo-pick:hover{background:var(--cx-gold-soft)}#removePhoto{border:0;background:none;color:var(--cx-muted);font-size:11px;cursor:pointer}.account-section{padding:4px 0 20px}.section-heading{display:flex;gap:12px;align-items:center;margin-bottom:22px}.section-heading>span{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--card-border);border-radius:10px;color:var(--cx-gold);font-size:11px}.section-heading h4{margin:0;color:var(--cx-ink);font-size:15px}.section-heading p{margin:4px 0 0;color:var(--cx-muted);font-size:11px}.account-fields{gap:18px 14px}.account-fields .sx-f{font-size:12px;font-weight:700;gap:8px}.account-editor input:not([type=file]),.account-editor select{height:46px;min-height:46px;border-radius:10px;font:inherit;font-size:13px;padding:10px 12px;box-shadow:none!important}.account-editor input:focus{outline:1px solid var(--cx-gold);outline-offset:1px}.account-editor input:-webkit-autofill{-webkit-text-fill-color:var(--cx-ink);transition:background-color 99999s}.account-security{border:1px solid var(--card-border);border-radius:14px;margin-top:6px;padding:16px}.account-security summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--cx-ink)}.account-security summary small{display:block;margin:6px 0 0;font-size:10px;font-weight:400;color:var(--cx-muted)}.account-security[open] .account-fields{margin-top:20px}.account-footer{align-items:center;padding-top:20px;margin-top:24px}.account-footer>small{margin-inline-end:auto;font-size:10px;color:var(--cx-muted)}.account-footer .btn{border-radius:10px!important;font-size:12px;padding:11px 18px!important}.account-error{font-size:12px}@media(max-width:680px){.account-layout{grid-template-columns:1fr;gap:20px}.account-photo{padding:18px}.account-photo .staff-avatar{width:80px;height:80px;flex-basis:80px}.account-fields{grid-template-columns:1fr}.account-footer{flex-wrap:wrap}.account-footer>small{width:100%;margin:0}.account-title h3{font-size:20px!important}.account-page{padding:18px}.account-shell{padding:0}}
 
 .activity-list{display:flex;flex-direction:column;gap:10px}.activity-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:start;padding:14px;background:var(--cx-paper);border:1px solid var(--card-border);border-radius:14px}.activity-row.locked{border-style:dashed}.activity-avatar{width:42px;height:42px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--cx-paper-2);border:2px solid var(--cx-gold);font-weight:800}.activity-avatar img{width:100%;height:100%;object-fit:cover}.activity-main{min-width:0}.activity-heading{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.activity-action{font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:var(--cx-paper-2);border:1px solid var(--card-border)}.activity-action.add{color:#166534;background:#dcfce7}.activity-action.edit{color:#1e40af;background:#dbeafe}.activity-action.delete{color:#991b1b;background:#fee2e2}.activity-target{font-weight:800;margin-top:5px;overflow-wrap:anywhere}.activity-details{color:var(--cx-muted);font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px}.activity-time{color:var(--cx-muted);font-size:12px;margin-top:5px}.activity-select{padding:8px}.activity-lock{font-size:12px}.activity-empty{padding:30px;text-align:center;color:var(--cx-muted);background:var(--cx-paper);border:1px dashed var(--card-border);border-radius:16px}.activity-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.activity-tools input,.activity-tools select{min-height:40px}.activity-tools .sx-search{flex:1 1 230px}.activity-filters{display:grid;grid-template-columns:minmax(170px,1.5fr) repeat(3,minmax(135px,1fr));gap:8px;margin:10px 0}.activity-filters label{display:grid;gap:4px;font-size:.7rem;color:var(--cx-muted);font-weight:800}.activity-filters select,.activity-filters input{width:100%;min-width:0}.activity-count{margin:7px 0 12px;color:var(--cx-muted);font-size:.76rem;font-weight:800}.activity-note-modal{max-width:560px}.activity-note-modal textarea{min-height:100px}.activity-row.note{border-inline-start:4px solid var(--cx-gold)}@media(max-width:760px){.activity-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.activity-filters{grid-template-columns:1fr}.activity-tools>*{flex:1 1 auto}}@media(max-width:600px){.activity-row{grid-template-columns:36px minmax(0,1fr) auto;gap:8px;padding:10px}.activity-avatar{width:36px;height:36px}}
@@ -2018,6 +2022,75 @@ async function changeMyPassword(currentPw,newPw){
 /* ===== إنشاء حساب خادم جديد على Firebase Authentication =====
    بنستخدم نسخة تطبيق ثانوية (secondary app) عشان إنشاء الحساب
    ميعملش تسجيل خروج للأدمن اللي بيعمل الإضافة. */
+/* ===== مدير حفظ موثوق =====
+   المبدأ: الحفظ بيتم فورًا على الجهاز (واجهة فورية)، وبعدها بيترفع للسحابة.
+   لو الشبكة وقعت أو الطلب علّق، بيعيد المحاولة لوحده كل 4 ثواني لحد ما ينجح.
+   مفيش تعليق للواجهة، ومفيش ضياع للتعديل. */
+var USER_SAVE_PENDING={};      /* uid -> البيانات المستنية الرفع */
+var USER_SAVE_TIMER=null;
+var USER_SAVE_RETRY=0;
+
+function saveUserProfile(uid,data,onDone){
+  USER_SAVE_PENDING[uid]={data:data,onDone:onDone||null};
+  flushUserSaves();
+}
+
+function flushUserSaves(){
+  var ids=Object.keys(USER_SAVE_PENDING);
+  if(!ids.length){USER_SAVE_RETRY=0;return;}
+  if(typeof fbUsersRef==='undefined'||!fbUsersRef)return;
+  ids.forEach(function(uid){
+    var job=USER_SAVE_PENDING[uid];
+    if(!job||job.busy)return;
+    job.busy=true;
+    var p;
+    try{ p=fbUsersRef.child(uid).set(job.data); }
+    catch(e){ job.busy=false; scheduleUserFlush(); return; }
+    p.then(function(){
+      delete USER_SAVE_PENDING[uid];
+      USER_SAVE_RETRY=0;
+      if(job.onDone)try{job.onDone();}catch(_e){}
+      toast('☁️ تم الحفظ على السحابة');
+    },function(err){
+      job.busy=false;
+      var c=(err&&err.code)||'';
+      if(c==='PERMISSION_DENIED'||c==='database/permission-denied'){
+        delete USER_SAVE_PENDING[uid];
+        toast('⛔ القواعد رفضت الحفظ — تأكد إن rules-final.json منشور');
+        return;
+      }
+      scheduleUserFlush();
+    });
+  });
+  if(Object.keys(USER_SAVE_PENDING).length) scheduleUserFlush();
+}
+
+function scheduleUserFlush(){
+  if(USER_SAVE_TIMER)return;
+  USER_SAVE_RETRY++;
+  var wait=Math.min(4000+USER_SAVE_RETRY*1000,15000);
+  USER_SAVE_TIMER=setTimeout(function(){
+    USER_SAVE_TIMER=null;
+    flushUserSaves();
+  },wait);
+}
+
+/* تغيير كلمة المرور مع إعادة محاولة عند مشاكل الشبكة */
+async function changeMyPasswordRetry(currentPw,newPw){
+  var lastErr=null;
+  for(var i=0;i<3;i++){
+    try{
+      return await withTimeout(changeMyPassword(currentPw,newPw),25000,'تغيير كلمة المرور');
+    }catch(e){
+      lastErr=e;
+      var m=String((e&&e.msg)||'');
+      if(m.indexOf('الحالية')>-1||m.indexOf('ضعيفة')>-1)throw e;   /* مش خطأ شبكة — متعيدش */
+      await new Promise(function(r){setTimeout(r,1500*(i+1));});
+    }
+  }
+  throw lastErr||{msg:'تعذّر تغيير كلمة المرور'};
+}
+
 /* حد أقصى لأي عملية شبكة — عشان الواجهة ما تتعلّقش أبدًا لو Firebase ما ردّش */
 function withTimeout(p,ms,label){
   return Promise.race([
@@ -2315,6 +2388,7 @@ function initFirebase(){
       var cur=null;USERS.forEach(function(u){if(u.id===ME.id)cur=u;});
       if(!cur){revokeSession('تم حذف حسابك من الإدارة.');return;}
       syncMe();if(!ME)return;
+      try{refreshHeaderAvatar();}catch(_e){}
       try{syncLoginIndex();}catch(_e){}
       applyPerms();
       if((location.hash||'').indexOf('#team')===0)renderTeam();
@@ -2397,6 +2471,26 @@ function importBackup(file){
   };
   fr.readAsText(file);
 }
+/* صورة الحساب الحالي في الهيدر */
+function myPhoto(){
+  try{
+    var u=USERS.filter(function(x){return x&&x.id===ME.id;})[0];
+    return safePhoto((u&&u.photo)||(ME&&ME.photo)||'');
+  }catch(_e){return '';}
+}
+function headerAvatarHTML(){
+  var ph=myPhoto();
+  if(!ph)return '<span class="fb-avatar"><span class="fb-avatar-ph">👤</span></span>';
+  return '<span class="fb-avatar"><img src="'+esc(ph)+'" alt=""></span>';
+}
+function refreshHeaderAvatar(){
+  var b=document.getElementById('fbUser');
+  if(!b)return;
+  var old=b.querySelector('.fb-avatar');
+  if(old)old.outerHTML=headerAvatarHTML();
+  else b.insertAdjacentHTML('afterbegin',headerAvatarHTML());
+}
+
 function initHeaderTools(){
   var box=document.querySelector('.cx-actions'); if(!box)return;
   box.innerHTML='<div class="fb-tools">'+
@@ -2405,7 +2499,7 @@ function initHeaderTools(){
     '<button type="button" class="btn sm" id="fbExport" data-need="manageUsers" title="تنزيل نسخة احتياطية (JSON)">⬇️ <span>نسخة احتياطية</span></button>'+
     '<button type="button" class="btn sm" id="fbImport" data-need="manageUsers" title="استيراد نسخة احتياطية (JSON)">⬆️ <span>استيراد</span></button>'+
     '<input type="file" id="fbFile" accept=".json,application/json" style="display:none">'+
-    '<button type="button" class="fb-user" id="fbUser" title="الحساب الحالي — الدور: '+esc(ME.role)+'"><b>👤 '+esc(ME.name||ME.u)+'</b><small>'+esc(ME.role)+'</small></button>'+
+    '<button type="button" class="fb-user" id="fbUser" title="الحساب الحالي — الدور: '+esc(ME.role)+'">'+headerAvatarHTML()+'<b>'+esc(ME.name||ME.u)+'</b><small>'+esc(ME.role)+'</small></button>'+
     '<button type="button" class="btn sm" id="logoutBtn" title="خروج من الحساب">🚪 <span>خروج</span></button></div>';
   document.getElementById('fbExport').addEventListener('click',exportBackup);
   var f=document.getElementById('fbFile');
@@ -2419,7 +2513,8 @@ function initHeaderTools(){
   if(tb&&!tb._e3wired){tb._e3wired=true;tb.addEventListener('click',function(e){e.preventDefault();if(window.E3Theme)window.E3Theme.toggle(false);});}
   syncThemeBtn();
   document.addEventListener('focusout',function(){setTimeout(flushPending,80);});
-  window.addEventListener('online',function(){if(fbDirty)pushNow();});
+  setInterval(function(){try{ if(Object.keys(USER_SAVE_PENDING).length) flushUserSaves(); }catch(_e){}},30000);
+  window.addEventListener('online',function(){if(fbDirty)pushNow();try{flushUserSaves();}catch(_e){}});
 }
 
 /* ===== إدارة الخدام (حسابات الدخول والصلاحيات) ===== */
@@ -2866,7 +2961,8 @@ function openStaffForm(id,self){
    if(!isOwner()&&newRole==='إدارة النظام')return fail('غير مسموح بإنشاء حساب إدارة النظام');
    btn0.disabled=true;err.textContent='جارٍ إنشاء الحساب على Firebase…';
    try{
-     var prof=await withTimeout(createStaffAccount({name:name,username:un,password:pw,role:newRole,phone:enteredPhone,photo:photo}),30000,'إنشاء الحساب');
+     err.textContent='جارٍ إنشاء الحساب…';
+     var prof=await withTimeout(createStaffAccount({name:name,username:un,password:pw,role:newRole,phone:enteredPhone,photo:photo}),45000,'إنشاء الحساب');
      vaultPut(prof.id,pw,prof.name);
      USERS.push(prof);
      logActivity('add_user','الحساب: '+prof.name+' (@'+prof.username+')','إنشاء حساب جديد · الرتبة: '+prof.role);
@@ -2881,23 +2977,29 @@ function openStaffForm(id,self){
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;
  try{
-   if(!fbConnected)throw {msg:'مفيش اتصال بقاعدة البيانات. شوف مؤشر المزامنة فوق، استنى ثانية، وجرّب تاني.'};
-   if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await withTimeout(changeMyPassword(current,pw),20000,'تغيير كلمة المرور'); vaultPut(u.id,pw,name); }
-   err.textContent='جارٍ الحفظ…';
-   await withTimeout(fbUsersRef.child(u.id).set(next),15000,'حفظ بيانات الحساب');
+   /* 1) كلمة المرور الأول (لو مطلوبة) — بإعادة محاولة تلقائية */
+   if(pw){
+     err.textContent='جارٍ تغيير كلمة المرور…';
+     await changeMyPasswordRetry(current,pw);
+     vaultPut(u.id,pw,name);
+   }
+   /* 2) تحديث الواجهة فورًا (مش مستنيين الشبكة) */
+   var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
+   if(ME.id===u.id){ME.name=next.name;ME.u=un;writeSession();}
+   btn.disabled=false;err.textContent='';
+   if(self){try{openStaffForm(ME.id,true);}catch(_e){}}else{try{renderTeam();}catch(_e){}}
+   try{refreshHeaderAvatar();}catch(_e){}
+   toast(pw?'✅ اتحفظ واتغيرت كلمة المرور':'✅ اتحفظ');
+   /* 3) الرفع للسحابة في الخلفية مع إعادة محاولة حتى النجاح */
+   saveUserProfile(u.id,next);
    try{
      if(normUser(u.username||u.u)!==normUser(un))delLoginIndex(u.username||u.u);
      putLoginIndex(un,u.id,next.name,normUser(u.username||u.u));
    }catch(_e){}
-   var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
-   if(ME.id===u.id){ME.name=next.name;ME.u=un;writeSession();}
    var _fields=[];
    [['الاسم','name'],['اسم المستخدم','username'],['الهاتف','phone'],['الرتبة','role'],['الصورة','photo']].forEach(function(pair){if(String(u[pair[1]]||'')!==String(next[pair[1]]||''))_fields.push(pair[0]);});
    logActivity('edit_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')','الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة'));
    if(pw)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور من داخل النظام',{protected:true});
-   toast(pw?'تم حفظ الحساب وتغيير كلمة المرور ✅':'تم حفظ الحساب والصورة ✅');
-   btn.disabled=false;err.textContent='';
-   if(self)openStaffForm(ME.id,true);else renderTeam();
  }catch(ex){
    btn.disabled=false;
    var c=(ex&&ex.code)||'';
