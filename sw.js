@@ -1,6 +1,6 @@
-/* إعداد خدام للتلمذة — Service Worker v10 (تقارير الأشبين + الإدخال السريع + جلسات الأونلاين + طلبات التسجيل عن بُعد — 2026-10-22) (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
-var CACHE = 'e3-sw-v10-final-2026-10';
-var SHELL = ['./', './index.html', './admin.html', './register.html', './manifest.json', './icons/logo-192.png', './icons/logo-384.png', './icons/logo-512.png', './icons/logo-maskable-512.png'];
+/* إعداد خدام للتلمذة — Service Worker v11 (الحضور الثلاثي + الصلاحيات + الترقية والتقارير — 2026-10-23) (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
+var CACHE = 'e3-sw-v11-core-2026-10';
+var SHELL = ['./', './index.html', './admin.html', './register.html', './manifest.json'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
