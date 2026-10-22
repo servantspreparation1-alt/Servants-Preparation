@@ -1911,6 +1911,7 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
 'use strict';
 /* ===== ثوابت ===== */
 var KEY='e3_khodam_v1', AUTH_KEY='e3dad_auth_v2', STAFF_KEY='e3_khodam_v1_staff';
+var AUTH_DOMAIN='khodam.local';  /* نفس النطاق الداخلي لحسابات Firebase Auth */
 var LEVELS=['السنة الأولى','السنة الثانية','السنة الثالثة'];
 var CRIT=[
   {k:'att',     n:'حضور',   ic:'🙋', maxLbl:'عدد المحاضرات', ph:'حضر'},
@@ -2007,11 +2008,45 @@ async function changeMyPassword(currentPw,newPw){
   try{ await user.updatePassword(newPw); }
   catch(e){
     var c2=(e&&e.code)||'';
-    if(c2==='auth/weak-password')throw {msg:'كلمة المرور ضعيفة — استخدم 10 أحرف على الأقل فيها أرقام وحروف.'};
+    if(c2==='auth/weak-password')throw {msg:'كلمة المرور ضعيفة — استخدم 9 أحرف على الأقل فيها أرقام وحروف.'};
     if(c2==='auth/requires-recent-login')throw {msg:'سجّل خروج ودخول تاني، وبعدها غيّر كلمة المرور.'};
     throw {msg:'تعذّر تغيير كلمة المرور.'};
   }
   return true;
+}
+
+/* ===== إنشاء حساب خادم جديد على Firebase Authentication =====
+   بنستخدم نسخة تطبيق ثانوية (secondary app) عشان إنشاء الحساب
+   ميعملش تسجيل خروج للأدمن اللي بيعمل الإضافة. */
+async function createStaffAccount(o){
+  if(!isOwner())throw {msg:'إنشاء الحسابات لإدارة النظام فقط.'};
+  if(typeof firebase==='undefined'||!firebase.auth)throw {msg:'خدمة المصادقة غير محمّلة — اعمل تحديث للصفحة.'};
+  var email=String(o.username||'').toLowerCase().replace(/\s+/g,'')+'@'+AUTH_DOMAIN;
+  var secondary=null;
+  try{
+    secondary=firebase.apps.filter(function(a){return a.name==='creator';})[0];
+    if(!secondary)secondary=firebase.initializeApp(FB_CONFIG,'creator');
+  }catch(_e){ secondary=firebase.app('creator'); }
+  var auth2=firebase.auth(secondary);
+  var cred;
+  try{ cred=await auth2.createUserWithEmailAndPassword(email,o.password); }
+  catch(e){
+    var c=(e&&e.code)||'';
+    if(c==='auth/email-already-in-use')throw {msg:'اسم المستخدم ده مستعمل بالفعل في Authentication.'};
+    if(c==='auth/weak-password')throw {msg:'كلمة المرور ضعيفة — 9 أحرف على الأقل.'};
+    if(c==='auth/invalid-email')throw {msg:'اسم المستخدم لازم حروف إنجليزي وأرقام من غير مسافات.'};
+    if(c==='auth/operation-not-allowed')throw {msg:'تسجيل الدخول بالإيميل/كلمة السر مش مفعّل على Firebase.'};
+    if(c==='auth/network-request-failed')throw {msg:'النت قطع — جرّب تاني.'};
+    throw {msg:'تعذّر إنشاء الحساب على Firebase — '+(c||'خطأ غير معروف')};
+  }
+  var uid=cred.user.uid;
+  try{ await auth2.signOut(); }catch(_e){}
+  var prof={id:uid,name:o.name,username:o.username,u:o.username,role:o.role,active:true,phone:o.phone||'',photo:o.photo||''};
+  try{ await fbdb.ref('ekhdam/users/'+uid).set(prof); }
+  catch(_e){
+    throw {msg:'الحساب اتعمل على Authentication لكن حفظ البيانات فشل (UID: '+uid+'). راجع القواعد المنشورة، أو امسح الحساب من الـConsole وأعد المحاولة.'};
+  }
+  return prof;
 }
 
 /* بصمة تغيير كلمة السر فقط: ليست بديلاً عن المصادقة على الخادم */
@@ -2652,14 +2687,20 @@ function openStaffForm(id,self){
      +fields('كلمة المرور الحالية','Current','','password')
      +fields('كلمة المرور الجديدة','Pass','','password')
      +fields('تأكيد كلمة المرور الجديدة','Confirm','','password')
-     +'<p class="sx-hint" style="grid-column:1/-1">10 أحرف على الأقل. التغيير بيتم على Firebase Authentication مباشرة — مفيش كلمة سر بتتخزن في قاعدة البيانات.</p>'
+     +'<p class="sx-hint" style="grid-column:1/-1">9 أحرف على الأقل. التغيير بيتم على Firebase Authentication مباشرة — مفيش كلمة سر بتتخزن في قاعدة البيانات.</p>'
      +'</div></div>';
  } else if(!self&&existing){
    pwSection='<div class="account-security-sep">'
      +pwVaultHTML(u)
-     +'<p class="sx-hint" style="margin-top:10px">لإعادة تعيين كلمة مرور خادم آخر: Firebase Console → Authentication → Users → ⋮ → <b>Reset password</b>. ده مقصود — مفيش حد بيقدر يغيّر كلمة سر حد تاني من داخل النظام.</p>'
+     +'<p class="sx-hint" style="margin-top:10px">لإعادة تعيين كلمة مرور خادم: Firebase Console → Authentication → Users → ⋮ → <b>Reset password</b>.</p>'
      +'</div>';
- } else { pwSection=''; }
+ } else {
+   pwSection='<div class="account-security-sep"><div class="account-fields">'
+     +fields('كلمة المرور','Pass','','password')
+     +fields('تأكيد كلمة المرور','Confirm','','password')
+     +'<p class="sx-hint" style="grid-column:1/-1">9 أحرف على الأقل. الحساب بيتعمل على Firebase Authentication وأنت اللي بتسلّم كلمة السر للخادم بعد الإنشاء.</p>'
+     +'</div></div>';
+ }
  var body='<form id="accountForm" class="account-editor"><div class="account-layout"><aside class="account-photo"><span class="editor-eyebrow">الصورة الشخصية</span><label for="accountFile" id="accountPreview" class="staff-avatar" title="اختيار صورة"></label><b id="photoStatus">أضف لمسة شخصية لحسابك</b><p>صورة دائرية تظهر على كارت الخادم.<br>رفع الصورة اختياري.</p><input hidden id="accountFile" type="file" accept="image/jpeg,image/png,image/webp"><label class="photo-pick" for="accountFile">＋ اختيار صورة</label><button type="button" id="removePhoto">إزالة الصورة</button><small>JPG أو PNG أو WEBP · حتى 10 MB</small></aside><div class="account-main"><section class="account-section"><div class="section-heading"><span>01</span><div><h4>المعلومات الأساسية</h4><p>الاسم وبيانات التواصل وتسجيل الدخول</p></div></div><div class="account-fields">'+fields('الاسم الظاهر','Name',u.name)+fields('اسم المستخدم','User',u.username||u.u)+fields('رقم الموبايل','Phone',u.phone,'tel')+roleField+'</div></section>'+pwSection+(!existing?'<div class="wa-note">لو أضفت رقم موبايل صحيح، بعد حفظ الحساب هينقلك WhatsApp مباشرةً لمحادثة الرقم برسالة جاهزة فيها رابط الدخول واسم المستخدم وكلمة المرور. الرسالة لا تُرسل إلا لما تضغط «إرسال» داخل WhatsApp.</div>':'')+'</div></div><p id="accountError" role="alert" aria-live="polite"></p><div class="account-footer"><small>احفظ عند الانتهاء من تعديل بياناتك</small>'+'<button type="button" class="btn" '+(self?'id="backAccount"':'data-act="closeModal"')+'>إلغاء</button><button type="submit" class="btn primary">'+(existing?'حفظ التغييرات':'إنشاء الحساب')+'</button></div></form>';
  var title='<div class="account-title"><div><span class="editor-eyebrow">إعداد خدام · الحسابات</span><h3>'+heading+'</h3><p>كل بيانات الحساب في مكان واحد، بشكل أبسط.</p></div>'+(!self?'<button class="sx-x" data-act="closeModal" aria-label="إغلاق">×</button>':'')+'</div>';
  if(self){view.innerHTML='<section class="account-page">'+title+body+'</section>';document.getElementById('backAccount').onclick=function(){go(can('manageUsers')?'team':'results');};}
@@ -2676,20 +2717,39 @@ function openStaffForm(id,self){
  e.preventDefault();var err=document.getElementById('accountError');function fail(t){err.textContent=t;}
  if(pending)return fail('انتظر تجهيز الصورة');
  if(!accountAllowed(u)&&existing)return fail('غير مسموح');
- if(!existing)return fail('إنشاء حساب جديد بيتم من Firebase Console (Authentication → Add user) ثم إضافة بياناته. مش من هنا، لأن الحساب لازم يتعمل على السيرفر.');
  var name=document.getElementById('acName').value.trim(),un=document.getElementById('acUser').value.trim();
  if(/[<>]|&(?:lt|gt);/i.test(name))return fail('اكتب الاسم فقط بدون أكواد HTML');
  if(!name||!un)return fail('الاسم واسم المستخدم مطلوبان');
  var elPass=document.getElementById('acPass'),elConfirm=document.getElementById('acConfirm'),elCurrent=document.getElementById('acCurrent');
  var pw=elPass?elPass.value:'',confirm=elConfirm?elConfirm.value:'',current=elCurrent?elCurrent.value:'';
- if(pw){
+ if(!existing){
+   if(!pw)return fail('كلمة المرور مطلوبة للحساب الجديد');
+   if(pw!==confirm)return fail('تأكيد كلمة المرور غير مطابق');
+   if(pw.length<9)return fail('كلمة المرور 9 أحرف على الأقل');
+ } else if(pw){
    if(pw!==confirm)return fail('تأكيد كلمة المرور الجديدة غير مطابق');
-   if(pw.length<10)return fail('كلمة المرور الجديدة 10 أحرف على الأقل');
+   if(pw.length<9)return fail('كلمة المرور الجديدة 9 أحرف على الأقل');
    if(!current)return fail('اكتب كلمة المرور الحالية أولًا');
  }
- if(USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
+ if(!/^[a-z0-9._-]{3,30}$/.test(un.toLowerCase()))return fail('اسم المستخدم: حروف إنجليزي صغيرة وأرقام ونقطة أو شرطة (3–30 حرف)، من غير مسافات.');
+ if(USERS.some(function(x){return String(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
  var enteredPhone=document.getElementById('acPhone').value.trim();
  if(enteredPhone&&!whatsappDigits(enteredPhone))return fail('رقم الهاتف غير صالح. اكتبه بصيغة مصرية مثل 01012345678.');
+ var btn0=this.querySelector('[type=submit]');
+ if(!existing){
+   var roleEl=document.getElementById('acRole');
+   var newRole=roleEl?roleEl.value:'خادم';
+   if(!isOwner()&&newRole==='إدارة النظام')return fail('غير مسموح بإنشاء حساب إدارة النظام');
+   btn0.disabled=true;err.textContent='جارٍ إنشاء الحساب على Firebase…';
+   try{
+     var prof=await createStaffAccount({name:name,username:un.toLowerCase(),password:pw,role:newRole,phone:enteredPhone,photo:photo});
+     USERS.push(prof);
+     logActivity('add_user','الحساب: '+prof.name+' (@'+prof.username+')','إنشاء حساب جديد · الرتبة: '+prof.role);
+     toast('✅ اتعمل الحساب. اسم المستخدم: '+prof.username+' — كلمة السر اللي كتبتها');
+     closeModal();renderTeam();
+   }catch(ex){btn0.disabled=false;fail((ex&&ex.msg)||(ex&&ex.message)||'تعذّر إنشاء الحساب');}
+   return;
+ }
  var next=Object.assign({},u,{name:name,username:un,u:un,phone:enteredPhone,photo:photo});
  try{delete next.pass;}catch(_e){}
  if(!self){next.role=document.getElementById('acRole').value;if(!isOwner()&&next.role==='إدارة النظام')return fail('غير مسموح');}
@@ -2728,7 +2788,7 @@ function delStaff(id){
     if(!ok)return;
     logActivity('delete_user','الحساب: '+(u.name||u.u||u.username),'حذف الحساب · الرتبة: '+(u.role||'—'));
     USERS=USERS.filter(function(x){return x.id!==id;});
-    pushUsers();renderTeam();toast('اتحذف الحساب');
+    pushUsers();renderTeam();toast('اتشال من النظام. لو عايز تحذفه نهائيًا من Authentication كمان: Console → Authentication → Users');
   });
 }
 
