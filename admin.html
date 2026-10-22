@@ -1849,6 +1849,61 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
 @media(max-width:640px){.bc-grid{grid-template-columns:1fr}.bc-hero{padding:16px}}
 @media print{.bc-no-print{display:none!important}}
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   v6.6 (2026-10-22) — موبايل: شيل شريط التابات العلوي + ضبط صف الهيدر
+   ───────────────────────────────────────────────────────────────────────────
+   1) شريط التابات العلوي (#mainNav) مكرر مع الشريط السفلي الثابت ⇒ بيختفي على
+      الموبايل، والتنقل كله من الشريط السفلي (وفيه زر «الحضور» دلوقتي).
+   2) اللوجو الصغير في الهيدر كان بيتقصّر (flex-shrink) فيخرج عن مكانه ويركب
+      فوقه زرار الوضع الليلي — اتقفل: اللوجو مقاسه ثابت، والنوار هي اللي بتصغر.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media(max-width:900px){
+  /* (1) مفيش تابات فوق — التنقل من تحت */
+  #mainNav,#mainNav.tab-bar{display:none!important}
+  #appRoot #view{padding-top:16px}
+
+  /* (2) الهيدر: مفيش تراكب بين اللوجو وأزرار (الوضع الليلي / الحفظ / الحساب) */
+  .cx-nav-inner{flex-wrap:nowrap!important;gap:8px!important;min-height:58px!important;
+    padding-top:6px!important;padding-bottom:6px!important;width:calc(100% - 16px)!important}
+  .cx-brand{flex:0 0 auto!important;max-width:none!important;min-width:0!important;gap:0!important}
+  .cx-brand-copy{display:none!important}
+  .cx-logo{width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:11px!important;padding:2px!important}
+  .cx-actions{flex:1 1 auto!important;min-width:0!important;justify-content:flex-end;gap:5px!important}
+  .fb-tools{flex-wrap:nowrap!important;gap:5px!important;min-width:0!important;justify-content:flex-end;max-width:100%}
+  .fb-tools>.btn,.fb-tools>#themeBtn{flex:0 0 auto}
+  .fb-tools .btn{padding-inline:7px!important}
+  .fb-sync{padding:5px 8px!important;font-size:.61rem!important;flex:0 1 auto;min-width:0;overflow:hidden}
+  .fb-user{flex:0 1 auto!important;min-width:0!important;max-width:134px!important;padding:5px 8px!important;gap:5px!important}
+  .fb-user b{font-size:.7rem}
+  #themeBtn{min-width:32px;justify-content:center}
+  .fb-sync{padding:5px 7px!important}
+}
+/* شاشات ضيقة أوي (≤390px): النص بيتشال من «تم الحفظ» والحساب، وتسيب الأيقونات */
+@media(max-width:390px){
+  .cx-logo{width:34px!important;height:34px!important;flex:0 0 34px!important}
+  #fbSyncTxt{display:none!important}
+  .fb-sync{padding:6px!important}
+  .fb-user{max-width:76px!important}
+  .fb-user small{display:none!important}
+  .cx-nav-inner{gap:5px!important}
+}
+
+/* (3) الشريط السفلي: بقى فيه ٦/٧ عناصر ⇒ خط أصغر شوية عشان ما يتزاحموش */
+@media(max-width:900px){
+  .mobile-nav{justify-content:space-between;gap:0}
+  .mobile-nav button{flex:1 1 0!important;min-width:0!important;padding:6px 1px!important;font-size:.57rem!important;gap:1px;letter-spacing:0!important}
+  .mobile-nav button span{font-size:1.02rem!important}
+  .mobile-nav button small{font-size:.55rem!important;letter-spacing:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+}
+@media(max-width:390px){
+  .mobile-nav button small{font-size:.5rem!important}
+  .mobile-nav button span{font-size:.96rem!important}
+}
+@media(max-width:340px){
+  .mobile-nav button small{font-size:.46rem!important}
+  .mobile-nav button{padding:6px 0!important}
+}
+
 </style>
 </head>
 
@@ -1918,6 +1973,7 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
     <button type="button" data-view="students" onclick="location.hash='students'"><span>👥</span><small>الدارسون</small></button>
     <button type="button" data-view="subjects" onclick="location.hash='subjects'"><span>📚</span><small>المواد</small></button>
     <button type="button" data-view="lectures" onclick="location.hash='lectures'"><span>📅</span><small>المحاضرات</small></button>
+    <button type="button" data-view="attendance" onclick="location.hash='attendance'"><span>📋</span><small>الحضور</small></button>
     <button type="button" data-view="results" onclick="location.hash='results'"><span>📊</span><small>النتائج</small></button>
     <button type="button" data-view="team" id="teamTabMob" style="display:none" onclick="location.hash='team'"><span>🧑‍🏫</span><small>الخدام</small></button>
     <button type="button" data-view="activity" id="activityTabMob" style="display:none" onclick="location.hash='activity'"><span>📜</span><small>النشاطات</small></button>
@@ -2266,12 +2322,15 @@ function toArr(x){
 function normalizeDb(d){
   var out={students:toArr(d&&d.students),subjects:toArr(d&&d.subjects),lectures:toArr(d&&d.lectures)};
   out.students.forEach(function(s){
+    s.level=Math.min(3,Math.max(1,parseInt(s.level,10)||1)); /* السنة دايمًا رقم — حتى لو جت نص من استيراد قديم */
     if(!s.joinYear&&s.joined){var y=new Date(s.joined).getFullYear(); if(y)s.joinYear=y;}
     s.grades=s.grades||{}; s.custom=s.custom||{}; s.attempts=s.attempts||{};
     Object.keys(s.attempts).forEach(function(k){s.attempts[k]=toArr(s.attempts[k]);});
     s.photo=safePhoto(s.photo);
   });
   out.subjects.forEach(function(s){
+    s.level=Math.min(3,Math.max(1,parseInt(s.level,10)||1)); /* نفس القاعدة: سنة المادة رقم دايمًا */
+    s.term=parseInt(s.term,10)||0;
     /* نسخة مستقلة تمامًا لمعايير كل مادة: تعديل مادة لا يلمس أي مادة أخرى أبدًا */
     try{s.criteria=JSON.parse(JSON.stringify(s.criteria||{}));}catch(_e){s.criteria=s.criteria||{};}
     try{s.weights=(s.weights==null?null:JSON.parse(JSON.stringify(s.weights)));}catch(_e2){if(s.weights===undefined)s.weights=null;}
@@ -3879,7 +3938,7 @@ function openLectureForm(lecId){
     if(!oldSub||oldSub.id!==newSub.id)syncSubjectAttendance(newSub);
     if(save()){
       logActivity('edit_attendance','المحاضرات: '+newSub.name,(lec?'تعديل':'إضافة')+' محاضرة: «'+(title||'بدون اسم')+'» · '+termName(term)+' · '+fmtDate(date));
-      S.lecLevel=newSub.level;S.lecSub=newSub.id;S.lecTerm=0;
+      S.lecLevel=+newSub.level||1;S.lecSub=newSub.id;S.lecTerm=0;
       closeModal();toast('اتحفظت المحاضرة ✓');
       if((location.hash||'').indexOf('#lectures')===0)renderLectures();else go('lectures');
     }
@@ -3983,24 +4042,43 @@ function attCountersHTML(lec,sub){
   '</div>';
 }
 
+/* مواد سنة معيّنة — مقارنة رقمية عشان لو السنة متخزنة كنص (من استيراد قديم) تفضل ظاهرة */
+function subjectsOfLevel(lv){return (db.subjects||[]).filter(function(x){return (+x.level||0)===+lv;});}
+function subjectsCountByLevel(){
+  var c={1:0,2:0,3:0};
+  (db.subjects||[]).forEach(function(x){var n=+x.level||0;if(c[n]!=null)c[n]++;});
+  return c;
+}
 function renderAttendance(){
-  S.attLevel=S.attLevel||1;
-  var lv=S.attLevel;
-  var subs=(db.subjects||[]).filter(function(x){return x.level===lv;});
+  /* أول فتح للشاشة: ابدأ بالسنة اللي فيها مواد فعلًا — بدل ما تقع على سنة فاضية */
+  if(!S.attLevel){
+    var _c=subjectsCountByLevel();
+    var _with=[1,2,3].filter(function(n){return _c[n];});
+    S.attLevel=_with.length?_with[0]:1;
+  }
+  var lv=+S.attLevel||1;
+  S.attLevel=lv;
+  var subs=subjectsOfLevel(lv);
+  var _counts=subjectsCountByLevel();
   var lvlChips=[1,2,3].map(function(n){
-    return '<button type="button" class="tab'+(lv===n?' on':'')+'" data-attlevel="'+n+'">'+LEVELS[n-1]+'</button>';
+    return '<button type="button" class="tab'+(lv===n?' active':'')+'" data-attlevel="'+n+'">'+LEVELS[n-1]+(_counts[n]?' ('+nf(_counts[n])+' مادة)':'')+'</button>';
   }).join('');
 
   if(!subs.length){
+    var others=[1,2,3].filter(function(n){return n!==lv&&_counts[n];});
     view.innerHTML='<div class="sx-title"><h3>📋 تسجيل الحضور والغياب</h3></div>'+
       '<div class="tabs">'+lvlChips+'</div>'+
-      '<div class="sx-empty"><div class="big">🗂️</div><p>مفيش مواد في '+LEVELS[lv-1]+' لسه — ضيف المواد الأول من تبويب «المواد».</p></div>';
+      '<div class="sx-empty"><div class="big">🗂️</div><p>مفيش مواد في '+LEVELS[lv-1]+' لسه — ضيف المواد الأول من تبويب «المواد».</p>'+
+      (others.length
+        ? '<div class="sx-hint">فيه مواد متسجلة في: '+others.map(function(n){return '<button type="button" class="btn sm" data-attlevel="'+n+'">📚 '+LEVELS[n-1]+' ('+nf(_counts[n])+')</button>';}).join(' ')+'</div>'
+        : '')+
+      '<button class="btn primary" type="button" data-act="goSubjects" data-level="'+lv+'">➕ إضافة مواد في '+LEVELS[lv-1]+'</button></div>';
     return;
   }
   if(!S.attSub||!subs.some(function(x){return x.id===S.attSub;}))S.attSub=subs[0].id;
   var sub=getSubject(S.attSub);
   var subChips=subs.map(function(x){
-    return '<button type="button" class="tab'+(x.id===sub.id?' on':'')+'" data-attsub="'+esc(x.id)+'">'+esc(x.name)+'</button>';
+    return '<button type="button" class="tab'+(x.id===sub.id?' active':'')+'" data-attsub="'+esc(x.id)+'">'+esc(x.name)+'</button>';
   }).join('');
 
   var lecs=lecturesForSubject(sub.id).slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
@@ -4071,11 +4149,13 @@ function renderAttendance(){
 }
 
 function renderLectures(){
-  var lv=S.lecLevel;
+  var lv=+S.lecLevel||1;
+  S.lecLevel=lv;
+  var _cnt=subjectsCountByLevel();
   var chips=LEVELS.map(function(n,i){
-    var c=db.subjects.filter(function(s){return s.level===i+1;}).length;
+    var c=_cnt[i+1]||0;
     return '<button type="button" class="tab'+(lv===i+1?' active':'')+'" data-llevel="'+(i+1)+'">'+n+' ('+nf(c)+' مادة)</button>';}).join('');
-  var subs=db.subjects.filter(function(s){return s.level===lv;});
+  var subs=subjectsOfLevel(lv);
   if(!subs.length){
     view.innerHTML='<div class="tabs">'+chips+'</div><div class="sx-empty"><div class="big">📅</div><p>مفيش مواد في '+LEVELS[lv-1]+' — ضيف المادة الأول من تبويب المواد وهتلاقيها هنا</p><button class="btn primary" type="button" data-act="goSubjects" data-level="'+lv+'">➕ إضافة مواد</button></div>';
     return;
@@ -4394,7 +4474,7 @@ document.addEventListener('click',function(e){
   if(!ME)return;
   var _gd=e.target.closest('[data-need]');
   if(_gd&&!can(_gd.getAttribute('data-need'))){toast('🔒 صلاحيتك («'+ME.role+'») للعرض بس — التعديل مش متاح');return;}
-  var t=e.target.closest('[data-open],[data-flevel],[data-glevel],[data-slevel],[data-rlevel],[data-llevel],[data-lterm],[data-att-btn],[data-act],#sxNewStu');
+  var t=e.target.closest('[data-open],[data-flevel],[data-glevel],[data-slevel],[data-rlevel],[data-llevel],[data-lterm],[data-att-btn],[data-attlevel],[data-attsub],[data-attshift],[data-act],#sxNewStu');
   if(!t)return;
   if(t.id==='sxNewStu'){openStudentForm();return;}
   if(t.hasAttribute('data-open')){if(ME.role==='خادم'){toast('🔒 حسابك مُخصص لعرض جدول النتائج فقط');return;}S.pgl=+t.getAttribute('data-gl')||null;go('student/'+t.getAttribute('data-open'));return;}
@@ -4423,7 +4503,7 @@ document.addEventListener('click',function(e){
   else if(a==='editStu')openStudentForm(id);
   else if(a==='backStudents')go('students');
   else if(a==='goSubjects'){if(ME.role==='خادم')return;S.subjLevel=+t.getAttribute('data-level');go('subjects');}
-  else if(a==='goLectures'){if(ME.role==='خادم')return;var lsub=getSubject(id);if(lsub){S.lecLevel=lsub.level;S.lecSub=lsub.id;S.lecTerm=0;S.attLecture='';}go('lectures');}
+  else if(a==='goLectures'){if(ME.role==='خادم')return;var lsub=getSubject(id);if(lsub){S.lecLevel=+lsub.level||1;S.lecSub=lsub.id;S.lecTerm=0;S.attLecture='';}go('lectures');}
   else if(a==='genLectures')generateLectures();
   else if(a==='dupLecture')duplicateLecture(id);
   else if(a==='bulkDelLectures')bulkDeleteLectures();

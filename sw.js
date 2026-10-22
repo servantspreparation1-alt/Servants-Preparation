@@ -1,5 +1,5 @@
-/* إعداد خدام للتلمذة — Service Worker v6.4 — نسخة الدخول الجديد (Firebase Auth) (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
-var CACHE = 'e3-sw-v11-auth-2026-10';
+/* إعداد خدام للتلمذة — Service Worker v6.5 (إصلاح شاشة تسجيل الحضور — 2026-10-22) — نسخة الدخول الجديد (Firebase Auth) (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
+var CACHE = 'e3-sw-v12-att-fix-2026-10';
 var SHELL = ['./', './index.html', './admin.html', './manifest.json', './icons/logo-192.png', './icons/logo-384.png', './icons/logo-512.png', './icons/logo-maskable-512.png'];
 
 self.addEventListener('install', function (e) {
