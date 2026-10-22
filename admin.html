@@ -2018,10 +2018,33 @@ async function changeMyPassword(currentPw,newPw){
 /* ===== إنشاء حساب خادم جديد على Firebase Authentication =====
    بنستخدم نسخة تطبيق ثانوية (secondary app) عشان إنشاء الحساب
    ميعملش تسجيل خروج للأدمن اللي بيعمل الإضافة. */
+async /* اسم المستخدم: بنسمح بالمسافات والحروف الكابيتال في العرض،
+   لكن الدخول بيتوحّد (مسافات بتتشال + حروف صغيرة) عشان محدش يتلخبط. */
+function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
+function indexKey(v){return encodeURIComponent(normUser(v));}
+
+/* فهرس الدخول: بيسمح بتغيير اسم المستخدم في أي وقت من غير ما نلمس Firebase Auth.
+   مفتاح = اسم المستخدم الموحّد، والقيمة = الجزء الأول من إيميل الدخول الداخلي. */
+function putLoginIndex(username,uid,name,emailLocal){
+  try{
+    var o={id:uid,n:name||'',e:emailLocal||normUser(username),t:Date.now()};
+    return firebase.database().ref('ekhdam/loginIndex/'+indexKey(username)).set(o).catch(function(){});
+  }catch(_e){return Promise.resolve();}
+}
+function delLoginIndex(username){
+  try{return firebase.database().ref('ekhdam/loginIndex/'+indexKey(username)).remove().catch(function(){});}
+  catch(_e){return Promise.resolve();}
+}
+function syncLoginIndex(){
+  if(!isOwner()||!fbConnected||!USERS.length)return;
+  USERS.forEach(function(u){ if(u&&u.id&&(u.username||u.u)) putLoginIndex(u.username||u.u,u.id,u.name,u.username||u.u); });
+}
+
 async function createStaffAccount(o){
   if(!isOwner())throw {msg:'إنشاء الحسابات لإدارة النظام فقط.'};
   if(typeof firebase==='undefined'||!firebase.auth)throw {msg:'خدمة المصادقة غير محمّلة — اعمل تحديث للصفحة.'};
-  var email=String(o.username||'').toLowerCase().replace(/\s+/g,'')+'@'+AUTH_DOMAIN;
+  var emailLocal=normUser(o.username);
+  var email=emailLocal+'@'+AUTH_DOMAIN;
   var secondary=null;
   try{
     secondary=firebase.apps.filter(function(a){return a.name==='creator';})[0];
@@ -2063,6 +2086,7 @@ async function createStaffAccount(o){
   }
   try{
     await firebase.database().ref('ekhdam/users/'+uid).set(prof);
+    await putLoginIndex(o.username,uid,o.name,emailLocal);
   }catch(dbErr){
     /* 2) لو فشلت: نلغي إنشاء الحساب تلقائيًا (rollback) بدل ما يفضل حساب يتيم */
     var rolled=false;
@@ -2279,6 +2303,7 @@ function initFirebase(){
       var cur=null;USERS.forEach(function(u){if(u.id===ME.id)cur=u;});
       if(!cur){revokeSession('تم حذف حسابك من الإدارة.');return;}
       syncMe();if(!ME)return;
+      try{syncLoginIndex();}catch(_e){}
       applyPerms();
       if((location.hash||'').indexOf('#team')===0)renderTeam();
     },function(){setSync('error','تعذّر التحقق من صلاحية حسابك');});
@@ -2613,7 +2638,7 @@ function pwReveal(id,forceHide){
   if(!isOwner()){return;}
   var p=vaultGet(id);
   if(!p){
-    toast('🔒 كلمة المرور مشفّرة عند Firebase ومستحيل استرجاعها. لو نسيتها: Console → Authentication → Reset password');
+    toast(isOwner()?'🔒 كلمة المرور مشفّرة عند Firebase. لو نسيتها: Console → Authentication → Reset password':'🔒 كلمة المرور مشفّرة ومستحيل استرجاعها — اطلب من إدارة النظام تعيين واحدة جديدة.');
     return;
   }
   var codes=document.querySelectorAll('[data-pw-code="'+id+'"]');
@@ -2777,7 +2802,7 @@ function openStaffForm(id,self){
  } else if(!self&&existing){
    pwSection='<div class="account-security-sep">'
      +pwVaultHTML(u)
-     +'<p class="sx-hint" style="margin-top:10px">لإعادة تعيين كلمة مرور خادم: Firebase Console → Authentication → Users → ⋮ → <b>Reset password</b>.</p>'
+     +(isOwner()?'<p class="sx-hint" style="margin-top:10px">لإعادة تعيين كلمة مرور خادم: Firebase Console → Authentication → Users → ⋮ → <b>Reset password</b>.</p>':'')
      +'</div>';
  } else {
    pwSection='<div class="account-security-sep"><div class="account-fields">'
@@ -2816,8 +2841,10 @@ function openStaffForm(id,self){
    if(pw.length<9)return fail('كلمة المرور الجديدة 9 أحرف على الأقل');
    if(!current)return fail('اكتب كلمة المرور الحالية أولًا');
  }
- if(!/^[a-z0-9._-]{3,30}$/.test(un.toLowerCase()))return fail('اسم المستخدم: حروف إنجليزي صغيرة وأرقام ونقطة أو شرطة (3–30 حرف)، من غير مسافات.');
- if(USERS.some(function(x){return String(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
+ if(un.length<3||un.length>40)return fail('اسم المستخدم من 3 إلى 40 حرف.');
+ if(/[<>\\/]/.test(un))return fail('ممنوع استخدام الرموز < > / \\ في اسم المستخدم');
+ var normUn=normUser(un);
+ if(USERS.some(function(x){return x&&x.id!==u.id&&normUser(x.username||x.u||'')===normUn;}))return fail('الاسم ده متشابه جدًا مع حساب تاني (المسافات والحروف الكابيتال مش بتفرق في الدخول). غيّر حرف واحد عشان الدخول يبقى واضح.');
  var enteredPhone=document.getElementById('acPhone').value.trim();
  if(enteredPhone&&!whatsappDigits(enteredPhone))return fail('رقم الهاتف غير صالح. اكتبه بصيغة مصرية مثل 01012345678.');
  var btn0=this.querySelector('[type=submit]');
@@ -2827,7 +2854,7 @@ function openStaffForm(id,self){
    if(!isOwner()&&newRole==='إدارة النظام')return fail('غير مسموح بإنشاء حساب إدارة النظام');
    btn0.disabled=true;err.textContent='جارٍ إنشاء الحساب على Firebase…';
    try{
-     var prof=await createStaffAccount({name:name,username:un.toLowerCase(),password:pw,role:newRole,phone:enteredPhone,photo:photo});
+     var prof=await createStaffAccount({name:name,username:un,password:pw,role:newRole,phone:enteredPhone,photo:photo});
      vaultPut(prof.id,pw,prof.name);
      USERS.push(prof);
      logActivity('add_user','الحساب: '+prof.name+' (@'+prof.username+')','إنشاء حساب جديد · الرتبة: '+prof.role);
@@ -2845,6 +2872,8 @@ function openStaffForm(id,self){
    if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await changeMyPassword(current,pw); vaultPut(u.id,pw,name); }
    err.textContent='جارٍ الحفظ…';
    await fbUsersRef.child(u.id).set(next);
+   if(normUser(u.username||u.u)!==normUser(un)){ await delLoginIndex(u.username||u.u); }
+   await putLoginIndex(un,u.id,next.name,normUser(u.username||u.u));
    var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
    if(ME.id===u.id){ME.name=next.name;ME.u=un;writeSession();}
    var _fields=[];
@@ -2874,7 +2903,8 @@ function delStaff(id){
     if(!ok)return;
     logActivity('delete_user','الحساب: '+(u.name||u.u||u.username),'حذف الحساب · الرتبة: '+(u.role||'—'));
     USERS=USERS.filter(function(x){return x.id!==id;});
-    pushUsers();renderTeam();toast('اتشال من النظام. لو عايز تحذفه نهائيًا من Authentication كمان: Console → Authentication → Users');
+    delLoginIndex(u.username||u.u);
+    pushUsers();renderTeam();toast(isOwner()?'اتشال من النظام. لمسحه نهائيًا: Console → Authentication → Users':'اتشال من النظام');
   });
 }
 

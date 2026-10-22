@@ -2953,9 +2953,35 @@ function fbAuth(){
   return firebase.auth(app);
 }
 
+function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
+
+/* اسم المستخدم قابل للتعديل في أي وقت من لوحة الإدارة،
+   فبنجرّب الإيميل المباشر الأول، ولو مش موجود بنقرأ فهرس الدخول. */
+async function resolveLoginEmail(username){
+  var direct = ekhdamEmail(username);
+  if(String(username||'').indexOf('@')>-1) return direct;
+  var norm = normUser(username);
+  try{
+    var snap = await firebase.database().ref('ekhdam/loginIndex/'+encodeURIComponent(norm)).once('value');
+    var v = snap.val();
+    if(v && v.e) return v.e + '@' + AUTH_DOMAIN;
+  }catch(_e){}
+  return direct;
+}
+
 async function signInWithUsername(username, password){
-  var email = ekhdamEmail(username);
-  var cred  = await fbAuth().signInWithEmailAndPassword(email, password);
+  var email = await resolveLoginEmail(username);
+  var cred;
+  try{
+    cred = await fbAuth().signInWithEmailAndPassword(email, password);
+  }catch(e1){
+    var c1=(e1&&e1.code)||'';
+    if(c1==='auth/user-not-found'||c1==='auth/invalid-credential'||c1==='auth/invalid-login-credentials'){
+      var alt = ekhdamEmail(username);
+      if(alt!==email) cred = await fbAuth().signInWithEmailAndPassword(alt, password);
+      else throw e1;
+    } else throw e1;
+  }
   var uid   = cred.user.uid;
   var snap  = await firebase.database().ref('ekhdam/users/'+uid).once('value');
   var prof  = snap.val();
