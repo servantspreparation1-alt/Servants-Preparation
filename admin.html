@@ -2539,28 +2539,59 @@ function pwStr(v){return v==null?'':String(v);}
 function pwNum(v){try{return typeof nf==='function'?nf(v):pwStr(v);}catch(e){return pwStr(v);}}
 function pwUserById(id){for(var i=0;i<USERS.length;i++)if(USERS[i].id===id)return USERS[i];return null;}
 function pwMask(){return '••••••••••';}
+/* ===== خزنة محلية لكلمات المرور =====
+   Firebase بيخزّن كلمة السر مشفّرة (hash) ومستحيل استرجاعها — لا من هنا ولا من Console.
+   عشان كده بنحتفظ بنسخة محلية (على الجهاز ده بس) لأي كلمة سر إنت أنشأتها أو غيّرتها من هنا. */
+var PW_VAULT_KEY='e3_pwvault_v1';
+function vaultKey(s){var k='e3k2026';var out='';for(var i=0;i<s.length;i++)out+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return out;}
+function vaultEnc(s){try{return btoa(unescape(encodeURIComponent(vaultKey(String(s)))));}catch(_e){return '';}}
+function vaultDec(s){try{return vaultKey(decodeURIComponent(escape(atob(String(s)))));}catch(_e){return '';}}
+function vaultLoad(){try{var o=JSON.parse(localStorage.getItem(PW_VAULT_KEY)||'{}');return (o&&typeof o==='object')?o:{};}catch(_e){return {};}}
+function vaultPut(id,pw,name){
+  if(!id||!pw)return;
+  try{var v=vaultLoad();v[id]={p:vaultEnc(pw),n:name||'',t:Date.now()};localStorage.setItem(PW_VAULT_KEY,JSON.stringify(v));}catch(_e){}
+}
+function vaultGet(id){try{var v=vaultLoad(),e=v[id];return e&&e.p?vaultDec(e.p):'';}catch(_e){return '';}}
+function vaultDel(id){try{var v=vaultLoad();delete v[id];localStorage.setItem(PW_VAULT_KEY,JSON.stringify(v));}catch(_e){}}
+
 function pwCodeHTML(u,prefix){
   if(!u)return '';
-  var p=pwStr(u.pass);
-  if(!p)return '<code class="pw-code pw-empty" data-pw-code="'+esc(u.id)+'" dir="ltr">لا توجد كلمة مرور محفوظة</code>';
-  return '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr" title="كلمة المرور مخفية — اضغط إظهار">'+pwMask()+'</code>';
+  var p=vaultGet(u.id);
+  if(!p)return '<code class="pw-code pw-empty" data-pw-code="'+esc(u.id)+'" dir="ltr" title="كلمة المرور مشفّرة عند Firebase — مش ممكن استرجاعها">🔒 محمية</code>';
+  return '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr" title="كلمة المرور مخفية — اضغط 👁️">'+pwMask()+'</code>';
 }
 function pwVaultHTML(u){
-  /* لوحة داخل نافذة تعديل الحساب — مفيش عرض لكلمات المرور خلاص */
+  var p=vaultGet(u.id);
   return '<div class="pw-vault">'+
-    '<div class="pw-vault-head"><b>🔒 كلمة المرور</b><span class="pw-only">محميّة</span></div>'+
-    '<div class="pw-inline"><span style="font-size:.9rem;letter-spacing:2px">••••••••••</span></div>'+
-    '<p style="margin:8px 0 0;font-size:.69rem;color:var(--cx-muted,#5d6d7d);line-height:1.7">كلمة المرور بقت محفوظة ومشفّرة عند Firebase Authentication. مفيش حد يقدر يشوفها — ولا حتى إدارة النظام. التغيير بيتم من الزرار اللي تحت.</p>'+
+    '<div class="pw-vault-head"><b>🔒 كلمة المرور</b><span class="pw-only">إدارة النظام فقط</span></div>'+
+    '<div class="pw-inline">'+
+      (p
+        ? '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr">'+pwMask()+'</code>'+
+          '<div class="pw-vault-actions">'+
+            '<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️ إظهار</button>'+
+            '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋 نسخ</button>'+
+          '</div>'
+        : '<code class="pw-code pw-empty" dir="ltr">🔒 محمية عند Firebase</code>')+
+    '</div>'+
+    '<p style="margin:8px 0 0;font-size:.69rem;color:var(--cx-muted,#5d6d7d);line-height:1.7">'+
+      (p
+        ? 'دي نسخة محفوظة على <b>الجهاز ده بس</b> لكلمة السر اللي أنشأتها/غيّرتها من هنا. مش متخزنة على السحابة.'
+        : 'كلمة المرور متخزنة مشفّرة عند Firebase Authentication — مستحيل استرجاعها، حتى بإدارة النظام. تقدر تغيّرها من الزرار اللي تحت.')+
+    '</p>'+
   '</div>';
 }
 function pwReveal(id,forceHide){
   if(!isOwner()){return;}
-  var u=pwUserById(id);if(!u||!pwStr(u.pass))return;
-  var codes=document.querySelectorAll('[data-pw-code="'+id+'"]'),show=forceHide?false:true;
+  var p=vaultGet(id);
+  if(!p){
+    toast('🔒 كلمة المرور مشفّرة عند Firebase ومستحيل استرجاعها. لو نسيتها: Console → Authentication → Reset password');
+    return;
+  }
+  var codes=document.querySelectorAll('[data-pw-code="'+id+'"]');
   Array.prototype.forEach.call(codes,function(el){
     var isShown=el.getAttribute('data-shown')==='1';
     var next=forceHide?false:!isShown;
-    el.textContent=next?pwStr(u.pass):pwMask();
+    el.textContent=next?p:pwMask();
     el.setAttribute('data-shown',next?'1':'0');
     el.style.color=next?'#8a1c1c':'';
   });
@@ -2570,9 +2601,8 @@ function pwReveal(id,forceHide){
 }
 function pwCopy(id){
   if(!isOwner())return;
-  var u=pwUserById(id);
-  if(!u||!pwStr(u.pass)){toast('لا توجد كلمة مرور محفوظة لهذا الحساب');return;}
-  var txt=pwStr(u.pass);
+  var txt=vaultGet(id);
+  if(!txt){toast('🔒 كلمة المرور مشفّرة عند Firebase — مفيش نسخة قابلة للاسترجاع');return;}
   var fallback=function(){
     try{
       var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
@@ -2743,6 +2773,7 @@ function openStaffForm(id,self){
    btn0.disabled=true;err.textContent='جارٍ إنشاء الحساب على Firebase…';
    try{
      var prof=await createStaffAccount({name:name,username:un.toLowerCase(),password:pw,role:newRole,phone:enteredPhone,photo:photo});
+     vaultPut(prof.id,pw,prof.name);
      USERS.push(prof);
      logActivity('add_user','الحساب: '+prof.name+' (@'+prof.username+')','إنشاء حساب جديد · الرتبة: '+prof.role);
      toast('✅ اتعمل الحساب. اسم المستخدم: '+prof.username+' — كلمة السر اللي كتبتها');
@@ -2756,7 +2787,7 @@ function openStaffForm(id,self){
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;
  try{
-   if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await changeMyPassword(current,pw); }
+   if(pw){ err.textContent='جارٍ تغيير كلمة المرور…'; await changeMyPassword(current,pw); vaultPut(u.id,pw,name); }
    err.textContent='جارٍ الحفظ…';
    await fbUsersRef.child(u.id).set(next);
    var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
