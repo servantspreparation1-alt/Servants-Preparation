@@ -1359,6 +1359,37 @@ html[data-theme="dark"] .content,html.dark .content{background:transparent!impor
 .lec-main{display:flex;flex-direction:column;gap:2px;flex:1;min-width:200px}
 .lec-main small{color:var(--cx-muted);font-weight:700;font-size:.72rem}
 .att-sheet{padding:16px;margin-bottom:14px}
+/* ===== شاشة الحضور المستقلة ===== */
+.att-picker{padding:16px;margin-bottom:14px}
+.att-picker-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.att-sel{flex:1 1 280px;display:flex;flex-direction:column;gap:5px;font-size:.76rem;font-weight:900;color:var(--cx-muted)}
+.att-sel select{padding:9px 12px;border-radius:10px;border:1.5px solid var(--card-border);background:var(--cx-paper);font-family:inherit;font-weight:800;font-size:.85rem;color:var(--cx-ink)}
+.att-lec-head{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:12px;background:rgba(18,58,99,.05);border:1px solid var(--card-border);margin-bottom:10px}
+.att-lec-head b{font-size:.95rem;color:#0f2f52}
+.att-lec-head span{font-size:.73rem;font-weight:800;color:var(--cx-muted)}
+.att-counters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.att-cnt{flex:1 1 90px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 6px;border-radius:12px;background:var(--cx-paper);border:1px solid var(--card-border)}
+.att-cnt b{font-size:1.15rem;color:#0f2f52}
+.att-cnt span{font-size:.63rem;font-weight:900;color:var(--cx-muted);white-space:nowrap}
+.att-cnt.prog{flex:2 1 160px}
+.att-cnt.prog i{display:block;width:100%;height:6px;border-radius:999px;background:rgba(18,58,99,.12);margin-top:5px;overflow:hidden}
+.att-cnt.prog i em{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#1c8b52,#3fbf7f);transition:width .25s}
+.att-search{display:flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:999px;border:1.5px solid var(--card-border);background:var(--cx-paper);font-size:.8rem}
+.att-search input{flex:1;border:0;outline:0;background:transparent;font-family:inherit;font-size:.85rem;font-weight:700;color:var(--cx-ink)}
+.att-sheet .att-row{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px dashed var(--cx-line,#e3e7eb)}
+.att-sheet .att-row:last-child{border-bottom:0}
+.att-sheet .att-name{flex:1;display:flex;flex-direction:column;font-weight:800;font-size:.85rem}
+.att-sheet .att-name small{font-size:.66rem;font-weight:700;color:var(--cx-muted);direction:ltr;text-align:start}
+.att-sheet .att-btns{display:flex;gap:5px;flex-wrap:wrap}
+.att-sheet .att-btn{padding:7px 10px;border-radius:10px;border:1.5px solid var(--card-border);background:var(--cx-paper);font-family:inherit;font-weight:900;font-size:.72rem;cursor:pointer;color:var(--cx-ink);transition:.15s}
+.att-sheet .att-btn:hover:not(:disabled){transform:translateY(-1px);border-color:var(--cx-gold)}
+.att-sheet .att-btn:disabled{opacity:.45;cursor:not-allowed}
+.att-sheet .att-btn.on.p{background:rgba(28,139,82,.16);border-color:#1c8b52;color:#12694c}
+.att-sheet .att-btn.on.o{background:rgba(47,111,176,.16);border-color:#2f6fb0;color:#1c4f80}
+.att-sheet .att-btn.on.a{background:rgba(198,40,40,.14);border-color:#c62828;color:#8a1c1c}
+html[data-theme="dark"] .att-cnt,html.dark .att-cnt{background:#16202e;border-color:#2a3a4f}
+html[data-theme="dark"] .att-lec-head b,html.dark .att-lec-head b{color:#cfe0f5}
+@media(max-width:560px){.att-sheet .att-row{flex-wrap:wrap}.att-sheet .att-btns{width:100%;justify-content:flex-start}}
 .att-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed var(--cx-line,#e3e7eb);flex-wrap:wrap}
 .att-row:last-child{border-bottom:0}
 .att-name{flex:1;min-width:140px;font-weight:800;display:flex;flex-direction:column}
@@ -1833,7 +1864,7 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
         <span class="logo-icon cx-logo" id="sideLogo" style="display:grid;place-items:center;overflow:hidden"><img src="data:image/png;base64,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" alt="معلم الأجيال للتلمذة" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></span>
         <span class="cx-brand-copy"><b id="orgNameSide">معلم الأجيال للتلمذة</b><span>إعداد خدام</span></span>
       </a>
-      <div class="cx-links" id="topLinks"><a class="nav-item" data-view="students" href="#students">الدارسون</a><a class="nav-item" data-view="subjects" href="#subjects">المواد</a><a class="nav-item" data-view="lectures" href="#lectures">المحاضرات</a><a class="nav-item" data-view="results" href="#results">النتائج</a></div>
+      <div class="cx-links" id="topLinks"><a class="nav-item" data-view="students" href="#students">الدارسون</a><a class="nav-item" data-view="subjects" href="#subjects">المواد</a><a class="nav-item" data-view="lectures" href="#lectures">المحاضرات</a><a class="nav-item" data-view="attendance" href="#attendance">الحضور</a><a class="nav-item" data-view="results" href="#results">النتائج</a></div>
       <div class="cx-actions"></div>
     </div>
   </nav>
@@ -1851,7 +1882,8 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
   <div class="tab-bar no-print" id="mainNav" role="tablist">
     <a class="nav-item" data-view="students" href="#students"><span class="ic">👥</span> الدارسون</a>
     <a class="nav-item" data-view="subjects" href="#subjects"><span class="ic">📚</span> المواد</a>
-    <a class="nav-item" data-view="lectures" href="#lectures"><span class="ic">📅</span> المحاضرات والحضور</a>
+    <a class="nav-item" data-view="lectures" href="#lectures"><span class="ic">📅</span> المحاضرات</a>
+    <a class="nav-item" data-view="attendance" href="#attendance"><span class="ic">📋</span> تسجيل الحضور</a>
     <a class="nav-item" data-view="results" href="#results"><span class="ic">📊</span> النتائج</a>
     <a class="nav-item" data-view="team" id="teamTab" href="#team" style="display:none"><span class="ic">🧑‍🏫</span> إدارة الخدام</a>
     <a class="nav-item" data-view="activity" id="activityTab" href="#activity" style="display:none"><span class="ic">📜</span> سجل النشاطات</a>
@@ -3237,14 +3269,15 @@ function route(noScroll){
   pendingRender=false;
   var h=(location.hash||'#students').slice(1),parts=h.split('/'),tab=parts[0];
   if(tab==='profile'){openStaffForm(ME.id,true);return;}
-  if(tab!=='students'&&tab!=='student'&&tab!=='subjects'&&tab!=='lectures'&&tab!=='results'&&tab!=='team'&&tab!=='activity')tab=ME.role==='خادم'?'results':'students';
+  if(tab!=='students'&&tab!=='student'&&tab!=='subjects'&&tab!=='lectures'&&tab!=='attendance'&&tab!=='results'&&tab!=='team'&&tab!=='activity')tab=ME.role==='خادم'?'results':'students';
   if(tab==='activity'&&!isOwner()){location.replace(can('manageStudents')?'#students':'#results');return;}
   if(ME.role==='خادم'&&tab!=='results'){location.replace('#results');return;}
   var active=tab==='student'?'students':tab;
   $$('[data-view]').forEach(function(a){a.classList.toggle('active',a.getAttribute('data-view')===active);});
   /* عرض آمن: أي خطأ في قسم لا يقفل التاب ولا يسيب شاشة قديمة */
   if(tab==='students')safeRender('الدارسون',renderStudents);
-  else if(tab==='lectures')safeRender('المحاضرات والحضور',renderLectures);
+  else if(tab==='lectures')safeRender('المحاضرات',renderLectures);
+  else if(tab==='attendance')safeRender('تسجيل الحضور',renderAttendance);
   else if(tab==='student')safeRender('ملف الدارس',function(){renderStudent(parts[1]);});
   else if(tab==='results')safeRender('النتائج',renderResults);
   else if(tab==='team')safeRender('إدارة الخدام',renderTeam);
@@ -3733,6 +3766,7 @@ function setAttendanceMark(lecId,stId,val,btn){
   if(row)$$('.att-btn',row).forEach(function(b){b.classList.toggle('on',b.getAttribute('data-val')===val);b.classList.toggle('p',b.getAttribute('data-val')==='p'&&val==='p');b.classList.toggle('o',b.getAttribute('data-val')==='o'&&val==='o');b.classList.toggle('a',b.getAttribute('data-val')==='a'&&val==='a');});
   var sum=document.getElementById('attSum-'+sub.id);if(sum)sum.textContent=attendanceSummaryText(attendanceCounts(sub.id,stId));
   var lcSum=document.getElementById('attSheetCounts');if(lcSum&&S.attLecture===lecId)lcSum.textContent=attendanceCountsText(lec,sub);
+  var attBox=document.getElementById('attCounters');if(attBox)attBox.innerHTML=attCountersHTML(lec,sub);
   var inp=document.querySelector('.sx-grade[data-sub="'+sub.id+'"][data-k="att"]');
   if(inp){inp.value=(st.grades&&st.grades[sub.id]&&st.grades[sub.id].att!=null)?st.grades[sub.id].att:'';var card=inp.closest('.sx-sc');if(card)refreshTotal(card);}
 }
@@ -3925,10 +3959,117 @@ function setBulkAttendance(lecId,val){
     var lbl=val==='p'?'حضوري':val==='o'?'أونلاين':val==='a'?'غائب':'مسح الكل';
     logActivity('edit_attendance','المحاضرات: '+sub.name,'تسجيل جماعي ('+lbl+') لكل الدارسين ('+nf(studs.length)+') في محاضرة '+fmtDate(lec.date));
     toast('اتسجل '+lbl+' لـ '+nf(studs.length)+' دارس مرة واحدة ✓');
-    renderLectures();
+    if((location.hash||'').indexOf('#attendance')===0)renderAttendance();else renderLectures();
     setTimeout(function(){var sh=document.getElementById('attSheet');if(sh&&sh.scrollIntoView)sh.scrollIntoView({behavior:'smooth',block:'start'});},60);
   }
 }
+/* ============================================================
+   شاشة الحضور المستقلة — اختَر السنة والمادة والمحاضرة وخذ الحضور
+   ============================================================ */
+function attCountersHTML(lec,sub){
+  var p=0,o=0,a=0,u=0;
+  studentsForLecture(sub).forEach(function(st){
+    var mk=(lec.marks&&lec.marks[st.id])||'';
+    if(mk==='p')p++;else if(mk==='o')o++;else if(mk==='a')a++;else u++;
+  });
+  var tot=p+o+a+u, done=p+o+a;
+  var pct=tot?Math.round(done/tot*100):0;
+  return '<div class="att-counters">'+
+    '<div class="att-cnt"><b>'+nf(p)+'</b><span>🙋 حضوري</span></div>'+
+    '<div class="att-cnt"><b>'+nf(o)+'</b><span>💻 أونلاين</span></div>'+
+    '<div class="att-cnt"><b>'+nf(a)+'</b><span>✖ غائب</span></div>'+
+    '<div class="att-cnt"><b>'+nf(u)+'</b><span>⏳ لم يُسجل</span></div>'+
+    '<div class="att-cnt prog"><b>'+pct+'٪</b><span>تم التسجيل</span><i><em style="width:'+pct+'%"></em></i></div>'+
+  '</div>';
+}
+
+function renderAttendance(){
+  S.attLevel=S.attLevel||1;
+  var lv=S.attLevel;
+  var subs=(db.subjects||[]).filter(function(x){return x.level===lv;});
+  var lvlChips=[1,2,3].map(function(n){
+    return '<button type="button" class="tab'+(lv===n?' on':'')+'" data-attlevel="'+n+'">'+LEVELS[n-1]+'</button>';
+  }).join('');
+
+  if(!subs.length){
+    view.innerHTML='<div class="sx-title"><h3>📋 تسجيل الحضور والغياب</h3></div>'+
+      '<div class="tabs">'+lvlChips+'</div>'+
+      '<div class="sx-empty"><div class="big">🗂️</div><p>مفيش مواد في '+LEVELS[lv-1]+' لسه — ضيف المواد الأول من تبويب «المواد».</p></div>';
+    return;
+  }
+  if(!S.attSub||!subs.some(function(x){return x.id===S.attSub;}))S.attSub=subs[0].id;
+  var sub=getSubject(S.attSub);
+  var subChips=subs.map(function(x){
+    return '<button type="button" class="tab'+(x.id===sub.id?' on':'')+'" data-attsub="'+esc(x.id)+'">'+esc(x.name)+'</button>';
+  }).join('');
+
+  var lecs=lecturesForSubject(sub.id).slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
+  if(!lecs.length){
+    view.innerHTML='<div class="sx-title"><h3>📋 تسجيل الحضور والغياب</h3></div>'+
+      '<div class="tabs">'+lvlChips+'</div><div class="tabs">'+subChips+'</div>'+
+      '<div class="sx-empty"><div class="big">🗓️</div><p>مفيش محاضرات لـ«'+esc(sub.name)+'» — اعملها الأول من تبويب «المحاضرات»، وبعدها هتلاقيها هنا جاهزة للحضور.</p>'+
+      '<button class="btn primary" type="button" data-act="goLectures" data-id="'+esc(sub.id)+'">🗓️ اعمل محاضرات المادة دي</button></div>';
+    return;
+  }
+  var selId=S.attLecId;
+  if(!selId||!lecs.some(function(l){return l.id===selId;}))selId=lecs[lecs.length-1].id;
+  S.attLecId=selId;
+  var lec=getLecture(selId);
+  var seqMap=lectureSeqMap(sub.id);
+  var locked=isSubjectLocked(sub);
+  var canEdit=can('editGrades')&&!locked;
+  var studs=studentsForLecture(sub);
+  var q=normAr(S.attQ||'');
+  var shown=q?studs.filter(function(st){return normAr(displayPersonName(st.name)).indexOf(q)>-1||String(st.phone||'').indexOf(String(S.attQ||'').trim())>-1;}):studs;
+
+  var lecOpts=lecs.map(function(l){
+    var mk='';
+    var c=attendanceCountsText(l,sub);
+    return '<option value="'+esc(l.id)+'"'+(l.id===selId?' selected':'')+'>'+esc(fmtDate(l.date))+' — '+esc(lectureDisplayTitle(l,seqMap[l.id]))+'</option>';
+  }).join('');
+
+  var idx=lecs.findIndex(function(l){return l.id===selId;});
+  var prev=idx>0?lecs[idx-1]:null, next=idx<lecs.length-1?lecs[idx+1]:null;
+
+  var rows=shown.map(function(st){
+    var mk=(lec.marks&&lec.marks[st.id])||'';
+    return '<div class="att-row" data-att-row="'+esc(lec.id)+':'+esc(st.id)+'">'+avatar(st,'sm')+
+      '<span class="att-name">'+esc(displayPersonName(st.name))+'<small>'+esc(st.phone||'')+'</small></span>'+
+      '<span class="att-btns">'+
+      '<button type="button" class="att-btn'+(mk==='p'?' on p':'')+'" data-att-btn data-lec="'+esc(lec.id)+'" data-stu="'+esc(st.id)+'" data-val="p"'+(canEdit?'':' disabled')+'>🙋 حضوري</button>'+
+      '<button type="button" class="att-btn'+(mk==='o'?' on o':'')+'" data-att-btn data-lec="'+esc(lec.id)+'" data-stu="'+esc(st.id)+'" data-val="o"'+(canEdit?'':' disabled')+'>💻 أونلاين</button>'+
+      '<button type="button" class="att-btn'+(mk==='a'?' on a':'')+'" data-att-btn data-lec="'+esc(lec.id)+'" data-stu="'+esc(st.id)+'" data-val="a"'+(canEdit?'':' disabled')+'>✖ غائب</button>'+
+      '<button type="button" class="att-btn" data-att-btn data-lec="'+esc(lec.id)+'" data-stu="'+esc(st.id)+'" data-val=""'+(canEdit?'':' disabled')+'>مسح</button>'+
+      '</span></div>';
+  }).join('');
+
+  view.innerHTML=
+    '<div class="sx-title"><h3>📋 تسجيل الحضور والغياب</h3><p class="sx-hint">اختَر السنة، بعدها المادة، بعدها المحاضرة — والأسماء هتظهر جاهزة. كل ضغطة بتتحفظ فورًا وبتحدّث درجة الحضور في المادة تلقائيًا.</p></div>'+
+    '<div class="tabs">'+lvlChips+'</div>'+
+    '<div class="tabs">'+subChips+'</div>'+
+    '<div class="card att-picker">'+
+      (locked?'<div class="lock-banner">🔒 نتيجة المادة معتمدة — الحضور للعرض فقط. إعادة الفتح من تبويب النتائج.</div>':'')+
+      '<div class="att-picker-row">'+
+        '<label class="att-sel">📅 المحاضرة<select id="attLecSel">'+lecOpts+'</select></label>'+
+        '<button class="btn sm" type="button" data-attshift="prev"'+(prev?'':' disabled')+'>⏮ السابقة</button>'+
+        '<button class="btn sm" type="button" data-attshift="next"'+(next?'':' disabled')+'>التالية ⏭</button>'+
+      '</div>'+
+      '<div class="att-lec-head"><b>'+esc(lectureDisplayTitle(lec,seqMap[lec.id]))+'</b>'+
+        '<span>'+fmtDate(lec.date)+' · '+weekdayName(lec.date)+' · '+esc(sub.name)+'</span></div>'+
+      '<div id="attCounters">'+attCountersHTML(lec,sub)+'</div>'+
+      '<div class="att-bulk"><span>⚡ تسجيل جماعي:</span>'+
+        '<button class="btn sm" type="button" data-act="attAll" data-id="'+esc(lec.id)+'" data-val="p"'+(canEdit?'':' disabled')+'>🙋 الكل حضوري</button>'+
+        '<button class="btn sm" type="button" data-act="attAll" data-id="'+esc(lec.id)+'" data-val="o"'+(canEdit?'':' disabled')+'>💻 الكل أونلاين</button>'+
+        '<button class="btn sm" type="button" data-act="attAll" data-id="'+esc(lec.id)+'" data-val="a"'+(canEdit?'':' disabled')+'>✖ الكل غائب</button>'+
+        '<button class="btn sm" type="button" data-act="attAll" data-id="'+esc(lec.id)+'" data-val=""'+(canEdit?'':' disabled')+'>↩ مسح الكل</button>'+
+      '</div>'+
+      '<label class="att-search">🔍 <input type="search" id="attQ" placeholder="ابحث باسم الدارس أو الموبايل…" value="'+esc(S.attQ||'')+'"></label>'+
+    '</div>'+
+    (studs.length
+      ? (shown.length?'<div class="card att-sheet" id="attSheet">'+rows+'</div>':'<div class="sx-empty"><div class="big">🔍</div><p>مفيش دارس مطابق لبحثك</p></div>')
+      : '<div class="sx-empty"><div class="big">👥</div><p>مفيش دارسين مسجلين في '+LEVELS[sub.level-1]+' — ضيفهم من تبويب «الدارسين».</p></div>');
+}
+
 function renderLectures(){
   var lv=S.lecLevel;
   var chips=LEVELS.map(function(n,i){
@@ -4264,6 +4405,15 @@ document.addEventListener('click',function(e){
   if(t.hasAttribute('data-llevel')){S.lecLevel=+t.getAttribute('data-llevel');S.lecSub='';S.lecTerm=0;S.lecSelected={};S.lecQ='';S.attLecture='';renderLectures();return;}
   if(t.hasAttribute('data-lterm')){S.lecTerm=+t.getAttribute('data-lterm');renderLectures();return;}
   if(t.hasAttribute('data-att-btn')){setAttendanceMark(t.getAttribute('data-lec'),t.getAttribute('data-stu'),t.getAttribute('data-val'),t);return;}
+  if(t.hasAttribute('data-attlevel')){S.attLevel=+t.getAttribute('data-attlevel');S.attSub='';S.attLecId='';S.attQ='';renderAttendance();return;}
+  if(t.hasAttribute('data-attsub')){S.attSub=t.getAttribute('data-attsub');S.attLecId='';S.attQ='';renderAttendance();return;}
+  if(t.hasAttribute('data-attshift')){
+    var _lecs=lecturesForSubject(S.attSub).slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
+    var _i=_lecs.findIndex(function(l){return l.id===S.attLecId;});
+    var _j=t.getAttribute('data-attshift')==='next'?_i+1:_i-1;
+    if(_lecs[_j]){S.attLecId=_lecs[_j].id;renderAttendance();}
+    return;
+  }
   var a=t.getAttribute('data-act'),id=t.getAttribute('data-id'),sid=t.getAttribute('data-sub');
   if(a==='closeModal')closeModal();
   else if(a==='newStu')openStudentForm();
@@ -4284,6 +4434,7 @@ document.addEventListener('click',function(e){
   else if(a==='editLecture')openLectureForm(id);
   else if(a==='openAtt'){S.attLecture=(S.attLecture===id?'':id);renderLectures();setTimeout(function(){var sh=document.getElementById('attSheet');if(sh&&sh.scrollIntoView)sh.scrollIntoView({behavior:'smooth',block:'start'});},60);}
   else if(a==='closeAtt'){S.attLecture='';renderLectures();}
+  else if(a==='goAttendance'){go('attendance');}
   else if(a==='delLecture')deleteLecture(id);
   else if(a==='lockSub')lockSubject(id);
   else if(a==='unlockSub')unlockSubject(id);
@@ -4304,6 +4455,8 @@ document.addEventListener('input',function(e){
   if(t.id==='sxRQ'){S.resQ=t.value;var pos=t.selectionStart;renderResults();var n=$('#sxRQ');n.focus();try{n.setSelectionRange(pos,pos);}catch(_){}return;}
   if(t.id==='lcStart'||t.id==='lcCount'||t.id==='lcEnd'||t.id==='lcWeekday'||t.id==='lcTerm'){updateGenPreview();return;}
   if(t.id==='lecQ'){S.lecQ=t.value;renderLectures();var lq=document.getElementById('lecQ');if(lq){lq.focus();try{lq.setSelectionRange(lq.value.length,lq.value.length);}catch(_e){}}return;}
+  if(t.id==='attQ'){S.attQ=t.value;var _pos=t.selectionStart;renderAttendance();var aq=document.getElementById('attQ');if(aq){aq.focus();try{aq.setSelectionRange(_pos,_pos);}catch(_e){}}return;}
+  if(t.id==='attLecSel'){S.attLecId=t.value;renderAttendance();return;}
   if(!t.classList.contains('sx-grade'))return;
   if(!can('editGrades'))return;
   var v=toEn(t.value).trim(),n=Number(v),m=parseFloat(t.max);
