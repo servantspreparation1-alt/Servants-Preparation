@@ -2370,6 +2370,36 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 
 #vzAva{position:relative;overflow:hidden}#vzAva img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}.vz-box.done #vzAva{animation:none!important}
 </style>
+<style id="e3-reg-cta">
+/* ═══ v9.1 — زرار التسجيل عن بُعد: الزرار الوحيد في شريط صفحة الدخول ═══ */
+/* «الدخول» و«لوحة التحكم» يفضلوا روابط نصية، والتسجيل هو الزرار الوحيد هنا */
+.cx-links a.on,.cx-links button.on{
+  background:transparent;border-color:transparent;
+  color:var(--cx-gold);font-weight:900;
+  text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:2px;
+}
+html[data-theme="dark"] .cx-links a.on,html.dark .cx-links a.on{color:var(--cx-gold-2)}
+.cx-links a.on:hover{background:var(--cx-gold-soft);text-decoration:none}
+a.cx-regbtn{
+  background:linear-gradient(135deg,var(--cx-gold-2),var(--cx-gold));
+  color:#241a05;border:1px solid rgba(122,92,10,.5);
+  font-weight:900;box-shadow:0 8px 22px rgba(201,162,39,.32);
+  margin-inline-start:6px;white-space:nowrap;
+}
+a.cx-regbtn:hover{
+  background:linear-gradient(135deg,#f3dd93,var(--cx-gold-2));color:#241a05;
+  transform:translateY(-1px);box-shadow:0 10px 26px rgba(201,162,39,.45);
+}
+html[data-theme="dark"] a.cx-regbtn,html.dark a.cx-regbtn{color:#1d1503}
+/* نفس الزرار في قائمة الموبايل (الدرج) */
+.cx-drawer a.nav-item.reg-item{
+  background:linear-gradient(135deg,var(--cx-gold-2),var(--cx-gold));
+  color:#241a05;font-weight:900;border:1px solid rgba(122,92,10,.5);
+  box-shadow:0 8px 20px rgba(201,162,39,.28);margin-top:6px;
+}
+html[data-theme="dark"] .cx-drawer a.nav-item.reg-item,html.dark .cx-drawer a.nav-item.reg-item{color:#1d1503}
+@media(max-width:640px){a.cx-regbtn{padding:8px 10px;font-size:.72rem}}
+</style>
 </head>
 <body class="login-page">
 
@@ -2385,6 +2415,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
     <div class="cx-links">
       <a href="index.html" class="on">الدخول</a>
       <a href="admin.html">لوحة التحكم</a>
+      <a href="register.html" class="cx-regbtn" title="فورم تسجيل البيانات — للدارسين الجدد (صفحة خارجية)">📝 تسجيل البيانات</a>
     </div>
     <div class="cx-actions">
       <span class="cx-clock" title="توقيت القاهرة"><i></i><b data-cx-clock>--:--</b><span>القاهرة</span></span>
@@ -2404,6 +2435,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
   </div>
   <a class="nav-item" href="index.html">🔐 الدخول</a>
   <a class="nav-item" href="admin.html">🏠 لوحة التحكم</a>
+  <a class="nav-item reg-item" href="register.html">📝 تسجيل البيانات (للدارسين الجدد)</a>
   <div class="cx-dactions">
     <button class="theme-btn" type="button" data-theme-toggle><span class="tico">🌙</span><span class="tlabel">الوضع الليلي</span></button>
   </div>
@@ -2792,7 +2824,7 @@ setInterval(tickClock,1000);
 var deferredInstall=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstall=e;});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
-  window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js?v=6.3').catch(function(){});});
+  window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js?v=10.0').catch(function(){});});
 }
 window.handleInstall=function(){
   var h=$('#installHelp');
