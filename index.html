@@ -2548,6 +2548,7 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -2635,17 +2636,41 @@ function applyTheme(t){
     if(lb)lb.textContent=(t==='dark'?'الوضع النهاري':'الوضع الليلي');
   });
 }
+function scheduledCairoTheme(){
+  try{
+    var h=parseInt(new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',hour12:false}).format(new Date()),10);
+    if(isFinite(h)){if(h===24)h=0;return (h>=6&&h<19)?'light':'dark';}
+  }catch(_e){}
+  var hr=new Date().getHours();return (hr>=6&&hr<19)?'light':'dark';
+}
+function nextCairoBoundaryIso(){
+  var d=new Date(),h=d.getHours(),y=d.getFullYear(),mo=d.getMonth()+1,day=d.getDate(),bh=6;
+  if(h<6)bh=6;else if(h<19)bh=19;else{bh=6;var n=new Date(d.getTime()+86400000);y=n.getFullYear();mo=n.getMonth()+1;day=n.getDate();}
+  var pad=function(x){return (x<10?'0':'')+x;};
+  return y+'-'+pad(mo)+'-'+pad(day)+'T'+pad(bh)+':00';
+}
 (function(){
   try{
-    var t=localStorage.getItem('e3dad-theme');
-    if(t!=='dark'&&t!=='light')t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+    var t=null,raw=localStorage.getItem('e3dad-theme-manual');
+    if(raw){
+      var o=JSON.parse(raw);
+      if(o&&(o.mode==='dark'||o.mode==='light'))t=o.mode;
+    }
+    if(!t){
+      var old=localStorage.getItem('e3dad-theme');
+      if(old==='dark'||old==='light')t=old;
+    }
+    if(t!=='dark'&&t!=='light')t=scheduledCairoTheme();
     applyTheme(t);
   }catch(e){}
 })();
 $$('[data-theme-toggle]').forEach(function(b){
   b.addEventListener('click',function(){
     var t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-    try{localStorage.setItem('e3dad-theme',t);}catch(e){}
+    try{
+      localStorage.setItem('e3dad-theme',t);
+      localStorage.setItem('e3dad-theme-manual',JSON.stringify({mode:t,until:nextCairoBoundaryIso(),at:new Date().toISOString()}));
+    }catch(e){}
     applyTheme(t);
   });
 });
@@ -2886,7 +2911,7 @@ function fetchUsersWithOfflineFallback(){
       firebase.database(app).ref('ekhdam/users').once('value').then(function(snap){
         if(settled)return;settled=true;clearTimeout(timer);
         var arr=[],v=snap.val();
-        if(v)Object.keys(v).forEach(function(k){if(v[k]&&typeof v[k]==='object')arr.push(v[k]);});
+        if(v)Object.keys(v).forEach(function(k){if(v[k]&&typeof v[k]==='object'){if(!v[k].id)v[k].id=k;arr.push(v[k]);}});
         if(!arr.length){reject({msg:'لم يتم تهيئة حساب مدير الخدمة بعد. اطلب من مسؤول النظام إعداد الحساب من جهة الخادم؛ لا يوجد حساب افتراضي مكشوف.',tone:'warn',authFail:false});return;}
         resolve({list:arr,offline:false});
       }).catch(function(err){if(settled)return;settled=true;clearTimeout(timer);reject(err);});
@@ -2913,6 +2938,40 @@ function writeLoginAudit(action,account,enteredUser,details){
   }catch(_e){return Promise.resolve(false);}
 }
 
+/* ===== الدخول الحقيقي عبر Firebase Authentication ===== */
+var AUTH_DOMAIN = 'khodam.local';   /* نفس النطاق الداخلي اللي اتعملت بيه الحسابات */
+
+function ekhdamEmail(username){
+  var x = clean(username).toLowerCase().replace(/\s+/g,'');
+  if(!x) return '';
+  if(x.indexOf('@') > -1) return x;
+  return x + '@' + AUTH_DOMAIN;
+}
+
+function fbAuth(){
+  var app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG);
+  return firebase.auth(app);
+}
+
+async function signInWithUsername(username, password){
+  var email = ekhdamEmail(username);
+  var cred  = await fbAuth().signInWithEmailAndPassword(email, password);
+  var uid   = cred.user.uid;
+  var snap  = await firebase.database().ref('ekhdam/users/'+uid).once('value');
+  var prof  = snap.val();
+  if(!prof){
+    await fbAuth().signOut();
+    throw {msg:'الحساب ده مش متجهّز للدخول بعد — كلّم أمين الخدمة.', tone:'warn'};
+  }
+  if(prof.active === false){
+    await fbAuth().signOut();
+    throw {msg:'الحساب ده موقوف مؤقتًا من الإدارة — راجع أمين خدمة إعداد الخدام.', tone:'warn'};
+  }
+  prof.id = uid;
+  prof.username = prof.username || prof.u || '';
+  return prof;
+}
+
 window.doLogin=async function(){
   if(busy)return;
   if(lockActive()){lockTick();return;}
@@ -2925,29 +2984,22 @@ window.doLogin=async function(){
   var btn=$('#loginBtn'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='⏳ بنطابق البيانات…';
   try{
     VZ.open(u);
-    await VZ.step('الاتصال بقاعدة بيانات الخدمة');
-    var res=await fetchUsersWithOfflineFallback();
-    var arr=res.list;
-    await VZ.step('البحث عن الحساب ومراجعة بيانات الدخول');
-    var acc=matchAccount(arr,u);
-    if(!acc){
-      await writeLoginAudit('login_failed',null,u,'فشل تسجيل الدخول: الحساب غير موجود');
+    await VZ.step('تسجيل الدخول على خادم Firebase');
+    var acc;
+    try{
+      acc = await signInWithUsername(u, p);
+    }catch(err){
       VZ.finish(false,'بيانات الدخول غير صحيحة',true);
       await new Promise(function(r){setTimeout(r,550);});
-      throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. راجع البيانات أو تواصل مع أمين الخدمة.',authFail:true};
-    }
-    if(acc.active===false){
-      await writeLoginAudit('login_failed',acc,u,'فشل تسجيل الدخول: الحساب موقوف');
-      VZ.finish(false,'الحساب موقوف مؤقتاً',true);
-      await new Promise(function(r){setTimeout(r,550);});
-      throw {msg:'الحساب ده موقوف مؤقتًا من الإدارة — راجع أمين خدمة إعداد الخدام.',tone:'warn',authFail:false};
-    }
-    await VZ.step('التأكد من كلمة السر');
-    if(String(acc.pass||'')!==p){
-      await writeLoginAudit('login_failed',acc,u,'فشل تسجيل الدخول: كلمة المرور غير صحيحة');
-      VZ.finish(false,'بيانات الدخول غير صحيحة',true);
-      await new Promise(function(r){setTimeout(r,550);});
-      throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. لو نسيتها اتواصل مع أمين الخدمة.',authFail:true};
+      var code=(err&&err.code)||'';
+      if(code==='auth/wrong-password'||code==='auth/user-not-found'||code==='auth/invalid-credential'||code==='auth/invalid-login-credentials'){
+        throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. راجع البيانات أو تواصل مع أمين الخدمة.',authFail:true};
+      }
+      if(code==='auth/too-many-requests')throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
+      if(code==='auth/network-request-failed')throw {msg:'النت قطع — اتأكد من الاتصال وجرّب تاني.',tone:'warn'};
+      if(code==='auth/operation-not-allowed')throw {msg:'الدخول بالإيميل/كلمة السر مش مفعّل على Firebase.',tone:'warn'};
+      if(code==='auth/invalid-email')throw {msg:'اسم المستخدم لازم يكون حروف إنجليزي وأرقام من غير مسافات.',tone:'warn'};
+      throw {msg:(err&&err.msg)||'تعذّر الدخول دلوقتي — جرّب تاني.',tone:(err&&err.tone)||'warn',authFail:!!(err&&err.authFail)};
     }
     VZ.account(acc);
     resetFailedAttempts();
@@ -2971,5 +3023,5 @@ window.doLogin=async function(){
 </script>
 
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4e777ccbb6eee53',t:'MTc5MjY2MTI2NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
