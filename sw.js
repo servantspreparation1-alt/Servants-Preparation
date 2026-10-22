@@ -1,6 +1,6 @@
-/* إعداد خدام للتلمذة — Service Worker v6.3 (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
-var CACHE = 'e3-sw-v10-version8-bulk-lectures';
-var SHELL = ['./', './index.html', './admin.html', './manifest.json'];
+/* إعداد خدام للتلمذة — Service Worker v6.4 — نسخة الدخول الجديد (Firebase Auth) (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
+var CACHE = 'e3-sw-v11-auth-2026-10';
+var SHELL = ['./', './index.html', './admin.html', './manifest.json', './icons/logo-192.png', './icons/logo-384.png', './icons/logo-512.png', './icons/logo-maskable-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(

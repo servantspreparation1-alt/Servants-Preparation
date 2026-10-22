@@ -1905,6 +1905,7 @@ html[data-theme="dark"] .bc-panel h4{color:#a6d4fb}
 <!-- Firebase (compat SDK: بيشتغل من غير build وبيخلي الصفحة تكمل أوفلاين لو النت قطع) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -1975,7 +1976,13 @@ function writeSession(){
   var chip=document.getElementById('fbUser');
   if(chip){chip.title='الحساب الحالي — الدور: '+ME.role;chip.innerHTML='<b>👤 '+esc(ME.name||ME.u)+'</b><small>'+esc(ME.role)+'</small>';}
 }
-function logout(){var finished=false,done=function(){if(finished)return;finished=true;clearSession();ME=null;location.replace('index.html');};logActivity('logout','جلسة لوحة التحكم','تسجيل خروج ناجح',{protected:true}).then(done);setTimeout(done,700);}
+function logout(){
+  var finished=false,done=function(){if(finished)return;finished=true;clearSession();ME=null;location.replace('index.html');};
+  logActivity('logout','جلسة لوحة التحكم','تسجيل خروج ناجح',{protected:true}).then(function(){
+    try{if(typeof firebase!=='undefined'&&firebase.apps.length)firebase.auth().signOut().then(done,done);else done();}catch(_e){done();}
+  });
+  setTimeout(done,1500);
+}
 function revokeSession(msg){
   if(!ME)return;
   logActivity('session_revoked','الجلسة','إنهاء الجلسة: '+String(msg||'انتهت صلاحية الجلسة'),{protected:true});
@@ -1994,9 +2001,6 @@ function syncMe(){
   var cur=USERS.filter(function(u){return u&&u.id===ME.id;})[0];
   if(!cur)return;
   if(cur.active===false){revokeSession('تم إيقاف حسابك مؤقتًا من الإدارة.');return;}
-  var fp=passwordFingerprint(cur.pass||'');
-  if(ME.ph&&ME.ph!==fp){revokeSession('تم تغيير كلمة السر؛ سجل دخولك مجددًا.');return;}
-  if(!ME.ph){ME.ph=fp;writeSession();}
   if(cur.role!==ME.role||(cur.name||'')!==(ME.name||'')||(cur.username||cur.u||'')!==ME.u){
     ME.u=cur.username||cur.u;ME.name=cur.name||'';ME.role=cur.role||'خادم';writeSession();
     toast('اتحدثت بيانات حسابك — الدور: '+ME.role);applyPerms();
@@ -2136,16 +2140,16 @@ function pushNow(){
   if(!fbConnected){fbDirty=true;return;}
   if(!localMeta.rev){localMeta.updatedAt=Date.now();localMeta.rev=clientId+'-'+localMeta.updatedAt;saveLocal();}
   var sentRev=localMeta.rev;
-  /* بنكتب كل عقدة بيانات كاملة بـ set على عقدتها هي فقط (students/subjects/lectures/meta)
-     فالحذف يوصل للسحابة زي الإضافة، ومن غير ما نلمس ekhdam/users أو ekhdam/activity. */
-  var writes=[
-    fbRef.child('students').set(byId(db.students||[])),
-    fbRef.child('subjects').set(byId(db.subjects||[])),
-    fbRef.child('lectures').set(byId(db.lectures||[])),
-    fbRef.child('tombstones').set(db.tombstones||null),
-    fbRef.child('meta').set({rev:localMeta.rev,updatedAt:localMeta.updatedAt,app:'e3_khodam',v:2})
-  ];
-  Promise.all(writes).then(function(){
+  /* كتابة ذرية موحّدة (Atomic multi-path update) لكل عقد البيانات معًا في طلب واحد
+     لمنع إطلاق مستمع القراءة في منتصف الحفظ قبل تحديث meta.rev، وبدون لمس ekhdam/users أو ekhdam/activity. */
+  var payload={
+    students:byId(db.students||[]),
+    subjects:byId(db.subjects||[]),
+    lectures:byId(db.lectures||[]),
+    tombstones:db.tombstones||null,
+    meta:{rev:localMeta.rev,updatedAt:localMeta.updatedAt,app:'e3_khodam',v:2}
+  };
+  fbRef.update(payload).then(function(){
     if(localMeta.rev!==sentRev){fbDirty=true;schedulePush();return;}
     fbDirty=false;setSync('online','تم الحفظ ☁️');
   },function(){fbDirty=true;setSync('error','الحفظ فشل — هيتكرر تلقائي');});
@@ -2171,9 +2175,17 @@ function initFirebase(){
   var fbdb;
   try{ firebase.initializeApp(FB_CONFIG); fbdb=firebase.database(); fbRef=fbdb.ref('ekhdam'); }
   catch(e){ fbRef=null; setSync('error','خطأ اتصال'); return; }
+  /* حارس الجلسة: مفيش لوحة تحكم من غير تسجيل دخول حقيقي على Firebase */
+  try{
+    firebase.auth().onAuthStateChanged(function(user){
+      if(!user){ try{clearSession();}catch(_e){} location.replace('index.html'); }
+    });
+  }catch(_e){}
   try{ fbUsersRef=fbdb.ref('ekhdam/users');
     fbUsersRef.on('value',function(usnap){
-      USERS=toArr(usnap.val());
+      var rawUsers=usnap.val();
+      if(rawUsers&&typeof rawUsers==='object'&&!Array.isArray(rawUsers)){Object.keys(rawUsers).forEach(function(k){if(rawUsers[k]&&typeof rawUsers[k]==='object'&&!rawUsers[k].id)rawUsers[k].id=k;});}
+      USERS=toArr(rawUsers);
       USERS=USERS.filter(function(u){return u&&typeof u==='object'&&u.id;});
       /* لا تُخزّن كلمات السر النصية في localStorage */
       /* لا تنشئ مالكًا افتراضيًا بكلمة سر منشورة في الكود. جهّز أول حساب بأداة خادم موثوقة. */
@@ -2188,7 +2200,7 @@ function initFirebase(){
   setSync('connecting','بيتصل…');
   try{fbdb.ref('.info/connected').on('value',function(s){
     fbConnected=!!s.val();
-    if(fbConnected){ if(fbDirty)pushNow(); else if(fbReady)setSync('online','تم الحفظ ☁️'); }
+    if(fbConnected){ if(fbDirty&&fbReady)pushNow(); else if(fbReady)setSync('online','تم الحفظ ☁️'); }
     else setSync('offline','أوفلاين');
   });}catch(e){}
   fbRef.on('value',function(snap){
@@ -2215,7 +2227,8 @@ function initFirebase(){
     var merged=mergeCloudDb(cloudDb,db,fbDirty);
     if(JSON.stringify(merged)!==JSON.stringify(cloudDb)){
       db=merged;
-      localMeta={rev:(rmeta&&rmeta.rev)||localMeta.rev||'',updatedAt:(rmeta&&rmeta.updatedAt)||localMeta.updatedAt||0};
+      var nowTs=Date.now();
+      localMeta={rev:clientId+'-'+nowTs,updatedAt:nowTs};
       saveLocal(); fbDirty=true; fbInitialSynced=true; pushNow();
       if(canRenderNow())route(true); else pendingRender=true;
       return;
@@ -2249,7 +2262,12 @@ function importBackup(file){
     nd=normalizeDb(nd);
     ask('استيراد نسخة احتياطية','هيتم استبدال كل البيانات الحالية ('+nf(db.students.length)+' دارس) ببيانات الملف ('+nf(nd.students.length)+' دارس، '+nf(nd.subjects.length)+' مادة) وهيتزامن على كل الأجهزة. (بتتحفظ نسخة أمان تلقائية قبل الاستبدال)','⬆️ استيراد').then(function(ok){
       if(!ok)return;
-      autoBackup(); db=nd;
+      autoBackup();
+      var oldTb=(db&&db.tombstones)||{students:{},subjects:{},lectures:{}};
+      db=nd; db.tombstones=oldTb;
+      (db.students||[]).forEach(function(x){if(x&&x.id)clearDeleted('students',x.id);});
+      (db.subjects||[]).forEach(function(x){if(x&&x.id)clearDeleted('subjects',x.id);});
+      (db.lectures||[]).forEach(function(x){if(x&&x.id)clearDeleted('lectures',x.id);});
       if(save()){logActivity('import','نسخة احتياطية','استيراد نسخة بيانات JSON · '+nf(nd.students.length)+' دارس و'+nf(nd.subjects.length)+' مادة');toast('⬆️ تم الاستيراد بنجاح');route();}
     });
   };
@@ -2646,27 +2664,23 @@ function openStaffForm(id,self){
  
  var name=document.getElementById('acName').value.trim(),un=document.getElementById('acUser').value.trim(),pw=canPassword?document.getElementById('acPass').value:'';
  if(/[<>]|&(?:lt|gt);/i.test(name))return fail('اكتب الاسم فقط بدون أكواد HTML');
- if(!name||!un||(!existing&&!pw))return fail('الاسم واسم المستخدم وكلمة مرور الحساب الجديد مطلوبة');
+ if(!name||!un)return fail('الاسم واسم المستخدم مطلوبان');
  var confirm=canPassword?document.getElementById('acConfirm').value:'';
  var current=self&&existing?document.getElementById('acCurrent').value:'';
  /* تغيير كلمة المرور يتم فقط لو المستخدم كتب باسورد جديد فعلاً — عشان تعديل الاسم/الصورة يشتغل من غير أي طلب أو تحقق من الباسورد */
- if(pw){
-   if(self&&existing&&current!==u.pass)return fail('كلمة المرور الحالية غير صحيحة');
-   if(pw!==confirm)return fail('تأكيد كلمة المرور الجديدة غير مطابق');
-   if(pw.length<8)return fail('كلمة المرور الجديدة 8 أحرف على الأقل');
- }
+ /* كلمات المرور بقت على Firebase Authentication — مفيش pass في قاعدة البيانات */
  if(USERS.some(function(x){return x.id!==u.id&&(x.username||x.u||'').toLowerCase()===un.toLowerCase();}))return fail('اسم المستخدم مستخدم بالفعل');
  var enteredPhone=document.getElementById('acPhone').value.trim(),waNumber=(!existing&&enteredPhone)?whatsappDigits(enteredPhone):'';
  if(!existing&&enteredPhone&&!waNumber)return fail('رقم الهاتف غير صالح لفتح WhatsApp. اكتبه برمز الدولة أو بصيغة مصرية مثل 01012345678.');
  var next=Object.assign({},u,{name:name,username:un,u:un,phone:enteredPhone,photo:photo});
- if(pw&&canPassword)next.pass=pw;
+ try{delete next.pass;}catch(_e){}
  if(!self){next.role=document.getElementById('acRole').value;if(!isOwner()&&next.role==='إدارة النظام')return fail('غير مسموح');}
  if(u.role==='إدارة النظام')next.role=u.role;
  var btn=this.querySelector('[type=submit]');btn.disabled=true;err.textContent='جارٍ الحفظ…';
- var waUrl=(!existing&&waNumber)?createWhatsAppInvite(waNumber,next,pw):'';
+ var waUrl='';
  fbUsersRef.child(u.id).set(next).then(function(){
    var i=USERS.findIndex(function(x){return x.id===u.id;});if(i<0)USERS.push(next);else USERS[i]=next;
-   if(ME.id===u.id){ME.name=next.name;ME.u=un;ME.ph=passwordFingerprint(next.pass);writeSession();}
+   if(ME.id===u.id){ME.name=next.name;ME.u=un;writeSession();}
    var _fields=[];if(existing){[['الاسم','name'],['اسم المستخدم','username'],['الهاتف','phone'],['الرتبة','role'],['الصورة','photo']].forEach(function(pair){if(String(u[pair[1]]||'')!==String(next[pair[1]]||''))_fields.push(pair[0]);});}
    logActivity(existing?'edit_user':'add_user','الحساب: '+(next.name||next.u)+' (@'+(next.username||next.u)+')',existing?('الحقول المعدلة: '+(_fields.join('، ')||'لا تغييرات ظاهرة')):('إنشاء حساب جديد · الرتبة: '+(next.role||'—'))+(pw&&canPassword?' · تم تعيين كلمة مرور جديدة':''));
    if(pw&&canPassword)logActivity('change_password','الحساب: '+(next.name||next.u),'تغيير كلمة المرور',{protected:true});
@@ -4228,7 +4242,7 @@ function loadLib(key,url,check){
   return libPromises[key];
 }
 function loadXLSX(){return loadLib('xlsx','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',function(){return !!window.XLSX;});}
-function loadDOCX(){return loadLib('docx','https://unpkg.com/docx@8.5.0/build/index.umd.min.js',function(){return !!(window.docx&&window.docx.Document);});}
+function loadDOCX(){return loadLib('docx','https://unpkg.com/docx@8.5.0/build/index.umd.js',function(){return !!(window.docx&&window.docx.Document);});}
 function loadExcelJS(){return loadLib('exceljs','https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',function(){return !!window.ExcelJS;});}
 function loadJSZip(){return loadLib('jszip','https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',function(){return !!window.JSZip;});}
 function loadPDFLibs(){return loadLib('html2canvas','https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',function(){return !!window.html2canvas;}).then(function(){return loadLib('jspdf','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',function(){return !!(window.jspdf&&window.jspdf.jsPDF);});});}
@@ -4325,7 +4339,7 @@ function collectUsers(includePass){
   var canPass=!!includePass&&(typeof isOwner==='function'&&isOwner());
   return (typeof USERS!=='undefined'?USERS:[]).map(function(u){
     var o={id:u.id||'',name:u.name||'',username:u.username||u.u||'',phone:u.phone||'',role:u.role||'',active:u.active!==false};
-    if(canPass)o.pass=u.pass||'';
+    /* لا تُصدَّر كلمات مرور — بقت محفوظة عند Firebase Authentication */
     return o;
   });
 }
@@ -4348,7 +4362,7 @@ function statsData(){
   return out;
 }
 function extraKeys(){
-  var owned={students:1,subjects:1,lectures:1};
+  var owned={students:1,subjects:1,lectures:1,tombstones:1};
   return Object.keys(db||{}).filter(function(k){return !owned[k];});
 }
 function byName(a,b){return S(a.name).localeCompare(S(b.name),'ar');}
@@ -4375,7 +4389,9 @@ registerSection({id:'results',icon:'🏆',label:'النتائج والملخص',
   count:function(){return resultsRows().length;},collect:function(){return resultsRows().map(function(r){return {student:r[0],phone:r[1],level:r[2],studentStatus:r[3],subject:r[4],pct:r[5],status:r[6],passMark:r[7],entered:r[8],attempt:r[9]};});},
   tables:function(){return [{name:'النتائج',headers:['الدارس','الموبايل','السنة','حالة الدارس','المادة','النسبة','النتيجة','النجاح من','المعايير المدخلة','المحاولة'],rows:resultsRows()}];}});
 registerSection({id:'attempts',icon:'🔁',label:'سجل المحاولات والإعادات',description:'كل المحاولات السابقة وتواريخها ونتائجها ودرجاتها.',
-  count:function(){return attemptsRows().length;},collect:function(){var o={};(db.students||[]).forEach(function(s){if(s.attempts&&Object.keys(s.attempts).length)o[s.id]=s.attempts;});
+  count:function(){return attemptsRows().length;},collect:function(){var o={};(db.students||[]).forEach(function(s){if(s.attempts&&Object.keys(s.attempts).length)o[s.id]=s.attempts;});return o;},
+  tables:function(){return [{name:'المحاولات السابقة',headers:['الدارس','المادة','رقم المحاولة','النسبة','النتيجة','التاريخ','درجات المحاولة'],rows:attemptsRows()}];},
+  apply:function(data){Object.keys(data||{}).forEach(function(id){var st=stu(id);if(st)st.attempts=data[id]||{};});}});
 registerSection({id:'lectures',icon:'📅',label:'المحاضرات والحضور',description:'جدول محاضرات كل مادة (تواريخ متولدة تلقائيًا) وسجل حضور كل دارس في كل محاضرة (حضوري/أونلاين/غائب) — درجة الحضور بتتحسب منه.',
   count:function(){return (db.lectures||[]).length;},collect:function(){return JSON.parse(JSON.stringify(db.lectures||[]));},
   tables:function(){
@@ -4392,9 +4408,7 @@ registerSection({id:'lectures',icon:'📅',label:'المحاضرات والحض�
     return [{name:'المحاضرات',headers:['المادة','السنة','الترم','اسم المحاضرة','التاريخ','حضوري','أونلاين','غائب'],rows:rows},
             {name:'سجل الحضور',headers:['الدارس','المادة','اسم المحاضرة','تاريخ المحاضرة','الحالة'],rows:attRows}];
   },
-  apply:function(data,mode){applyById('lectures',data,mode);}});return o;},
-  tables:function(){return [{name:'المحاولات السابقة',headers:['الدارس','المادة','رقم المحاولة','النسبة','النتيجة','التاريخ','درجات المحاولة'],rows:attemptsRows()}];},
-  apply:function(data){Object.keys(data||{}).forEach(function(id){var st=stu(id);if(st)st.attempts=data[id]||{};});}});
+  apply:function(data,mode){applyById('lectures',data,mode);}});
 registerSection({id:'confessors',icon:'🙏',label:'آباء الاعتراف',description:'قائمة مجمعة تلقائيًا من بيانات الدارسين (تقرير — تُبنى من قسم الدارسين عند الاستيراد).',
   count:function(){return collectConfessors().length;},collect:function(){return collectConfessors();},
   tables:function(){return [{name:'آباء الاعتراف',headers:['أب الاعتراف','الموبايل','الكنيسة','عدد الدارسين'],rows:collectConfessors().map(function(c){return [c.name,c.phone,c.church,N(c.students)];})}];}});
@@ -4967,8 +4981,13 @@ function buildZip(backup,selected,fmts){
    ============================================================ */
 function applyById(key,data,mode){
   if(!Array.isArray(data))return;
-  if(typeof clearDeleted==='function')data.forEach(function(x){if(x&&x.id)clearDeleted(key,x.id);});
-  if(mode==='replace'){db[key]=typeof normalizeDb==='function'?normalizeDb({students:key==='students'?data:db.students,subjects:key==='subjects'?data:db.subjects,lectures:key==='lectures'?data:(db.lectures||[])})[key]:data;return;}
+  var incomingIds={};
+  if(typeof clearDeleted==='function')data.forEach(function(x){if(x&&x.id){incomingIds[x.id]=1;clearDeleted(key,x.id);}});
+  if(mode==='replace'){
+    if(typeof markDeleted==='function')(db[key]||[]).forEach(function(old){if(old&&old.id&&!incomingIds[old.id])markDeleted(key,old.id);});
+    db[key]=typeof normalizeDb==='function'?normalizeDb({students:key==='students'?data:db.students,subjects:key==='subjects'?data:db.subjects,lectures:key==='lectures'?data:(db.lectures||[]),tombstones:db.tombstones})[key]:data;
+    return;
+  }
   var map={};(db[key]||[]).forEach(function(x,i){if(x&&x.id)map[x.id]=i;});
   data.forEach(function(x){if(!x)return;if(x.id&&map[x.id]!=null)db[key][map[x.id]]=x;else db[key].push(x);});
 }
@@ -5013,23 +5032,32 @@ function applyImported(data,mode,selected){
   var oldDb=db;
   try{
     if(selected.indexOf('students')>=0&&Array.isArray(data.students)){
-      if(mode==='replace')work.students=data.students;
-      else{var m={};work.students.forEach(function(x,i){m[x.id]=i;});data.students.forEach(function(x){if(x&&x.id&&m[x.id]!=null)work.students[m[x.id]]=x;else if(x)work.students.push(x);});}
+      var inStu={};
+      data.students.forEach(function(x){if(x&&x.id){inStu[x.id]=1;if(typeof clearDeleted==='function')clearDeleted('students',x.id);}});
+      if(mode==='replace'){
+        if(typeof markDeleted==='function')work.students.forEach(function(old){if(old&&old.id&&!inStu[old.id])markDeleted('students',old.id);});
+        work.students=data.students;
+      }else{var m={};work.students.forEach(function(x,i){m[x.id]=i;});data.students.forEach(function(x){if(x&&x.id&&m[x.id]!=null)work.students[m[x.id]]=x;else if(x)work.students.push(x);});}
     }
     if(selected.indexOf('subjects')>=0&&Array.isArray(data.subjects)){
-      if(mode==='replace')work.subjects=data.subjects;
-      else{var m2={};work.subjects.forEach(function(x,i){m2[x.id]=i;});data.subjects.forEach(function(x){if(x&&x.id&&m2[x.id]!=null)work.subjects[m2[x.id]]=x;else if(x)work.subjects.push(x);});}
+      var inSub={};
+      data.subjects.forEach(function(x){if(x&&x.id){inSub[x.id]=1;if(typeof clearDeleted==='function')clearDeleted('subjects',x.id);}});
+      if(mode==='replace'){
+        if(typeof markDeleted==='function')work.subjects.forEach(function(old){if(old&&old.id&&!inSub[old.id])markDeleted('subjects',old.id);});
+        work.subjects=data.subjects;
+      }else{var m2={};work.subjects.forEach(function(x,i){m2[x.id]=i;});data.subjects.forEach(function(x){if(x&&x.id&&m2[x.id]!=null)work.subjects[m2[x.id]]=x;else if(x)work.subjects.push(x);});}
     }
     db.students=work.students;db.subjects=work.subjects;
     if(typeof normalizeDb==='function'){var nd=normalizeDb(db);db.students=nd.students;db.subjects=nd.subjects;db.lectures=nd.lectures||db.lectures||[];}
-    /* الدرجات/المحاولات/الإضافي بعد تطبيع الدارسين */
+    /* الدرجات/المحاولات/المحاضرات/الإضافي بعد تطبيع الدارسين */
     selected.forEach(function(id){
       if(id==='students'||id==='subjects'||id==='users')return;
       var sec=sectionById(id),key=id==='__extra'?'extra':id;
       if(!sectionAllowed(sec))return; /* قسم ممنوع للدور الحالي (سجل النشاطات) */
       if(sec&&sec.apply&&data[key]!=null)sec.apply(data[key],mode);
     });
-    if(data.extra)Object.keys(data.extra).forEach(function(k){if(k!=='students'&&k!=='subjects')db[k]=data.extra[k];});
+    if(selected.indexOf('lectures')>=0&&typeof syncSubjectAttendance==='function'){(db.subjects||[]).forEach(function(s){syncSubjectAttendance(s);});}
+    if(data.extra)Object.keys(data.extra).forEach(function(k){if(k!=='students'&&k!=='subjects'&&k!=='lectures'&&k!=='tombstones')db[k]=data.extra[k];});
     return true;
   }catch(e){db=oldDb;throw e;}
 }
@@ -5068,10 +5096,10 @@ function levelFromName(v){var t=S(v);if(typeof LEVELS!=='undefined'){for(var i=0
    ============================================================ */
 var BC={tab:'export',selected:null,formats:{json:true,xlsx:true,docx:true,pdf:true},includePasswords:false,pending:null};
 function defaultSelected(){return visibleSections().map(function(s){return s.id;});}
-/* النسخ الاحتياطي: متاح للجميع للتحميل، لكن كلمة المرور لإدارة النظام فقط */
-var BC_ALLOWED_ROLES=['إدارة النظام','أمين خدمة إعداد خدام','مساعد أمين إعداد خدام','خادم'];
+/* النسخ الاحتياطي والاستيراد: متاح فقط لمن يملك صلاحية الإدارة (إدارة النظام / أمين خدمة إعداد خدام) */
+var BC_ALLOWED_ROLES=['إدارة النظام','أمين خدمة إعداد خدام'];
 function bcAllowed(){
-  try{return !!(typeof ME!=='undefined'&&ME&&BC_ALLOWED_ROLES.indexOf(ME.role)>=0);}catch(e){return false;}
+  try{return !!(typeof ME!=='undefined'&&ME&&BC_ALLOWED_ROLES.indexOf(ME.role)>=0&&(typeof can!=='function'||can('manageUsers')));}catch(e){return false;}
 }
 function openBackupCenter(tab){
   if(typeof ME==='undefined'||!ME){return;} /* الجلسة متحققة أصلًا من النظام */
@@ -5140,7 +5168,7 @@ function bindBC(){
   var pass=document.getElementById('bcPass');if(pass)pass.addEventListener('change',function(){BC.includePasswords=pass.checked;});
   var all=document.getElementById('bcAll');if(all)all.addEventListener('click',function(){BC.selected=defaultSelected();renderBC();});
   var none=document.getElementById('bcNone');if(none)none.addEventListener('click',function(){BC.selected=[];renderBC();});
-  var core=document.getElementById('bcCore');if(core)core.addEventListener('click',function(){BC.selected=['students','subjects','grades','results','attempts','stats'];renderBC();});
+  var core=document.getElementById('bcCore');if(core)core.addEventListener('click',function(){BC.selected=['students','subjects','grades','lectures','results','attempts','stats'];renderBC();});
   var ex=document.getElementById('bcDoExport');if(ex)ex.addEventListener('click',function(){doExport('zip');});
   var exn=document.getElementById('bcDoExportNormal');if(exn)exn.addEventListener('click',function(){doExport('files');});
   var drop=document.getElementById('bcDrop'),file=document.getElementById('bcFile');
@@ -5153,6 +5181,7 @@ function bindBC(){
   }
 }
 function doExport(mode){
+  if(!bcAllowed()){toastMsg('🔒 النسخة الاحتياطية متاحة لإدارة النظام أو أمين الخدمة فقط');return;}
   mode=mode||'zip';
   resetSaveQueue();
   if(!BC.selected.length){toastMsg('اختر قسمًا واحدًا على الأقل');return;}
@@ -5257,6 +5286,7 @@ function renderImportPreview(file,pending){
   if(btn)btn.addEventListener('click',doImport);
 }
 function doImport(){
+  if(!bcAllowed()){toastMsg('🔒 الاستيراد متاح لإدارة النظام أو أمين الخدمة فقط');return;}
   var pending=BC.pending;if(!pending){toastMsg('اختر ملفًا أولًا');return;}
   var agree=document.getElementById('bcAgree');
   if(agree&&!agree.checked){toastMsg('فعّل تأكيد المراجعة أولًا');return;}
@@ -5353,7 +5383,7 @@ initHeaderTools();
 initFirebase();
 route();
 applyPerms();
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js?v=1').catch(function(){});});}
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js?v=6.3').catch(function(){});});}
 } // end authenticated application
 })();
 
