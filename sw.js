@@ -1,5 +1,5 @@
 /* إعداد خدام للتلمذة — Service Worker v6.3 (الشبكة أولاً + دعم العمل بدون إنترنت بعد أول فتح) */
-var CACHE = 'e3-sw-v7-account-studio';
+var CACHE = 'e3-sw-v10-version8-bulk-lectures';
 var SHELL = ['./', './index.html', './admin.html', './manifest.json'];
 
 self.addEventListener('install', function (e) {
