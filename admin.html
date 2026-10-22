@@ -2018,7 +2018,7 @@ async function changeMyPassword(currentPw,newPw){
 /* ===== إنشاء حساب خادم جديد على Firebase Authentication =====
    بنستخدم نسخة تطبيق ثانوية (secondary app) عشان إنشاء الحساب
    ميعملش تسجيل خروج للأدمن اللي بيعمل الإضافة. */
-async /* اسم المستخدم: بنسمح بالمسافات والحروف الكابيتال في العرض،
+/* اسم المستخدم: بنسمح بالمسافات والحروف الكابيتال في العرض،
    لكن الدخول بيتوحّد (مسافات بتتشال + حروف صغيرة) عشان محدش يتلخبط. */
 function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
 function indexKey(v){return encodeURIComponent(normUser(v));}
