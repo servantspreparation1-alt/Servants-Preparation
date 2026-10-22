@@ -2597,13 +2597,14 @@ function pwVaultHTML(u){
         ? '<code class="pw-code" data-pw-code="'+esc(u.id)+'" dir="ltr">'+pwMask()+'</code>'+
           '<div class="pw-vault-actions">'+
             '<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️ إظهار</button>'+
-            '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋 نسخ</button>'+
+            '<button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'" title="نسخ رسالة الدخول كاملة: الاسم واسم المستخدم وكلمة السر والرابط">📋 نسخ البيانات</button>'+
+            '<button type="button" class="btn sm" data-pw-wa="'+esc(u.id)+'" title="إرسال بيانات الدخول على واتساب">📨 واتساب</button>'+
           '</div>'
         : '<code class="pw-code pw-empty" dir="ltr">🔒 محمية عند Firebase</code>')+
     '</div>'+
     '<p style="margin:8px 0 0;font-size:.69rem;color:var(--cx-muted,#5d6d7d);line-height:1.7">'+
       (p
-        ? 'دي نسخة محفوظة على <b>الجهاز ده بس</b> لكلمة السر اللي أنشأتها/غيّرتها من هنا. مش متخزنة على السحابة.'
+        ? 'دي نسخة محفوظة على <b>الجهاز ده بس</b> لكلمة السر اللي أنشأتها/غيّرتها من هنا. اضغط <b>📋 نسخ البيانات</b> وهتاخد رسالة جاهزة فيها الاسم واسم المستخدم وكلمة السر ولينك النظام وآية — تبعتهم للخادم زي ما هما.'
         : 'كلمة المرور متخزنة مشفّرة عند Firebase Authentication — مستحيل استرجاعها، حتى بإدارة النظام. تقدر تغيّرها من الزرار اللي تحت.')+
     '</p>'+
   '</div>';
@@ -2628,20 +2629,32 @@ function pwReveal(id,forceHide){
   });
 }
 function pwCopy(id){
-  if(!isOwner())return;
-  var txt=vaultGet(id);
-  if(!txt){toast('🔒 كلمة المرور مشفّرة عند Firebase — مفيش نسخة قابلة للاسترجاع');return;}
+  if(!isOwner()){toast('🔒 لإدارة النظام فقط');return;}
+  var u=pwUserById(id)||USERS.filter(function(x){return x&&x.id===id;})[0];
+  if(!u){toast('الحساب غير موجود');return;}
+  var txt=createStaffCredentialsMessage(u);
+  var done=function(){toast('📋 اتنسخت رسالة الدخول كاملة — الاسم واسم المستخدم وكلمة السر والرابط');};
   var fallback=function(){
     try{
       var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');
       ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
       document.body.appendChild(ta);ta.select();try{ta.setSelectionRange(0,txt.length);}catch(e){}
-      document.execCommand('copy');ta.remove();toast('📋 اتنقلت كلمة المرور');
-    }catch(e){toast('تعذر النسخ — اضغط «إظهار» وانسخها يدويًا');}
+      document.execCommand('copy');ta.remove();done();
+    }catch(e){toast('تعذّر النسخ — جرّب من متصفح تاني');}
   };
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(function(){toast('📋 اتنقلت كلمة المرور');},fallback);
+    navigator.clipboard.writeText(txt).then(done,fallback);
   }else fallback();
+}
+function pwWhatsApp(id){
+  if(!isOwner())return;
+  var u=pwUserById(id)||USERS.filter(function(x){return x&&x.id===id;})[0];
+  if(!u)return;
+  var phone=whatsappDigits(u.phone);
+  if(!phone){toast('مفيش رقم موبايل صالح لحساب '+displayPersonName(u.name||u.u||'')+'. أضف الرقم من «تعديل» الأول.');return;}
+  var url='https://wa.me/'+phone+'?text='+encodeURIComponent(createStaffCredentialsMessage(u));
+  window.open(url,'_blank');
+  toast('📨 جارٍ فتح واتساب برسالة الدخول كاملة');
 }
 function openPasswordsVault(){
   if(!isOwner()){toast('🔒 كلمات المرور متاحة لإدارة النظام فقط');return;}
@@ -2680,7 +2693,7 @@ document.addEventListener('click',function(e){
   }
   if(el.hasAttribute('data-pw-wa')){
     e.preventDefault();
-    if(typeof sendStaffCredentials==='function')sendStaffCredentials(el.getAttribute('data-pw-wa'));
+    pwWhatsApp(el.getAttribute('data-pw-wa'));
     return;
   }
 });
@@ -2690,7 +2703,7 @@ function renderTeam(){
  var list=USERS.filter(function(u){return ((u.name||'')+' '+(u.username||u.u||'')+' '+(u.phone||'')).toLowerCase().includes(q);});
  view.innerHTML='<div class="sx-bar"><input class="sx-search" id="sxTQ" type="search" placeholder="ابحث عن خادم…" value="'+esc(S.tq||'')+'">'+(isOwner()?'<button class="btn" id="openPwVault" type="button" title="عرض كلمات مرور كل الحسابات (إدارة النظام فقط)">🔑 كلمات المرور</button>':'')+'<button class="btn primary" data-act="newStaff">＋ خادم جديد</button></div><p class="sx-count">'+list.length+' حساب</p><div class="staff-grid">'+list.map(function(u){
  var ph=safePhoto(u.photo),allow=accountAllowed(u);
- return '<article class="staff-tile" '+(allow?'tabindex="0" data-card-user="'+esc(u.id)+'" aria-label="تعديل حساب '+esc(nmForCard(u))+'"':'')+'><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<div class="pw-inline" style="justify-content:center;margin:2px 0 6px">'+pwCodeHTML(u)+'<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'">👁️</button><button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'">📋</button></div>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
+ return '<article class="staff-tile" '+(allow?'tabindex="0" data-card-user="'+esc(u.id)+'" aria-label="تعديل حساب '+esc(nmForCard(u))+'"':'')+'><div class="staff-top"><span class="chip-role">'+esc(u.role)+'</span><small>'+(u.active===false?'موقوف':'نشط')+'</small></div><div class="staff-avatar">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc((u.name||'؟')[0]))+'</div><h3>'+esc(u.name||u.u)+'</h3><div class="staff-un" dir="ltr">@'+esc(u.username||u.u)+'</div><p dir="ltr">'+esc(u.phone||'—')+'</p>'+(isOwner()?'<div class="pw-inline" style="justify-content:center;margin:2px 0 6px">'+pwCodeHTML(u)+'<button type="button" class="btn sm" data-pw-reveal="'+esc(u.id)+'" title="إظهار كلمة المرور">👁️</button><button type="button" class="btn sm" data-pw-copy="'+esc(u.id)+'" title="نسخ رسالة الدخول كاملة (اسم المستخدم + كلمة السر + الرابط + آية)">📋</button></div>':'')+'<div class="staff-buttons">'+(allow?'<button class="btn sm" data-act="editStaff" data-id="'+esc(u.id)+'">تعديل</button>':'<small>حساب إدارة النظام محمي</small>')+(allow&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm" data-toggle-user="'+esc(u.id)+'">'+(u.active===false?'تفعيل':'إيقاف')+'</button>':'')+(isOwner()&&u.id!==ME.id&&u.role!=='إدارة النظام'?'<button class="btn sm danger" data-act="delStaff" data-id="'+esc(u.id)+'">حذف</button>':'')+'</div></article>';
  }).join('')+'</div>';
  var pv=document.getElementById('openPwVault');
  if(pv)pv.onclick=function(){openPasswordsVault();};
@@ -2710,7 +2723,21 @@ function createWhatsAppInvite(phone,account,password){
 function createStaffCredentialsMessage(account){
   var name=displayPersonName(account.name||account.username||account.u||'الخادم');
   var creator=displayPersonName(ME.name||ME.u||'إدارة النظام');
-  return 'سلام ونعمة المسيح معك يا '+name+' ✝️🌿\nدي بيانات دخولك المحفوظة في نظام إعداد خدام، أرسلها لك '+creator+' 🙏\n\n📖 «وما سمعته مني بشهود كثيرين، أودعه أناسًا أمناء، يكونون أكفاء أن يعلّموا آخرين أيضًا.» (٢ تيموثاوس ٢:٢)\n\n🔗 رابط النظام: '+appInviteURL()+'\n👤 الاسم الظاهر: '+(account.name||'')+'\n🔐 اسم المستخدم: '+(account.username||account.u||'')+'\n🔑 كلمة المرور: '+String(account.pass||'')+'\n🛡️ الدور: '+(account.role||'خادم')+'\n\nاحتفظ ببياناتك بأمان، ولا تشارك كلمة المرور مع أي شخص آخر. ☦️';
+  var pw=vaultGet(account.id);
+  var user=account.username||account.u||'';
+  return 'سلام ونعمة المسيح معك يا '+name+' ✝️🌿'
+    +'\nدي بيانات دخولك المحفوظة في نظام إعداد خدام، أرسلها لك '+creator+' 🙏'
+    +'\n'
+    +'\n📖 «وَمَا سَمِعْتَهُ مِنِّي بِشُهُودٍ كَثِيرِينَ، أَوْدِعْهُ أُنَاسًا أُمَنَاءَ، يَكُونُونَ أَكْفَاءَ أَنْ يُعَلِّمُوا آخَرِينَ أَيْضًا.»'
+    +'\n(٢ تيموثاوس ٢:٢)'
+    +'\n'
+    +'\n🔗 رابط النظام: '+appInviteURL()
+    +'\n👤 الاسم الظاهر: '+(account.name||'')
+    +'\n🔐 اسم المستخدم: '+user
+    +'\n🔑 كلمة المرور: '+(pw||'— (مشفّرة عند Firebase، اطلب من إدارة النظام تعيين واحدة جديدة)')
+    +'\n🛡️ الدور: '+(account.role||'خادم')
+    +'\n'
+    +'\nاحتفظ ببياناتك بأمان، ولا تشارك كلمة المرور مع أي شخص آخر. ☦️';
 }
 function sendStaffCredentials(id){
   if(!isOwner())return;
