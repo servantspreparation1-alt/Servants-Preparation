@@ -1,64 +1,3 @@
-window.doLogin=async function(){
-  if(busy)return;
-  if(lockActive()){lockTick();return;}
-  clearErr();
-  var u=clean($('#liUser').value);
-  var p=String($('#liPass').value||'').replace(/^\s+|\s+$/g,'');
-  if(!u){showErr('اكتب اسم المستخدم الأول','warn');$('#liUser').focus();return;}
-  if(!p){showErr('اكتب كلمة السر','warn');$('#liPass').focus();return;}
-  busy=true;
-  var btn=$('#loginBtn'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='⏳ بنطابق البيانات…';
-  try{
-    VZ.open(u);
-    await VZ.step('فتح اتصال مشفّر مع خادم Firebase (europe-west1)','☁️',60);
-    await VZ.step('التحقق من هوية اسم المستخدم: '+u,'🔎',40);
-    var acc = await signInWithUsername(u,p);
-    await VZ.step('تأكيد كلمة المرور عبر خدمة المصادقة','🔐',40);
-    VZ.account(acc);
-    resetFailedAttempts();
-    await VZ.step('قراءة صلاحيات الحساب: '+(acc.role||'خادم'),'🛡️',40);
-    await VZ.step('تحميل بيانات الخدمة من قاعدة البيانات','🗂️',30);
-    await VZ.step('تجهيز لوحة التحكم والواجهة','✨',30);
-    var rememberEl=$('#remember7d');
-    var remember=rememberEl?!!rememberEl.checked:true;
-    writeSession(acc,remember);
-    VZ.finish(true,'أهلاً '+displayPersonName(acc.name||u)+' — بنفتح لوحة التحكم');
-    btn.innerHTML='✅ تم التحقق — بنفتح اللوحة…';
-    busy=false;
-    setTimeout(function(){location.replace('admin.html');},260);
-  }catch(err){
-    busy=false;btn.disabled=false;btn.innerHTML=old;
-    var code=(err&&err.code)||'';
-    var isCredErr=(code==='auth/wrong-password'||code==='auth/user-not-found'||code==='auth/invalid-credential'||code==='auth/invalid-login-credentials');
-    if(isCredErr){
-      /* نحدد بالظبط: الاسم غلط؟ ولا الباسورد غلط؟ */
-      var exists=false;
-      try{ exists=await diagnoseLogin(u); }catch(_e){}
-      resetFailedAttempts(); /* العداد بيتحسب تحت */
-      recordFailedAttempt();
-      var msg, sub;
-      if(exists){
-        msg='كلمة المرور غير صحيحة';
-        sub='اسم المستخدم «'+u+'» موجود فعلًا — راجع كلمة المرور (حروف كبيرة/صغيرة، مسافات) وجرّب تاني.';
-      }else{
-        msg='اسم المستخدم غير موجود';
-        sub='مفيش حساب باسم «'+u+'». راجع الإملاء (حروف إنجليزي، من غير مسافات زيادة) أو كلّم أمين الخدمة.';
-      }
-      try{ VZ.finish(false,msg,true); }catch(_e){ VZ.hide(); }
-      if(code==='auth/too-many-requests'){
-        try{VZ.finish(false,'محاولات كثيرة جدًا',true);}catch(_e){}
-        throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
-      }
-      throw {msg:msg+' — '+sub,tone:'bad',authFail:true};
-    }
-    if(code==='auth/too-many-requests')throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
-    if(code==='auth/network-request-failed')throw {msg:'النت قطع — اتأكد من الاتصال وجرّب تاني.',tone:'warn'};
-    if(code==='auth/operation-not-allowed')throw {msg:'الدخول بالإيميل/كلمة السر مش مفعّل على Firebase.',tone:'warn'};
-    if(code==='auth/invalid-email')throw {msg:'اسم المستخدم لازم يكون حروف إنجليزي وأرقام من غير مسافات.',tone:'warn'};
-    throw {msg:(err&&err.msg)||'تعذّر الدخول دلوقتي — جرّب تاني.',tone:(err&&err.tone)||'warn'};
-  }
-};
-
 <!DOCTYPE html>
 <!-- ================= E3DAD-COMPLETE v4.0 (v1+v2+v3) | بناء 2026-10-19 | index.html ================= -->
 <html lang="ar" dir="rtl" data-skin="shamamsa-v2" data-theme="light">
@@ -3013,15 +2952,14 @@ function writeLoginAudit(action,account,enteredUser,details){
   }catch(_e){return Promise.resolve(false);}
 }
 
-/* ===== تسخين الاتصال من أول تحميل الصفحة =====
-   بنفتح قناة Firebase والـAuth بدري عشان الدخول يبقى سريع (مفيش تأسيس اتصال وقت الدخول). */
+/* ===== تسخين الاتصال من أول تحميل الصفحة ===== */
+var AUTH_DOMAIN='khodam.local';
 var FB_WARM=(function(){
   try{
     var app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG);
     var db  = firebase.database(app);
     var au  = firebase.auth(app);
     try{ au.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(_e){}
-    var dbs = [];
     try{ db.ref('.info/connected').on('value',function(){}); }catch(_e){}
     try{
       db.ref('ekhdam/loginIndex').once('value').then(function(snap){
@@ -3032,8 +2970,7 @@ var FB_WARM=(function(){
   }catch(_e){ return Promise.resolve(false); }
 })();
 
-/* ===== الدخول الحقيقي عبر Firebase Authentication ===== */
-var AUTH_DOMAIN = 'khodam.local';   /* نفس النطاق الداخلي اللي اتعملت بيه الحسابات */
+function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
 
 function ekhdamEmail(username){
   var x = clean(username).toLowerCase().replace(/\s+/g,'');
@@ -3047,14 +2984,16 @@ function fbAuth(){
   return firebase.auth(app);
 }
 
-function normUser(v){return String(v||'').toLowerCase().replace(/\s+/g,'').replace(/[.#$\[\]\/]/g,'');}
-
-/* اسم المستخدم قابل للتعديل في أي وقت من لوحة الإدارة،
-   فبنجرّب الإيميل المباشر الأول، ولو مش موجود بنقرأ فهرس الدخول. */
+/* اسم المستخدم قابل للتعديل في أي وقت، فبنجرّب الإيميل المباشر وفهرس الدخول */
 async function resolveLoginEmail(username){
   var direct = ekhdamEmail(username);
   if(String(username||'').indexOf('@')>-1) return direct;
   var norm = normUser(username);
+  try{
+    if(window.__LOGIN_INDEX && window.__LOGIN_INDEX[encodeURIComponent(norm)]){
+      return window.__LOGIN_INDEX[encodeURIComponent(norm)].e + '@' + AUTH_DOMAIN;
+    }
+  }catch(_e){}
   try{
     var snap = await firebase.database().ref('ekhdam/loginIndex/'+encodeURIComponent(norm)).once('value');
     var v = snap.val();
@@ -3063,30 +3002,25 @@ async function resolveLoginEmail(username){
   return direct;
 }
 
-/* تشخيص دقيق: هل اسم المستخدم موجود؟ ولو موجود، يبقى العيب في كلمة المرور. */
+/* هل اسم المستخدم موجود فعلًا؟ لتحديد: الاسم غلط ولا الباسورد غلط */
 async function diagnoseLogin(username){
   var norm = normUser(username);
-  var found = false;
   try{
-    if(window.__LOGIN_INDEX && window.__LOGIN_INDEX[encodeURIComponent(norm)]) found = true;
+    if(window.__LOGIN_INDEX && window.__LOGIN_INDEX[encodeURIComponent(norm)]) return true;
   }catch(_e){}
-  if(!found){
-    try{
-      var snap = await firebase.database().ref('ekhdam/loginIndex/'+encodeURIComponent(norm)).once('value');
-      if(snap.val()) found = true;
-    }catch(_e){}
-  }
-  if(!found){
-    try{
-      var usnap = await firebase.database().ref('ekhdam/users').once('value');
-      var all = usnap.val()||{};
-      Object.keys(all).forEach(function(k){
-        var x=all[k]||{};
-        if(normUser(x.username||x.u||'')===norm) found = true;
-      });
-    }catch(_e){}
-  }
-  return found;
+  try{
+    var snap = await firebase.database().ref('ekhdam/loginIndex/'+encodeURIComponent(norm)).once('value');
+    if(snap.val()) return true;
+  }catch(_e){}
+  try{
+    var usnap = await firebase.database().ref('ekhdam/users').once('value');
+    var all = usnap.val()||{}, found=false;
+    Object.keys(all).forEach(function(k){
+      var x=all[k]||{};
+      if(normUser(x.username||x.u||'')===norm) found=true;
+    });
+    return found;
+  }catch(_e){ return false; }
 }
 
 async function signInWithUsername(username, password){
@@ -3102,9 +3036,9 @@ async function signInWithUsername(username, password){
       else throw e1;
     } else throw e1;
   }
-  var uid   = cred.user.uid;
-  var snap  = await firebase.database().ref('ekhdam/users/'+uid).once('value');
-  var prof  = snap.val();
+  var uid = cred.user.uid;
+  var snap = await firebase.database().ref('ekhdam/users/'+uid).once('value');
+  var prof = snap.val();
   if(!prof){
     await fbAuth().signOut();
     throw {msg:'الحساب ده مش متجهّز للدخول بعد — كلّم أمين الخدمة.', tone:'warn'};
@@ -3130,37 +3064,37 @@ window.doLogin=async function(){
   var btn=$('#loginBtn'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='⏳ بنطابق البيانات…';
   try{
     VZ.open(u);
-    await VZ.step('تسجيل الدخول على خادم Firebase');
-    var acc;
-    try{
-      acc = await signInWithUsername(u, p);
-    }catch(err){
-      VZ.finish(false,'بيانات الدخول غير صحيحة',true);
-      await new Promise(function(r){setTimeout(r,550);});
-      var code=(err&&err.code)||'';
-      if(code==='auth/wrong-password'||code==='auth/user-not-found'||code==='auth/invalid-credential'||code==='auth/invalid-login-credentials'){
-        throw {msg:'اسم المستخدم أو كلمة السر غير صحيحين. راجع البيانات أو تواصل مع أمين الخدمة.',authFail:true};
-      }
-      if(code==='auth/too-many-requests')throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
-      if(code==='auth/network-request-failed')throw {msg:'النت قطع — اتأكد من الاتصال وجرّب تاني.',tone:'warn'};
-      if(code==='auth/operation-not-allowed')throw {msg:'الدخول بالإيميل/كلمة السر مش مفعّل على Firebase.',tone:'warn'};
-      if(code==='auth/invalid-email')throw {msg:'اسم المستخدم لازم يكون حروف إنجليزي وأرقام من غير مسافات.',tone:'warn'};
-      throw {msg:(err&&err.msg)||'تعذّر الدخول دلوقتي — جرّب تاني.',tone:(err&&err.tone)||'warn',authFail:!!(err&&err.authFail)};
-    }
+    await VZ.step('فتح اتصال مشفّر مع خادم Firebase (europe-west1)','☁️',60);
+    await VZ.step('التحقق من هوية اسم المستخدم: '+u,'🔎',40);
+    var acc = await signInWithUsername(u,p);
+    await VZ.step('تأكيد كلمة المرور عبر خدمة المصادقة','🔐',40);
     VZ.account(acc);
     resetFailedAttempts();
+    await VZ.step('قراءة صلاحيات الحساب: '+(acc.role||'خادم'),'🛡️',40);
+    await VZ.step('تحميل بيانات الخدمة من قاعدة البيانات','🗂️',30);
+    await VZ.step('تجهيز لوحة التحكم والواجهة','✨',30);
     var rememberEl=$('#remember7d');
     var remember=rememberEl?!!rememberEl.checked:true;
-    await VZ.step('التأكد من الصلاحيات ('+(acc.role||'خادم')+')');
-    VZ.finish(true,'أهلاً '+displayPersonName(acc.name||u)+' — بنفتح لوحة التحكم');
     writeSession(acc,remember);
-    await writeLoginAudit('login',acc,u,'تسجيل دخول ناجح');
+    VZ.finish(true,'أهلاً '+displayPersonName(acc.name||u)+' — بنفتح لوحة التحكم');
     btn.innerHTML='✅ تم التحقق — بنفتح اللوحة…';
-    setTimeout(function(){location.replace('admin.html');},550);
     busy=false;
+    setTimeout(function(){location.replace('admin.html');},260);
   }catch(err){
     busy=false;VZ.hide();btn.disabled=false;btn.innerHTML=old;
-    if(err&&err.authFail&&recordFailedAttempt())return;
+    var _code=(err&&err.code)||'';
+    var _cred=(_code==='auth/wrong-password'||_code==='auth/user-not-found'||_code==='auth/invalid-credential'||_code==='auth/invalid-login-credentials');
+    if(_cred){
+      var exists=false;
+      try{ exists=await diagnoseLogin(u); }catch(_e){}
+      var msg,sub;
+      if(exists){ msg='كلمة المرور غير صحيحة'; sub='اسم المستخدم «'+u+'» موجود فعلًا — راجع كلمة المرور (حروف كبيرة/صغيرة، مسافات) وجرّب تاني.'; }
+      else { msg='اسم المستخدم غير موجود'; sub='مفيش حساب باسم «'+u+'». راجع الإملاء أو كلّم أمين الخدمة.'; }
+      try{ VZ.finish(false,msg,true); }catch(_e){ VZ.hide(); }
+      if(recordFailedAttempt())return;
+      showErr(msg+' — '+sub,'bad');
+      return;
+    }
     if(err&&err.code==='PERMISSION_DENIED')showErr('قواعد قاعدة البيانات مانعة القراءة — راجع إعدادات Firebase','bad');
     else showErr((err&&err.msg)||'حصل خطأ غير متوقع — اتأكد من الاتصال وجرب تاني',(err&&err.tone)||'bad');
   }

@@ -2223,6 +2223,7 @@ var clientId='c'+Math.random().toString(36).slice(2,9);
 var db={students:[],subjects:[],lectures:[],tombstones:{students:{},subjects:{},lectures:{}}};
 var localMeta={rev:'',updatedAt:0};
 var fbRef=null,fbConnected=false,fbReady=false,fbDirty=false,fbPushT=null,pendingRender=false,fbInitialSynced=false;
+var LAST_CLOUD={students:0,subjects:0,lectures:0};   /* آخر أعداد موثوقة من السحابة — للحماية من المسح */
 
 function toArr(x){
   if(!x)return [];
@@ -2345,6 +2346,27 @@ function pushNow(){
     tombstones:db.tombstones||null,
     meta:{rev:localMeta.rev,updatedAt:localMeta.updatedAt,app:'e3_khodam',v:2}
   };
+  /* ===== حماية ضد المسح بالغلط =====
+     لو الجهاز ده مفيهوش بيانات (كاش فاضي/جهاز جديد) والسحابة فيها بيانات،
+     ممنوع نرفع قايمة فاضية لأنها بتمسح كل حاجة على السحابة. */
+  var localCounts={
+    students:(db.students||[]).length,
+    subjects:(db.subjects||[]).length,
+    lectures:(db.lectures||[]).length
+  };
+  ['students','subjects','lectures'].forEach(function(k){
+    var cloudN=LAST_CLOUD[k]||0, localN=localCounts[k]||0;
+    if(cloudN>0&&localN===0){
+      delete payload[k];
+      setSync('error','⛔ اتمنع مسح '+k+' — الجهاز ده مفيهوش بيانات والسحابة فيها '+cloudN);
+      toast('⛔ اتلغى رفع '+k+': الجهاز مفيهوش بيانات والسحابة فيها '+nf(cloudN)+'. اعمل تحديث للصفحة الأول.');
+    } else if(cloudN>3&&localN<cloudN*0.5){
+      delete payload[k];
+      setSync('error','⛔ اتمنع تقليص '+k+' بشكل غير طبيعي');
+      toast('⛔ اتلغى رفع '+k+': العدد نزل من '+nf(cloudN)+' لـ'+nf(localN)+'. راجع البيانات الأول.');
+    }
+  });
+  if(Object.keys(payload).length===1){fbDirty=false;return;}   /* مفيش حاجة آمنة تترفع */
   fbRef.update(payload).then(function(){
     if(localMeta.rev!==sentRev){fbDirty=true;schedulePush();return;}
     fbDirty=false;setSync('online','تم الحفظ ☁️');
@@ -2404,6 +2426,23 @@ function initFirebase(){
   fbRef.on('value',function(snap){
     fbReady=true; fbConnected=true;
     var val=snap.val(),rmeta=val&&val.meta;
+    try{
+      LAST_CLOUD={
+        students:val&&val.students?Object.keys(val.students).length:0,
+        subjects:val&&val.subjects?Object.keys(val.subjects).length:0,
+        lectures:val&&val.lectures?Object.keys(val.lectures).length:0
+      };
+      /* نسخة أمان دوّارة من كل تحميل سليم (آخر 5) */
+      if(LAST_CLOUD.subjects||LAST_CLOUD.students){
+        var d=normalizeDb(val);
+        var key='e3_snap_'+Date.now();
+        try{
+          localStorage.setItem(key,JSON.stringify({at:Date.now(),students:d.students,subjects:d.subjects,lectures:d.lectures}));
+          var keys=Object.keys(localStorage).filter(function(k){return k.indexOf('e3_snap_')===0;}).sort();
+          while(keys.length>5){try{localStorage.removeItem(keys.shift());}catch(_e2){}}
+        }catch(_e){}
+      }
+    }catch(_e){}
     var cloudHasData=!!(val&&(val.students||val.subjects||val.lectures));
     if(!cloudHasData&&!(rmeta&&rmeta.rev)){
       /* سحابة فاضية + جهاز عليه بيانات = ترحيل أول مرة صامت (من غير سؤال) */
