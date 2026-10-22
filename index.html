@@ -1,3 +1,64 @@
+window.doLogin=async function(){
+  if(busy)return;
+  if(lockActive()){lockTick();return;}
+  clearErr();
+  var u=clean($('#liUser').value);
+  var p=String($('#liPass').value||'').replace(/^\s+|\s+$/g,'');
+  if(!u){showErr('اكتب اسم المستخدم الأول','warn');$('#liUser').focus();return;}
+  if(!p){showErr('اكتب كلمة السر','warn');$('#liPass').focus();return;}
+  busy=true;
+  var btn=$('#loginBtn'),old=btn.innerHTML;btn.disabled=true;btn.innerHTML='⏳ بنطابق البيانات…';
+  try{
+    VZ.open(u);
+    await VZ.step('فتح اتصال مشفّر مع خادم Firebase (europe-west1)','☁️',60);
+    await VZ.step('التحقق من هوية اسم المستخدم: '+u,'🔎',40);
+    var acc = await signInWithUsername(u,p);
+    await VZ.step('تأكيد كلمة المرور عبر خدمة المصادقة','🔐',40);
+    VZ.account(acc);
+    resetFailedAttempts();
+    await VZ.step('قراءة صلاحيات الحساب: '+(acc.role||'خادم'),'🛡️',40);
+    await VZ.step('تحميل بيانات الخدمة من قاعدة البيانات','🗂️',30);
+    await VZ.step('تجهيز لوحة التحكم والواجهة','✨',30);
+    var rememberEl=$('#remember7d');
+    var remember=rememberEl?!!rememberEl.checked:true;
+    writeSession(acc,remember);
+    VZ.finish(true,'أهلاً '+displayPersonName(acc.name||u)+' — بنفتح لوحة التحكم');
+    btn.innerHTML='✅ تم التحقق — بنفتح اللوحة…';
+    busy=false;
+    setTimeout(function(){location.replace('admin.html');},260);
+  }catch(err){
+    busy=false;btn.disabled=false;btn.innerHTML=old;
+    var code=(err&&err.code)||'';
+    var isCredErr=(code==='auth/wrong-password'||code==='auth/user-not-found'||code==='auth/invalid-credential'||code==='auth/invalid-login-credentials');
+    if(isCredErr){
+      /* نحدد بالظبط: الاسم غلط؟ ولا الباسورد غلط؟ */
+      var exists=false;
+      try{ exists=await diagnoseLogin(u); }catch(_e){}
+      resetFailedAttempts(); /* العداد بيتحسب تحت */
+      recordFailedAttempt();
+      var msg, sub;
+      if(exists){
+        msg='كلمة المرور غير صحيحة';
+        sub='اسم المستخدم «'+u+'» موجود فعلًا — راجع كلمة المرور (حروف كبيرة/صغيرة، مسافات) وجرّب تاني.';
+      }else{
+        msg='اسم المستخدم غير موجود';
+        sub='مفيش حساب باسم «'+u+'». راجع الإملاء (حروف إنجليزي، من غير مسافات زيادة) أو كلّم أمين الخدمة.';
+      }
+      try{ VZ.finish(false,msg,true); }catch(_e){ VZ.hide(); }
+      if(code==='auth/too-many-requests'){
+        try{VZ.finish(false,'محاولات كثيرة جدًا',true);}catch(_e){}
+        throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
+      }
+      throw {msg:msg+' — '+sub,tone:'bad',authFail:true};
+    }
+    if(code==='auth/too-many-requests')throw {msg:'محاولات كتير جدًا — استنى دقيقتين وجرّب تاني.',tone:'warn'};
+    if(code==='auth/network-request-failed')throw {msg:'النت قطع — اتأكد من الاتصال وجرّب تاني.',tone:'warn'};
+    if(code==='auth/operation-not-allowed')throw {msg:'الدخول بالإيميل/كلمة السر مش مفعّل على Firebase.',tone:'warn'};
+    if(code==='auth/invalid-email')throw {msg:'اسم المستخدم لازم يكون حروف إنجليزي وأرقام من غير مسافات.',tone:'warn'};
+    throw {msg:(err&&err.msg)||'تعذّر الدخول دلوقتي — جرّب تاني.',tone:(err&&err.tone)||'warn'};
+  }
+};
+
 <!DOCTYPE html>
 <!-- ================= E3DAD-COMPLETE v4.0 (v1+v2+v3) | بناء 2026-10-19 | index.html ================= -->
 <html lang="ar" dir="rtl" data-skin="shamamsa-v2" data-theme="light">
@@ -1259,6 +1320,8 @@ html[data-theme="dark"] .vz-title{color:var(--cx-gold-2)}
 .vz-box.done .vz-ring-in,.vz-box.fail .vz-ring-in{animation:none}
 .vz-who{font-size:.78rem;color:var(--cx-muted);font-weight:700;line-height:1.9;margin-bottom:8px;min-height:1em}
 .vz-log{display:grid;gap:5px;text-align:start;margin-bottom:10px;max-height:132px;overflow:auto}
+.vz-facts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:0 0 10px}
+.vz-facts span{font-size:.63rem;font-weight:800;padding:3px 9px;border-radius:999px;background:rgba(18,58,99,.07);color:#4a5a6e;white-space:nowrap}
 .vz-log .ln{
   display:flex;align-items:flex-start;gap:7px;font-size:.72rem;font-weight:700;line-height:1.7;
   color:var(--cx-muted);background:var(--cx-paper-2);border-radius:10px;padding:6px 9px;
@@ -2534,6 +2597,11 @@ html[data-theme="dark"] #sfRole option{color:#e2ebf5;background:#16202f}
       <div class="vz-ring"><span class="vz-ring-in" id="vzAva" aria-hidden="true">☦</span></div>
       <div class="vz-who" id="vzWho"></div>
       <div class="vz-log" id="vzLog"></div>
+      <div class="vz-facts" id="vzFacts">
+        <span>🔒 اتصال مشفّر TLS</span>
+        <span>☁️ Firebase · europe-west1</span>
+        <span>⚡ دخول سريع</span>
+      </div>
       <div class="vz-bar">
         <span class="fill"><i id="vzBarFill"></i></span>
         <span class="vz-pct" id="vzPct">0%</span>
@@ -2846,12 +2914,19 @@ var VZ=(function(){
       if(bar)bar.style.width='8%';if(pct)pct.textContent='8%';n=0;beep();
     },
     account:showAccount,
-    step:function(t,delayMs){
+    step:function(t,delayMs,ico){
       if(!ov)return Promise.resolve();n++;
-      var l=document.createElement('div');l.textContent='✓ '+t;l.style.cssText='padding:2px 0;font-size:.78rem;font-weight:700';
-      log.appendChild(l);
-      var p=Math.min(92,8+n*26);bar.style.width=p+'%';pct.textContent=p+'%';beep();
-      return new Promise(function(r){setTimeout(r,delayMs==null?320:delayMs);});
+      var l=document.createElement('div');
+      l.style.cssText='display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:9px;background:rgba(18,58,99,.045);font-size:.76rem;font-weight:700';
+      var ic=document.createElement('span');ic.textContent=ico||'✓';ic.style.cssText='flex:0 0 auto;font-size:.85rem';
+      var tx=document.createElement('span');tx.textContent=t;tx.style.cssText='flex:1';
+      var tm=document.createElement('span');tm.textContent='الآن';
+      tm.style.cssText='font-size:.62rem;opacity:.55;font-weight:800;letter-spacing:.3px';
+      l.appendChild(ic);l.appendChild(tx);l.appendChild(tm);
+      if(log){log.appendChild(l);try{log.scrollTop=log.scrollHeight;}catch(_e){}}
+      var p=Math.min(94,8+n*17);if(bar)bar.style.width=p+'%';if(pct)pct.textContent=p+'%';
+      beep();
+      return new Promise(function(r){setTimeout(r,delayMs==null?70:delayMs);});
     },
     finish:function(ok,msg,showClose){
       if(!ov)return;if(resSub)resSub.innerHTML='';
@@ -2938,6 +3013,25 @@ function writeLoginAudit(action,account,enteredUser,details){
   }catch(_e){return Promise.resolve(false);}
 }
 
+/* ===== تسخين الاتصال من أول تحميل الصفحة =====
+   بنفتح قناة Firebase والـAuth بدري عشان الدخول يبقى سريع (مفيش تأسيس اتصال وقت الدخول). */
+var FB_WARM=(function(){
+  try{
+    var app = firebase.apps.length ? firebase.app() : firebase.initializeApp(FB_CONFIG);
+    var db  = firebase.database(app);
+    var au  = firebase.auth(app);
+    try{ au.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(_e){}
+    var dbs = [];
+    try{ db.ref('.info/connected').on('value',function(){}); }catch(_e){}
+    try{
+      db.ref('ekhdam/loginIndex').once('value').then(function(snap){
+        window.__LOGIN_INDEX = snap.val()||{};
+      },function(){});
+    }catch(_e){}
+    return Promise.resolve(true);
+  }catch(_e){ return Promise.resolve(false); }
+})();
+
 /* ===== الدخول الحقيقي عبر Firebase Authentication ===== */
 var AUTH_DOMAIN = 'khodam.local';   /* نفس النطاق الداخلي اللي اتعملت بيه الحسابات */
 
@@ -2967,6 +3061,32 @@ async function resolveLoginEmail(username){
     if(v && v.e) return v.e + '@' + AUTH_DOMAIN;
   }catch(_e){}
   return direct;
+}
+
+/* تشخيص دقيق: هل اسم المستخدم موجود؟ ولو موجود، يبقى العيب في كلمة المرور. */
+async function diagnoseLogin(username){
+  var norm = normUser(username);
+  var found = false;
+  try{
+    if(window.__LOGIN_INDEX && window.__LOGIN_INDEX[encodeURIComponent(norm)]) found = true;
+  }catch(_e){}
+  if(!found){
+    try{
+      var snap = await firebase.database().ref('ekhdam/loginIndex/'+encodeURIComponent(norm)).once('value');
+      if(snap.val()) found = true;
+    }catch(_e){}
+  }
+  if(!found){
+    try{
+      var usnap = await firebase.database().ref('ekhdam/users').once('value');
+      var all = usnap.val()||{};
+      Object.keys(all).forEach(function(k){
+        var x=all[k]||{};
+        if(normUser(x.username||x.u||'')===norm) found = true;
+      });
+    }catch(_e){}
+  }
+  return found;
 }
 
 async function signInWithUsername(username, password){
